@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🐰 ABC Fun English</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ABC Fun">
+<link rel="apple-touch-icon" href="https://img.icons8.com/color/180/abc.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --primary: #FF9F1C;
+    --secondary: #2EC4B6;
+    --bg: #CBF3F0;
+    --card: #FFFFFF;
+    --wrong: #FF5A5F;
+    --correct: #2EC4B6;
+  }
+
+  body {
+    font-family: 'Kanit', sans-serif;
+    background-color: var(--bg);
+    margin: 0; padding: 10px;
+    display: flex; justify-content: center;
+    min-height: 100vh; color: #333;
+    overflow-x: hidden; -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .container { width: 100%; max-width: 600px; text-align: center; padding-bottom: 50px; }
+
+  /* Header Stats */
+  .header-bar {
+    background: var(--card); padding: 10px 15px; border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px;
+    display: flex; justify-content: space-between; align-items: center; font-weight: bold;
+  }
+  .stat-pill { background: #f0f2f5; padding: 5px 12px; border-radius: 15px; font-size: 0.9rem; }
+
+  /* Pages */
+  .page { display: none; animation: fadeIn 0.3s ease; }
+  .page.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--card); padding: 25px 20px; border-radius: 25px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 15px; position: relative;
+  }
+
+  h1 { color: var(--primary); margin: 0 0 10px 0; text-shadow: 2px 2px 0px #ffe5b4; font-size: 2.2rem; }
+  
+  /* Timer & Score */
+  .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+  
+  .timer-box {
+    font-size: 1.8rem; font-weight: 800; color: #555;
+    background: #fff; padding: 5px 15px; border-radius: 15px;
+    border: 3px solid #ddd;
+  }
+  
+  .score-box {
+    font-size: 2rem; font-weight: 800; color: #fff;
+    background: var(--primary); padding: 5px 20px; border-radius: 15px;
+    box-shadow: 0 4px 0 #e08e19;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  /* Buttons */
+  button {
+    border: none; outline: none; cursor: pointer; font-family: 'Kanit', sans-serif;
+    border-radius: 50px; width: 100%; margin: 6px 0; font-weight: 600;
+    transition: transform 0.1s; box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+  }
+  button:active { transform: scale(0.96); }
+  
+  .btn-main { background: var(--primary); color: white; font-size: 1.5rem; padding: 18px; box-shadow: 0 5px 0 #e08e19; }
+  .btn-practice { background: var(--secondary); color: white; font-size: 1.2rem; padding: 12px; box-shadow: 0 5px 0 #259f93; }
+  .btn-parent { background: #95a5a6; color: white; width: auto; font-size: 0.9rem; padding: 8px 20px; margin-top: 15px; }
+  .btn-back { background: #f1f2f6; color: #7f8c8d; width: auto; display: inline-block; padding: 8px 20px; }
+  
+  .btn-sound {
+    background: #FFBF69; color: #fff; width: 80px; height: 80px;
+    border-radius: 50%; font-size: 2.2rem; display: flex; align-items: center; 
+    justify-content: center; margin: 0 auto; box-shadow: 0 4px 0 #e0a85c;
+  }
+
+  /* Game Elements */
+  .vocab-display { font-size: 3.5rem; font-weight: 800; color: var(--primary); margin: 10px 0; line-height: 1.1; text-shadow: 2px 2px 0 #f0f0f0;}
+  .practice-vocab { font-size: 4rem; font-weight: 800; color: var(--secondary); margin: 15px 0; }
+  
+  .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+  .choice-btn {
+    background: white; border: 3px solid var(--secondary); color: var(--secondary);
+    border-radius: 20px; padding: 10px; font-size: 1.3rem; min-height: 90px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* History Table */
+  .history-list { list-style: none; padding: 0; text-align: left; max-height: 200px; overflow-y: auto; }
+  .history-list li { 
+    display: flex; justify-content: space-between; padding: 10px; 
+    border-bottom: 1px dashed #ccc; font-size: 0.95rem;
+  }
+  .date-label { color: #555; font-weight: bold; }
+  .count-label { background: var(--secondary); color: white; padding: 2px 10px; border-radius: 10px; }
+
+  @keyframes popIn { from { transform: scale(0.5); opacity:0; } to { transform: scale(1); opacity:1; } }
+  .correct-anim { background: var(--correct) !important; color: white !important; border-color: var(--correct) !important; transform: scale(1.05); }
+  .wrong-anim { background: var(--wrong) !important; color: white !important; border-color: var(--wrong) !important; animation: shake 0.4s; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  #mistakeList { text-align: left; max-height: 200px; overflow-y: auto; padding: 0; list-style: none; }
+  #mistakeList li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div class="header-bar">
+    <div class="stat-pill">⭐ สะสม: <span id="uiStars">0</span></div>
+    <div class="stat-pill">🏆 เล่นไป: <span id="uiRounds">0</span> รอบ</div>
+    <div id="onlineIndicator" style="font-size:0.7rem; color:#ccc;">⚪ Offline</div>
+  </div>
+
+  <div id="homePage" class="page active">
+    <div class="card">
+      <h1>🐰 ABC Fun</h1>
+      <p style="color:#777; margin-bottom: 20px;">เก่งศัพท์อังกฤษฉบับหนูน้อย</p>
+      
+      <div style="background:#f9f9f9; padding:10px; border-radius:15px; margin-bottom:15px; display:flex; justify-content:center; align-items:center; gap:10px;">
+        <span>🔊 เสียง:</span>
+        <button id="soundToggle" onclick="toggleSound()" style="width:auto; padding:5px 20px; font-size:1rem; margin:0;">เปิด</button>
+      </div>
+
+      <div id="loadingStatus" style="color: orange; font-style: italic; margin-bottom: 15px; font-size: 0.9rem;">กำลังโหลดข้อมูล...</div>
+      
+      <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (จับเวลา)</button>
+      <button class="btn-practice" onclick="startPractice()">📖 ฝึกท่องศัพท์</button>
+      
+      <button class="btn-parent" onclick="showPage('parentLogin')">🔒 ผู้ปกครอง</button>
+    </div>
+  </div>
+
+  <div id="gamePage" class="page">
+    <div class="game-header">
+      <div class="timer-box">⏳ <span id="timerDisplay">02:00</span></div>
+      <div class="score-box">คะแนน: <span id="liveScore">0</span></div>
+    </div>
+
+    <div class="card">
+      <div class="vocab-display" id="gameVocab">...</div>
+      <button class="btn-sound" onclick="repeatSound()">🔊</button>
+      <div id="choicesBox" class="choices-grid"></div>
+    </div>
+    <p style="color:#888; font-size: 0.8rem;">สู้ๆ นะคนเก่ง! หมดเวลาถึงจะจบเกมน้า</p>
+  </div>
+
+  <div id="resultPage" class="page">
+    <div class="card">
+      <h1 style="color:var(--primary)">หมดเวลาแล้ว! ⏰</h1>
+      <div style="font-size: 1.5rem; margin: 20px 0; background:#f0f8ff; padding:20px; border-radius:20px;">
+        คะแนนรวมรอบนี้<br>
+        <span id="finalScore" style="font-size: 4rem; color:var(--primary); font-weight:800;">0</span>
+      </div>
+      <div style="display:flex; justify-content:space-around; font-size:1.2rem;">
+        <span style="color:green">✔ ถูก: <span id="resultCorrect">0</span></span>
+        <span style="color:red">❌ ผิด: <span id="resultWrong">0</span></span>
+      </div>
+      <button class="btn-main" onclick="showPage('homePage')" style="margin-top:20px;">เล่นอีกครั้ง</button>
+    </div>
+  </div>
+
+  <div id="practicePage" class="page">
+    <div class="card">
+      <div class="practice-vocab" id="pVocab">...</div>
+      <div id="pReading" style="color:#666; font-size: 1.8rem; margin-bottom: 10px;">...</div>
+      <div id="pMeaning" style="color:var(--primary); font-size: 2.5rem; font-weight:bold; margin:10px 0; background: #fff8e1; padding: 10px; border-radius: 15px;">...</div>
+      
+      <button class="btn-sound" onclick="speakCurrentPractice()" style="margin: 20px auto;">🔊 ฟังเสียง</button>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="prevPractice()">⬅️ ถอยหลัง</button>
+        <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="nextPractice()">ถัดไป ➡️</button>
+      </div>
+    </div>
+    <button class="btn-back" onclick="showPage('homePage')">🏠 กลับหน้าหลัก</button>
+  </div>
+
+  <div id="parentLogin" class="page">
+    <div class="card">
+      <h2>🔒 โซนผู้ปกครอง</h2>
+      <input type="password" id="pinInput" placeholder="รหัสผ่าน" style="padding:15px; font-size:1.2rem; text-align:center; width:80%; border:2px solid #ddd; border-radius:15px;">
+      <br><br>
+      <button class="btn-main" style="width: auto; padding: 10px 40px;" onclick="checkPin()">ตกลง</button>
+      <br>
+      <button class="btn-back" onclick="showPage('homePage')">กลับ</button>
+    </div>
+  </div>
+
+  <div id="parentDashboard" class="page">
+    <div class="card">
+      <h2>📊 รายงานผล</h2>
+      
+      <div style="text-align:left; margin-top:10px;">📅 <b>ประวัติการเล่นรายวัน:</b></div>
+      <ul id="historyList" class="history-list">
+        <li>ไม่มีข้อมูล</li>
+      </ul>
+
+      <div style="text-align:left; margin-top:20px;">📌 <b>คำที่ผิดบ่อย (ควรฝึกเพิ่ม):</b></div>
+      <ul id="mistakeList"></ul>
+
+      <button class="btn-back" onclick="resetLocalData()" style="color:red; font-size: 0.8rem; margin-top:20px;">🗑️ ล้างข้อมูลเครื่องนี้</button>
+      <br>
+      <button class="btn-back" onclick="showPage('homePage')">🏠 กลับหน้าหลัก</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/**********************************************
+ * CONFIG & SETUP
+ **********************************************/
+// *** เปลี่ยน URL นี้เป็น Web App URL ใหม่ของคุณหลังจาก Deploy ***
+const API_URL = "https://script.google.com/macros/s/AKfycby3dXWMH9HD8oMtF8LaTnb0VP0HcddAzEVjyIQAK2kYJMX4OgWw10Sup5Ni0osh0iFO/exec"; 
+const PARENT_PIN = "0932815229";
+const GAME_TIME = 120; // 2 นาที
+
+// ข้อมูลสำรอง (กรณีเน็ตหลุด) - ตรงกับโครงสร้าง Sheet
+const backupWords = [
+  {Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},
+  {Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"},
+  {Vocabulary:"Cat", "คำอ่านไทย":"แคท", "คำแปล":"แมว"},
+  {Vocabulary:"Dog", "คำอ่านไทย":"ด็อก", "คำแปล":"สุนัข"},
+  {Vocabulary:"Elephant", "คำอ่านไทย":"เอล-เล-เฟ่น", "คำแปล":"ช้าง"},
+  {Vocabulary:"Fish", "คำอ่านไทย":"ฟิช", "คำแปล":"ปลา"}
+];
+
+// ตัวแปรระบบ
+let words = [];
+let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
+let playHistory = JSON.parse(localStorage.getItem("playHistory")) || {}; // เก็บประวัติรายวัน
+let totalStars = Number(localStorage.getItem("totalStars")) || 0;
+let playRounds = Number(localStorage.getItem("playRounds")) || 0;
+let isSoundEnabled = true;
+
+// ตัวแปรเกม
+let currentWord = null;
+let gameTimerId = null;
+let timeLeft = 0;
+let currentScore = 0; // คะแนนในรอบปัจจุบัน
+let sessionCorrect = 0;
+let sessionWrong = 0;
+let practiceIndex = 0;
+
+/**********************************************
+ * STARTUP & UTILS
+ **********************************************/
+window.onload = function() {
+  updateUI();
+  toggleSoundUI(); // อัปเดตปุ่มเสียง
+
+  // ดึงข้อมูล
+  fetch(API_URL).then(res => res.json()).then(data => {
+    // รองรับทั้งแบบ data.words หรือ data เป็น array ตรงๆ
+    if(data.words) words = data.words;
+    else if(Array.isArray(data)) words = data;
+    
+    if(words.length > 0) {
+      document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
+      document.getElementById("onlineIndicator").textContent = "🟢 Online";
+      document.getElementById("onlineIndicator").style.color = "green";
+    }
+  }).catch(e => {
+    words = backupWords; // ใช้ข้อมูลสำรอง
+    document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์ (ข้อมูลสำรอง)";
+  });
+
+  // Pre-load voices (แก้ปัญหาเสียงไม่ออกครั้งแรก)
+  window.speechSynthesis.getVoices();
+};
+
+function toggleSound() {
+  isSoundEnabled = !isSoundEnabled;
+  toggleSoundUI();
+  // ลองเล่นเสียงเงียบๆ เพื่อกระตุ้น Browser
+  if(isSoundEnabled) {
+    const u = new SpeechSynthesisUtterance("");
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function toggleSoundUI() {
+  const btn = document.getElementById("soundToggle");
+  if(isSoundEnabled) {
+    btn.textContent = "เปิด";
+    btn.style.background = "var(--correct)";
+    btn.style.color = "white";
+  } else {
+    btn.textContent = "ปิด";
+    btn.style.background = "#ccc";
+    btn.style.color = "#666";
+  }
+}
+
+function speak(text) {
+  if(!isSoundEnabled) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US"; // ตั้งค่าภาษาอังกฤษ
+  u.rate = 0.8; // พูดช้าลงนิดนึง
+  
+  // พยายามเลือกเสียงผู้หญิง (ถ้ามี)
+  const voices = window.speechSynthesis.getVoices();
+  const femaleVoice = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English"));
+  if(femaleVoice) u.voice = femaleVoice;
+
+  window.speechSynthesis.speak(u);
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateUI() {
+  document.getElementById("uiStars").textContent = totalStars;
+  document.getElementById("uiRounds").textContent = playRounds;
+}
+
+/**********************************************
+ * GAME LOGIC
+ **********************************************/
+function startGame() {
+  if(words.length < 4) { alert("ข้อมูลกำลังโหลด รอสักครู่นะครับ"); return; }
+  
+  // รีเซ็ตค่าเกม
+  currentScore = 0;
+  sessionCorrect = 0;
+  sessionWrong = 0;
+  timeLeft = GAME_TIME;
+  
+  document.getElementById("liveScore").textContent = "0";
+  showPage('gamePage');
+  updateTimerDisplay();
+  
+  // จับเวลา
+  clearInterval(gameTimerId);
+  gameTimerId = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft <= 0) finishGame();
+  }, 1000);
+
+  nextQuestion();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  document.getElementById("timerDisplay").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+// สุ่มคำถามโดยเน้นคำที่ผิดบ่อย
+function getWeightedWord() {
+  let pool = [];
+  words.forEach(w => {
+    pool.push(w);
+    const stat = wordStats[w.Vocabulary];
+    if (stat && stat.wrong > stat.correct) { 
+      // ใส่เพิ่มเข้าไปอีก 2 ตัวเพื่อให้มีโอกาสสุ่มเจอมากขึ้น
+      pool.push(w); pool.push(w); 
+    }
+  });
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function nextQuestion() {
+  if(timeLeft <= 0) return;
+  
+  currentWord = getWeightedWord();
+  document.getElementById("gameVocab").textContent = currentWord.Vocabulary;
+  speak(currentWord.Vocabulary);
+
+  // สร้างตัวเลือก 4 ตัว
+  let choices = [currentWord];
+  while(choices.length < 4) {
+    let w = words[Math.floor(Math.random() * words.length)];
+    if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w);
+  }
+  
+  const box = document.getElementById("choicesBox");
+  box.innerHTML = "";
+  // สลับตำแหน่งตัวเลือก
+  choices.sort(() => Math.random() - 0.5).forEach(w => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    btn.textContent = w["คำแปล"];
+    btn.onclick = () => checkAnswer(w, btn);
+    box.appendChild(btn);
+  });
+}
+
+function checkAnswer(selected, btn) {
+  // ล็อกปุ่มกันกดรัว
+  const allBtns = document.querySelectorAll('.choice-btn');
+  allBtns.forEach(b => b.disabled = true);
+  
+  // สร้าง Stat ถ้ายังไม่มี
+  if(!wordStats[currentWord.Vocabulary]) {
+    wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
+  }
+
+  if(selected.Vocabulary === currentWord.Vocabulary) {
+    // ถูกต้อง (+1)
+    btn.classList.add("correct-anim");
+    currentScore++;
+    sessionCorrect++;
+    wordStats[currentWord.Vocabulary].correct++;
+    
+    // เล่นเสียงถูกต้อง
+    if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg").play().catch(e=>{});
+    
+    setTimeout(nextQuestion, 800);
+  } else {
+    // ผิด (-1)
+    btn.classList.add("wrong-anim");
+    currentScore--;
+    sessionWrong++;
+    wordStats[currentWord.Vocabulary].wrong++;
+    
+    // เฉลยข้อที่ถูก
+    allBtns.forEach(b => {
+       if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim");
+    });
+    
+    // เล่นเสียงผิด
+    if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play().catch(e=>{});
+
+    setTimeout(nextQuestion, 1500);
+  }
+
+  // อัปเดตคะแนนบนหน้าจอ
+  document.getElementById("liveScore").textContent = currentScore;
+  localStorage.setItem("wordStats", JSON.stringify(wordStats));
+}
+
+function finishGame() {
+  clearInterval(gameTimerId);
+  
+  // บันทึกสถิติ
+  playRounds++;
+  totalStars += Math.max(0, currentScore); // ดาวเพิ่มตามคะแนน (ไม่ติดลบ)
+  
+  // บันทึกประวัติรายวัน (วันที่: จำนวนรอบ)
+  const today = new Date().toLocaleDateString("th-TH");
+  if(!playHistory[today]) playHistory[today] = 0;
+  playHistory[today]++;
+  
+  saveAllData();
+
+  // แสดงหน้าสรุป
+  document.getElementById("finalScore").textContent = currentScore;
+  document.getElementById("resultCorrect").textContent = sessionCorrect;
+  document.getElementById("resultWrong").textContent = sessionWrong;
+  showPage('resultPage');
+}
+
+function saveAllData() {
+  localStorage.setItem("totalStars", totalStars);
+  localStorage.setItem("playRounds", playRounds);
+  localStorage.setItem("playHistory", JSON.stringify(playHistory));
+  localStorage.setItem("wordStats", JSON.stringify(wordStats));
+  updateUI();
+}
+
+function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
+
+/**********************************************
+ * PRACTICE MODE
+ **********************************************/
+function startPractice() {
+  if(words.length === 0) return;
+  practiceIndex = 0;
+  showPage('practicePage');
+  renderPractice();
+}
+
+function renderPractice() {
+  const w = words[practiceIndex];
+  
+  // แสดงผล (ป้องกัน error ถ้าข้อมูลไม่ครบ)
+  document.getElementById("pVocab").textContent = w.Vocabulary || "";
+  document.getElementById("pReading").textContent = w["คำอ่านไทย"] ? "คำอ่าน: " + w["คำอ่านไทย"] : "";
+  document.getElementById("pMeaning").textContent = w["คำแปล"] ? "แปลว่า: " + w["คำแปล"] : "";
+  
+  speak(w.Vocabulary);
+}
+
+function nextPractice() { practiceIndex = (practiceIndex + 1) % words.length; renderPractice(); }
+function prevPractice() { practiceIndex = practiceIndex <= 0 ? words.length - 1 : practiceIndex - 1; renderPractice(); }
+function speakCurrentPractice() { speak(words[practiceIndex].Vocabulary); }
+
+/**********************************************
+ * PARENT MODE
+ **********************************************/
+function checkPin() {
+  if(document.getElementById("pinInput").value === PARENT_PIN) {
+    document.getElementById("pinInput").value = "";
+    showPage('parentDashboard');
+    renderHistory();
+    renderMistakes();
+  } else { alert("รหัสผ่านไม่ถูกต้อง"); }
+}
+
+function renderHistory() {
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+  const dates = Object.keys(playHistory).reverse(); // เรียงจากล่าสุด
+  
+  if(dates.length === 0) {
+    list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีประวัติการเล่น</li>";
+    return;
+  }
+  
+  dates.forEach(date => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="date-label">${date}</span> <span class="count-label">${playHistory[date]} รอบ</span>`;
+    list.appendChild(li);
+  });
+}
+
+function renderMistakes() {
+  const list = document.getElementById("mistakeList");
+  list.innerHTML = "";
+  // เรียงลำดับคำที่ผิดเยอะที่สุดขึ้นก่อน
+  const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
+  
+  if(sorted.length === 0) { list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีข้อมูลคำศัพท์</li>"; return; }
+  
+  sorted.forEach(([vocab, s]) => {
+    if(s.wrong > 0) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span><b>${vocab}</b> (${s.meaning})</span> <span style="color:red">ผิด ${s.wrong}</span>`;
+      list.appendChild(li);
+    }
+  });
+}
+
+function resetLocalData() {
+  if(confirm("ยืนยันลบประวัติทั้งหมดในเครื่องนี้?")) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+</script>
+
+</body>
+</html>
