@@ -80,6 +80,7 @@
   
   .btn-main { background: var(--primary); color: white; font-size: 1.5rem; padding: 18px; box-shadow: 0 5px 0 #e08e19; }
   .btn-practice { background: var(--secondary); color: white; font-size: 1.2rem; padding: 12px; box-shadow: 0 5px 0 #259f93; }
+  .btn-info { background: #3498db; color: white; font-size: 1rem; padding: 10px; margin-top: 10px; }
   .btn-parent { background: #95a5a6; color: white; width: auto; font-size: 0.9rem; padding: 8px 20px; margin-top: 15px; }
   .btn-back { background: #f1f2f6; color: #7f8c8d; width: auto; display: inline-block; padding: 8px 20px; }
   
@@ -101,13 +102,26 @@
   }
 
   /* History Table */
-  .history-list { list-style: none; padding: 0; text-align: left; max-height: 250px; overflow-y: auto; }
+  .history-list { list-style: none; padding: 0; text-align: left; max-height: 300px; overflow-y: auto; }
   .history-list li { 
-    display: flex; justify-content: space-between; align-items: center; padding: 10px; 
-    border-bottom: 1px dashed #ccc; font-size: 0.95rem;
+    display: flex; flex-direction: column; padding: 15px; 
+    border-bottom: 1px dashed #ccc; font-size: 0.95rem; background: #fdfdfd; margin-bottom: 5px; border-radius: 10px;
   }
+  .history-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px;}
   .date-label { color: #555; font-weight: bold; }
-  .count-label { background: var(--secondary); color: white; padding: 2px 10px; border-radius: 10px; min-width: 40px; text-align: center;}
+  .badge-group { display: flex; gap: 5px; }
+  .count-label { background: var(--secondary); color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.8rem;}
+  .wrong-text { color: #d63031; font-size: 0.85rem; background: #fff0f0; padding: 5px; border-radius: 5px; margin-top: 5px;}
+
+  /* Vocab Table */
+  .vocab-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+  .vocab-table th { background: var(--primary); color: white; padding: 8px; border: 1px solid #eee; }
+  .vocab-table td { border: 1px solid #eee; padding: 8px; vertical-align: middle; cursor: pointer; }
+  .vocab-table tr:nth-child(even) { background: #f9f9f9; }
+  .hidden-text { color: transparent !important; text-shadow: 0 0 8px rgba(0,0,0,0.3); background: #eee; border-radius: 5px; user-select: none; }
+  
+  .controls-bar { display: flex; justify-content: space-around; background: #fff; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #eee; font-size: 0.9rem; }
+  .checkbox-wrapper { display: flex; align-items: center; gap: 5px; }
 
   @keyframes popIn { from { transform: scale(0.5); opacity:0; } to { transform: scale(1); opacity:1; } }
   .correct-anim { background: var(--correct) !important; color: white !important; border-color: var(--correct) !important; transform: scale(1.05); }
@@ -184,12 +198,47 @@
       
       <button class="btn-sound" onclick="speakCurrentPractice()" style="margin: 20px auto;">🔊 ฟังเสียง</button>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
         <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="prevPractice()">⬅️ ถอยหลัง</button>
         <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="nextPractice()">ถัดไป ➡️</button>
       </div>
+      
+      <button class="btn-info" onclick="openVocabList()">📜 ดูคำศัพท์ทั้งหมด (ตาราง)</button>
     </div>
     <button class="btn-back" onclick="showPage('homePage')">🏠 กลับหน้าหลัก</button>
+  </div>
+
+  <div id="vocabListPage" class="page">
+    <div class="card" style="padding: 15px;">
+      <h2>📜 คำศัพท์ทั้งหมด</h2>
+      
+      <div class="controls-bar">
+        <label class="checkbox-wrapper">
+            <input type="checkbox" id="showRead" checked onchange="toggleVocabColumn('read')"> แสดงคำอ่าน
+        </label>
+        <label class="checkbox-wrapper">
+            <input type="checkbox" id="showMean" checked onchange="toggleVocabColumn('mean')"> แสดงคำแปล
+        </label>
+      </div>
+      <div style="font-size:0.8rem; color:#888; margin-bottom:10px;">💡 จิ้มที่คำเพื่อฟังเสียง</div>
+
+      <div style="overflow-x:auto;">
+        <table class="vocab-table">
+            <thead>
+                <tr>
+                    <th style="width:10%">#</th>
+                    <th style="width:30%">Vocab</th>
+                    <th style="width:30%">คำอ่าน</th>
+                    <th style="width:30%">คำแปล</th>
+                </tr>
+            </thead>
+            <tbody id="vocabTableBody">
+                </tbody>
+        </table>
+      </div>
+      <br>
+      <button class="btn-back" onclick="showPage('practicePage')">⬅️ กลับ</button>
+    </div>
   </div>
 
   <div id="parentLogin" class="page">
@@ -306,16 +355,23 @@ function toggleSoundUI() {
   }
 }
 
-function speak(text) {
+// อัปเดตฟังก์ชัน Speak ให้รองรับภาษาไทย
+function speak(text, lang = "en-US") {
   if(!isSoundEnabled) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
+  u.lang = lang; // กำหนดภาษาตามที่ส่งมา
   u.rate = 0.8;
   
   const voices = window.speechSynthesis.getVoices();
-  const femaleVoice = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English"));
-  if(femaleVoice) u.voice = femaleVoice;
+  // พยายามเลือกเสียงให้ตรงภาษา
+  if(lang === "en-US") {
+     const femaleVoice = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English"));
+     if(femaleVoice) u.voice = femaleVoice;
+  } else if (lang === "th-TH") {
+     const thaiVoice = voices.find(v => v.lang === "th-TH" || v.name.includes("Thai"));
+     if(thaiVoice) u.voice = thaiVoice;
+  }
 
   window.speechSynthesis.speak(u);
 }
@@ -446,19 +502,14 @@ function finishGame() {
   playRounds++;
   totalStars += Math.max(0, currentScore);
   
-  // บันทึก Local
   const today = new Date().toLocaleDateString("th-TH");
   if(!playHistory[today]) playHistory[today] = 0;
   playHistory[today]++;
   saveAllData();
 
-  // 🚀 ส่งข้อมูลไป Cloud (Google Sheets)
-  // รวบรวมคำที่ผิดในรอบนี้ (หรือสะสม) เพื่อส่งไปรายงาน
   const wrongWordsSummary = Object.entries(wordStats)
     .filter(([_, s]) => s.wrong > 0)
-    // เรียงตามจำนวนผิดมาก -> น้อย
     .sort((a,b) => b[1].wrong - a[1].wrong)
-    // เอาแค่ 5 คำแรก
     .slice(0, 5)
     .map(([vocab, s]) => `${vocab}(${s.wrong})`)
     .join(", ");
@@ -503,6 +554,58 @@ function nextPractice() { practiceIndex = (practiceIndex + 1) % words.length; re
 function prevPractice() { practiceIndex = practiceIndex <= 0 ? words.length - 1 : practiceIndex - 1; renderPractice(); }
 function speakCurrentPractice() { speak(words[practiceIndex].Vocabulary); }
 
+// 📌 ฟังก์ชันใหม่: เปิดหน้าตารางคำศัพท์
+function openVocabList() {
+    showPage('vocabListPage');
+    const tbody = document.getElementById("vocabTableBody");
+    tbody.innerHTML = "";
+
+    words.forEach((w, index) => {
+        const tr = document.createElement("tr");
+        // ลำดับ
+        const tdIdx = document.createElement("td");
+        tdIdx.textContent = index + 1;
+        
+        // Vocab (คลิกฟังอังกฤษ)
+        const tdVocab = document.createElement("td");
+        tdVocab.innerHTML = `<b>${w.Vocabulary}</b>`;
+        tdVocab.onclick = () => speak(w.Vocabulary, 'en-US');
+
+        // คำอ่าน (คลิกฟังไทย)
+        const tdRead = document.createElement("td");
+        tdRead.className = "col-read";
+        tdRead.textContent = w["คำอ่านไทย"];
+        tdRead.onclick = () => speak(w["คำอ่านไทย"], 'th-TH');
+
+        // คำแปล (คลิกฟังไทย)
+        const tdMean = document.createElement("td");
+        tdMean.className = "col-mean";
+        tdMean.textContent = w["คำแปล"];
+        tdMean.onclick = () => speak(w["คำแปล"], 'th-TH');
+
+        tr.appendChild(tdIdx);
+        tr.appendChild(tdVocab);
+        tr.appendChild(tdRead);
+        tr.appendChild(tdMean);
+        tbody.appendChild(tr);
+    });
+
+    // ปรับการแสดงผลตาม Checkbox
+    toggleVocabColumn('read');
+    toggleVocabColumn('mean');
+}
+
+// ฟังก์ชันซ่อน/แสดงคอลัมน์
+function toggleVocabColumn(type) {
+    const isChecked = document.getElementById(type === 'read' ? 'showRead' : 'showMean').checked;
+    const cells = document.querySelectorAll(type === 'read' ? '.col-read' : '.col-mean');
+    
+    cells.forEach(cell => {
+        if(isChecked) cell.classList.remove('hidden-text');
+        else cell.classList.add('hidden-text');
+    });
+}
+
 /**********************************************
  * PARENT MODE
  **********************************************/
@@ -510,12 +613,12 @@ function checkPin() {
   if(document.getElementById("pinInput").value === PARENT_PIN) {
     document.getElementById("pinInput").value = "";
     showPage('parentDashboard');
-    renderHistory(); // เรียกฟังก์ชันดึงข้อมูลจาก Cloud
-    renderMistakes(); // แสดงคำผิด (จาก Local)
+    renderHistory(); 
+    renderMistakes(); 
   } else { alert("รหัสผ่านไม่ถูกต้อง"); }
 }
 
-// 📌 ฟังก์ชันใหม่: ดึงข้อมูลจาก Google Sheets (Cloud)
+// 📌 ฟังก์ชันใหม่: ดึงข้อมูลและแสดงผล Rounds, Top Wrong Words
 async function renderHistory() {
   const list = document.getElementById("historyList");
   list.innerHTML = "<li>⏳ กำลังโหลดข้อมูลจาก Cloud...</li>";
@@ -531,17 +634,19 @@ async function renderHistory() {
     }
 
     data.history.forEach(item => {
-      // แปลงวันที่
       const dateObj = new Date(item.timestamp);
       const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
       
       const li = document.createElement("li");
       li.innerHTML = `
-        <div style="text-align:left; width:100%;">
-          <div>${dateStr}</div>
-          <div style="font-size:0.75rem; color:#d63031; margin-top:4px;">${item.wrong ? '⚠️ ผิด: '+item.wrong : ''}</div>
+        <div class="history-header">
+            <span class="date-label">${dateStr}</span>
+            <div class="badge-group">
+                <span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span>
+                <span class="count-label" style="background:#95a5a6">🔄 ${item.rounds || 1} รอบ</span>
+            </div>
         </div>
-        <span class="count-label">⭐ ${item.stars}</span>
+        ${item.wrong ? `<div class="wrong-text">❌ คำที่ผิด: ${item.wrong}</div>` : ''}
       `;
       list.appendChild(li);
     });
