@@ -137,9 +137,9 @@
 <div class="container">
   
   <div class="header-bar">
-    <div class="stat-pill">⭐ สะสม: <span id="uiStars">0</span></div>
-    <div class="stat-pill">🏆 เล่นไป: <span id="uiRounds">0</span> รอบ</div>
-    <div id="onlineIndicator" style="font-size:0.7rem; color:#ccc;">⚪ Offline</div>
+    <div class="stat-pill">⭐ รวม: <span id="uiStars">...</span></div>
+    <div class="stat-pill">🏆 เล่น: <span id="uiRounds">...</span> รอบ</div>
+    <div id="onlineIndicator" style="font-size:0.7rem; color:#ccc;">⚪ Check...</div>
   </div>
 
   <div id="homePage" class="page active">
@@ -254,7 +254,17 @@
 
   <div id="parentDashboard" class="page">
     <div class="card">
-      <h2>📊 รายงานผล (ออนไลน์)</h2>
+      <h2>📊 รายงานผล (Cloud)</h2>
+      <div style="display:flex; justify-content:space-around; background:#f0f8ff; padding:15px; border-radius:15px; margin-bottom:15px;">
+        <div style="text-align:center;">
+            <div style="font-size:0.8rem; color:#666;">⭐ ดาวทั้งหมด</div>
+            <div id="cloudStars" style="font-size:2rem; font-weight:bold; color:var(--primary);">...</div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:0.8rem; color:#666;">🏆 เล่นไป (รอบ)</div>
+            <div id="cloudRounds" style="font-size:2rem; font-weight:bold; color:var(--secondary);">...</div>
+        </div>
+      </div>
       
       <div style="text-align:left; margin-top:10px;">📅 <b>ประวัติการเล่นล่าสุด:</b></div>
       <ul id="historyList" class="history-list">
@@ -264,7 +274,7 @@
       <div style="text-align:left; margin-top:20px;">📌 <b>คำที่ผิดบ่อย (ในเครื่องนี้):</b></div>
       <ul id="mistakeList"></ul>
 
-      <button class="btn-back" onclick="resetLocalData()" style="color:red; font-size: 0.8rem; margin-top:20px;">🗑️ ล้างข้อมูลเครื่องนี้</button>
+      <button class="btn-back" onclick="resetCloudData()" style="color:red; font-size: 0.9rem; margin-top:20px; border: 1px solid red; background:#fff0f0;">🗑️ ล้างข้อมูลทั้งหมด (Reset Cloud)</button>
       <br>
       <button class="btn-back" onclick="showPage('homePage')">🏠 กลับหน้าหลัก</button>
     </div>
@@ -284,19 +294,14 @@ const GAME_TIME = 120; // 2 นาที
 // ข้อมูลสำรอง (กรณีเน็ตหลุด)
 const backupWords = [
   {Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},
-  {Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"},
-  {Vocabulary:"Cat", "คำอ่านไทย":"แคท", "คำแปล":"แมว"},
-  {Vocabulary:"Dog", "คำอ่านไทย":"ด็อก", "คำแปล":"สุนัข"},
-  {Vocabulary:"Elephant", "คำอ่านไทย":"เอล-เล-เฟ่น", "คำแปล":"ช้าง"},
-  {Vocabulary:"Fish", "คำอ่านไทย":"ฟิช", "คำแปล":"ปลา"}
+  {Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}
 ];
 
 // ตัวแปรระบบ
 let words = [];
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
-let playHistory = JSON.parse(localStorage.getItem("playHistory")) || {}; // เก็บประวัติรายวัน (Local)
-let totalStars = Number(localStorage.getItem("totalStars")) || 0;
-let playRounds = Number(localStorage.getItem("playRounds")) || 0;
+let globalStars = 0;  // เปลี่ยนมาใช้ค่าจาก Cloud
+let globalRounds = 0; // เปลี่ยนมาใช้ค่าจาก Cloud
 let isSoundEnabled = true;
 
 // ตัวแปรเกม
@@ -312,26 +317,45 @@ let practiceIndex = 0;
  * STARTUP & UTILS
  **********************************************/
 window.onload = function() {
-  updateUI();
   toggleSoundUI();
-
-  // ดึงข้อมูลคำศัพท์จาก Google Sheets
-  fetch(API_URL).then(res => res.json()).then(data => {
-    if(data.words) words = data.words;
-    else if(Array.isArray(data)) words = data;
-    
-    if(words.length > 0) {
-      document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
-      document.getElementById("onlineIndicator").textContent = "🟢 Online";
-      document.getElementById("onlineIndicator").style.color = "green";
-    }
-  }).catch(e => {
-    words = backupWords;
-    document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์ (ข้อมูลสำรอง)";
-  });
+  fetchData(); // ดึงข้อมูลคำศัพท์ + ยอดรวมทันทีที่เปิดแอป
 
   window.speechSynthesis.getVoices();
 };
+
+function fetchData() {
+    document.getElementById("loadingStatus").textContent = "กำลังเชื่อมต่อ Cloud...";
+    // ดึงข้อมูล Report เพื่อเอา Summary
+    fetch(API_URL + "?action=getReport")
+    .then(res => res.json())
+    .then(data => {
+        if(data.summary) {
+            globalStars = data.summary.stars;
+            globalRounds = data.summary.rounds;
+            updateUI();
+        }
+    })
+    .catch(console.error);
+
+    // ดึงคำศัพท์
+    fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+        if(data.words) words = data.words;
+        else if(Array.isArray(data)) words = data;
+        
+        if(words.length > 0) {
+            document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
+            document.getElementById("onlineIndicator").textContent = "🟢 Online (Synced)";
+            document.getElementById("onlineIndicator").style.color = "green";
+        }
+    })
+    .catch(e => {
+        words = backupWords;
+        document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์ (ใช้ข้อมูลเดิม)";
+        document.getElementById("onlineIndicator").textContent = "🔴 Offline";
+    });
+}
 
 function toggleSound() {
   isSoundEnabled = !isSoundEnabled;
@@ -355,16 +379,14 @@ function toggleSoundUI() {
   }
 }
 
-// อัปเดตฟังก์ชัน Speak ให้รองรับภาษาไทย
 function speak(text, lang = "en-US") {
   if(!isSoundEnabled) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang; // กำหนดภาษาตามที่ส่งมา
+  u.lang = lang;
   u.rate = 0.8;
   
   const voices = window.speechSynthesis.getVoices();
-  // พยายามเลือกเสียงให้ตรงภาษา
   if(lang === "en-US") {
      const femaleVoice = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English"));
      if(femaleVoice) u.voice = femaleVoice;
@@ -382,8 +404,11 @@ function showPage(id) {
 }
 
 function updateUI() {
-  document.getElementById("uiStars").textContent = totalStars;
-  document.getElementById("uiRounds").textContent = playRounds;
+  document.getElementById("uiStars").textContent = globalStars;
+  document.getElementById("uiRounds").textContent = globalRounds;
+  // อัปเดตในหน้า Parent ด้วย
+  document.getElementById("cloudStars").textContent = globalStars;
+  document.getElementById("cloudRounds").textContent = globalRounds;
 }
 
 /**********************************************
@@ -489,23 +514,24 @@ function sendDataToSheets(stars, wrongWords) {
   fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({
+      action: 'save',
       totalStars: stars,
       wrongWords: wrongWords
     })
-  }).then(res => console.log("Sent to sheets"))
-    .catch(err => console.error("Error sending", err));
+  }).then(res => {
+      console.log("Saved.");
+      // หลังจากบันทึกเสร็จ ให้ดึงข้อมูลล่าสุดมาอัปเดตหน้าจอทันที
+      fetchData(); 
+  }).catch(err => console.error("Error sending", err));
 }
 
 function finishGame() {
   clearInterval(gameTimerId);
   
-  playRounds++;
-  totalStars += Math.max(0, currentScore);
-  
-  const today = new Date().toLocaleDateString("th-TH");
-  if(!playHistory[today]) playHistory[today] = 0;
-  playHistory[today]++;
-  saveAllData();
+  // อัปเดตชั่วคราวให้เด็กรู้สึกว่าคะแนนขึ้นทันที
+  globalRounds++;
+  globalStars += Math.max(0, currentScore);
+  updateUI();
 
   const wrongWordsSummary = Object.entries(wordStats)
     .filter(([_, s]) => s.wrong > 0)
@@ -520,14 +546,6 @@ function finishGame() {
   document.getElementById("resultCorrect").textContent = sessionCorrect;
   document.getElementById("resultWrong").textContent = sessionWrong;
   showPage('resultPage');
-}
-
-function saveAllData() {
-  localStorage.setItem("totalStars", totalStars);
-  localStorage.setItem("playRounds", playRounds);
-  localStorage.setItem("playHistory", JSON.stringify(playHistory));
-  localStorage.setItem("wordStats", JSON.stringify(wordStats));
-  updateUI();
 }
 
 function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
@@ -562,22 +580,19 @@ function openVocabList() {
 
     words.forEach((w, index) => {
         const tr = document.createElement("tr");
-        // ลำดับ
+        
         const tdIdx = document.createElement("td");
         tdIdx.textContent = index + 1;
         
-        // Vocab (คลิกฟังอังกฤษ)
         const tdVocab = document.createElement("td");
         tdVocab.innerHTML = `<b>${w.Vocabulary}</b>`;
         tdVocab.onclick = () => speak(w.Vocabulary, 'en-US');
 
-        // คำอ่าน (คลิกฟังไทย)
         const tdRead = document.createElement("td");
         tdRead.className = "col-read";
         tdRead.textContent = w["คำอ่านไทย"];
         tdRead.onclick = () => speak(w["คำอ่านไทย"], 'th-TH');
 
-        // คำแปล (คลิกฟังไทย)
         const tdMean = document.createElement("td");
         tdMean.className = "col-mean";
         tdMean.textContent = w["คำแปล"];
@@ -590,16 +605,13 @@ function openVocabList() {
         tbody.appendChild(tr);
     });
 
-    // ปรับการแสดงผลตาม Checkbox
     toggleVocabColumn('read');
     toggleVocabColumn('mean');
 }
 
-// ฟังก์ชันซ่อน/แสดงคอลัมน์
 function toggleVocabColumn(type) {
     const isChecked = document.getElementById(type === 'read' ? 'showRead' : 'showMean').checked;
     const cells = document.querySelectorAll(type === 'read' ? '.col-read' : '.col-mean');
-    
     cells.forEach(cell => {
         if(isChecked) cell.classList.remove('hidden-text');
         else cell.classList.add('hidden-text');
@@ -618,7 +630,6 @@ function checkPin() {
   } else { alert("รหัสผ่านไม่ถูกต้อง"); }
 }
 
-// 📌 ฟังก์ชันใหม่: ดึงข้อมูลและแสดงผล Rounds, Top Wrong Words
 async function renderHistory() {
   const list = document.getElementById("historyList");
   list.innerHTML = "<li>⏳ กำลังโหลดข้อมูลจาก Cloud...</li>";
@@ -626,6 +637,13 @@ async function renderHistory() {
   try {
     const response = await fetch(API_URL + "?action=getReport");
     const data = await response.json();
+    
+    // อัปเดต Summary ทันที
+    if(data.summary) {
+        globalStars = data.summary.stars;
+        globalRounds = data.summary.rounds;
+        updateUI();
+    }
     
     list.innerHTML = "";
     if (!data.history || data.history.length === 0) {
@@ -643,16 +661,15 @@ async function renderHistory() {
             <span class="date-label">${dateStr}</span>
             <div class="badge-group">
                 <span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span>
-                <span class="count-label" style="background:#95a5a6">🔄 ${item.rounds || 1} รอบ</span>
             </div>
         </div>
-        ${item.wrong ? `<div class="wrong-text">❌ คำที่ผิด: ${item.wrong}</div>` : ''}
+        ${item.wrong ? `<div class="wrong-text">❌ ผิด: ${item.wrong}</div>` : ''}
       `;
       list.appendChild(li);
     });
   } catch (e) {
     console.error(e);
-    list.innerHTML = "<li style='color:red;'>เชื่อมต่อ Server ไม่สำเร็จ <br>(เช็กเน็ต หรือ URL Script)</li>";
+    list.innerHTML = "<li style='color:red;'>เชื่อมต่อ Server ไม่สำเร็จ</li>";
   }
 }
 
@@ -672,11 +689,30 @@ function renderMistakes() {
   });
 }
 
+// 📌 ฟังก์ชันใหม่: Reset Cloud Data
+function resetCloudData() {
+  if(!confirm("⚠️ คำเตือน: การกระทำนี้จะลบประวัติการเล่นทั้งหมดบน Google Sheets และในเครื่องนี้\n\nยืนยันหรือไม่?")) return;
+
+  // ส่งคำสั่ง Reset ไป Cloud
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "reset" })
+  }).then(res => {
+      alert("ล้างข้อมูลเรียบร้อยแล้ว");
+      // ล้างข้อมูลในเครื่องด้วย
+      localStorage.clear();
+      globalStars = 0;
+      globalRounds = 0;
+      location.reload();
+  }).catch(err => {
+      alert("เกิดข้อผิดพลาดในการลบข้อมูลบน Cloud");
+  });
+}
+
+// ถ้าจะ Reset แค่ในเครื่อง (ปุ่มเดิม) ผมเอาออกแล้วใช้ปุ่มใหญ่ปุ่มเดียวข้างบนแทนตาม Requirement ที่ให้รวมศูนย์
+// แต่ถ้าอยากลบแค่ Local จริงๆ ให้ใช้ localStorage.removeItem("wordStats") แทน
 function resetLocalData() {
-  if(confirm("ยืนยันลบข้อมูลในเครื่องนี้? (ข้อมูลบน Cloud จะยังอยู่)")) {
-    localStorage.clear();
-    location.reload();
-  }
+    resetCloudData(); // ให้ปุ่มนี้ไปเรียก Reset ทั้งหมดแทน
 }
 </script>
 
