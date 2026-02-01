@@ -101,13 +101,13 @@
   }
 
   /* History Table */
-  .history-list { list-style: none; padding: 0; text-align: left; max-height: 200px; overflow-y: auto; }
+  .history-list { list-style: none; padding: 0; text-align: left; max-height: 250px; overflow-y: auto; }
   .history-list li { 
-    display: flex; justify-content: space-between; padding: 10px; 
+    display: flex; justify-content: space-between; align-items: center; padding: 10px; 
     border-bottom: 1px dashed #ccc; font-size: 0.95rem;
   }
   .date-label { color: #555; font-weight: bold; }
-  .count-label { background: var(--secondary); color: white; padding: 2px 10px; border-radius: 10px; }
+  .count-label { background: var(--secondary); color: white; padding: 2px 10px; border-radius: 10px; min-width: 40px; text-align: center;}
 
   @keyframes popIn { from { transform: scale(0.5); opacity:0; } to { transform: scale(1); opacity:1; } }
   .correct-anim { background: var(--correct) !important; color: white !important; border-color: var(--correct) !important; transform: scale(1.05); }
@@ -205,14 +205,14 @@
 
   <div id="parentDashboard" class="page">
     <div class="card">
-      <h2>📊 รายงานผล</h2>
+      <h2>📊 รายงานผล (ออนไลน์)</h2>
       
-      <div style="text-align:left; margin-top:10px;">📅 <b>ประวัติการเล่นรายวัน:</b></div>
+      <div style="text-align:left; margin-top:10px;">📅 <b>ประวัติการเล่นล่าสุด:</b></div>
       <ul id="historyList" class="history-list">
-        <li>ไม่มีข้อมูล</li>
+        <li>กำลังโหลด...</li>
       </ul>
 
-      <div style="text-align:left; margin-top:20px;">📌 <b>คำที่ผิดบ่อย (ควรฝึกเพิ่ม):</b></div>
+      <div style="text-align:left; margin-top:20px;">📌 <b>คำที่ผิดบ่อย (ในเครื่องนี้):</b></div>
       <ul id="mistakeList"></ul>
 
       <button class="btn-back" onclick="resetLocalData()" style="color:red; font-size: 0.8rem; margin-top:20px;">🗑️ ล้างข้อมูลเครื่องนี้</button>
@@ -227,12 +227,12 @@
 /**********************************************
  * CONFIG & SETUP
  **********************************************/
-// *** เปลี่ยน URL นี้เป็น Web App URL ใหม่ของคุณหลังจาก Deploy ***
+// *** สำคัญ: ตรวจสอบ URL นี้ให้ตรงกับ Web App URL ล่าสุดของคุณ ***
 const API_URL = "https://script.google.com/macros/s/AKfycby3dXWMH9HD8oMtF8LaTnb0VP0HcddAzEVjyIQAK2kYJMX4OgWw10Sup5Ni0osh0iFO/exec"; 
 const PARENT_PIN = "0932815229";
 const GAME_TIME = 120; // 2 นาที
 
-// ข้อมูลสำรอง (กรณีเน็ตหลุด) - ตรงกับโครงสร้าง Sheet
+// ข้อมูลสำรอง (กรณีเน็ตหลุด)
 const backupWords = [
   {Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},
   {Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"},
@@ -245,7 +245,7 @@ const backupWords = [
 // ตัวแปรระบบ
 let words = [];
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
-let playHistory = JSON.parse(localStorage.getItem("playHistory")) || {}; // เก็บประวัติรายวัน
+let playHistory = JSON.parse(localStorage.getItem("playHistory")) || {}; // เก็บประวัติรายวัน (Local)
 let totalStars = Number(localStorage.getItem("totalStars")) || 0;
 let playRounds = Number(localStorage.getItem("playRounds")) || 0;
 let isSoundEnabled = true;
@@ -254,7 +254,7 @@ let isSoundEnabled = true;
 let currentWord = null;
 let gameTimerId = null;
 let timeLeft = 0;
-let currentScore = 0; // คะแนนในรอบปัจจุบัน
+let currentScore = 0;
 let sessionCorrect = 0;
 let sessionWrong = 0;
 let practiceIndex = 0;
@@ -264,11 +264,10 @@ let practiceIndex = 0;
  **********************************************/
 window.onload = function() {
   updateUI();
-  toggleSoundUI(); // อัปเดตปุ่มเสียง
+  toggleSoundUI();
 
-  // ดึงข้อมูล
+  // ดึงข้อมูลคำศัพท์จาก Google Sheets
   fetch(API_URL).then(res => res.json()).then(data => {
-    // รองรับทั้งแบบ data.words หรือ data เป็น array ตรงๆ
     if(data.words) words = data.words;
     else if(Array.isArray(data)) words = data;
     
@@ -278,18 +277,16 @@ window.onload = function() {
       document.getElementById("onlineIndicator").style.color = "green";
     }
   }).catch(e => {
-    words = backupWords; // ใช้ข้อมูลสำรอง
+    words = backupWords;
     document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์ (ข้อมูลสำรอง)";
   });
 
-  // Pre-load voices (แก้ปัญหาเสียงไม่ออกครั้งแรก)
   window.speechSynthesis.getVoices();
 };
 
 function toggleSound() {
   isSoundEnabled = !isSoundEnabled;
   toggleSoundUI();
-  // ลองเล่นเสียงเงียบๆ เพื่อกระตุ้น Browser
   if(isSoundEnabled) {
     const u = new SpeechSynthesisUtterance("");
     window.speechSynthesis.speak(u);
@@ -313,10 +310,9 @@ function speak(text) {
   if(!isSoundEnabled) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US"; // ตั้งค่าภาษาอังกฤษ
-  u.rate = 0.8; // พูดช้าลงนิดนึง
+  u.lang = "en-US";
+  u.rate = 0.8;
   
-  // พยายามเลือกเสียงผู้หญิง (ถ้ามี)
   const voices = window.speechSynthesis.getVoices();
   const femaleVoice = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English"));
   if(femaleVoice) u.voice = femaleVoice;
@@ -340,7 +336,6 @@ function updateUI() {
 function startGame() {
   if(words.length < 4) { alert("ข้อมูลกำลังโหลด รอสักครู่นะครับ"); return; }
   
-  // รีเซ็ตค่าเกม
   currentScore = 0;
   sessionCorrect = 0;
   sessionWrong = 0;
@@ -350,7 +345,6 @@ function startGame() {
   showPage('gamePage');
   updateTimerDisplay();
   
-  // จับเวลา
   clearInterval(gameTimerId);
   gameTimerId = setInterval(() => {
     timeLeft--;
@@ -367,14 +361,12 @@ function updateTimerDisplay() {
   document.getElementById("timerDisplay").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
 
-// สุ่มคำถามโดยเน้นคำที่ผิดบ่อย
 function getWeightedWord() {
   let pool = [];
   words.forEach(w => {
     pool.push(w);
     const stat = wordStats[w.Vocabulary];
     if (stat && stat.wrong > stat.correct) { 
-      // ใส่เพิ่มเข้าไปอีก 2 ตัวเพื่อให้มีโอกาสสุ่มเจอมากขึ้น
       pool.push(w); pool.push(w); 
     }
   });
@@ -388,7 +380,6 @@ function nextQuestion() {
   document.getElementById("gameVocab").textContent = currentWord.Vocabulary;
   speak(currentWord.Vocabulary);
 
-  // สร้างตัวเลือก 4 ตัว
   let choices = [currentWord];
   while(choices.length < 4) {
     let w = words[Math.floor(Math.random() * words.length)];
@@ -397,7 +388,6 @@ function nextQuestion() {
   
   const box = document.getElementById("choicesBox");
   box.innerHTML = "";
-  // สลับตำแหน่งตัวเลือก
   choices.sort(() => Math.random() - 0.5).forEach(w => {
     const btn = document.createElement("button");
     btn.className = "choice-btn";
@@ -408,64 +398,73 @@ function nextQuestion() {
 }
 
 function checkAnswer(selected, btn) {
-  // ล็อกปุ่มกันกดรัว
   const allBtns = document.querySelectorAll('.choice-btn');
   allBtns.forEach(b => b.disabled = true);
   
-  // สร้าง Stat ถ้ายังไม่มี
   if(!wordStats[currentWord.Vocabulary]) {
     wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
   }
 
   if(selected.Vocabulary === currentWord.Vocabulary) {
-    // ถูกต้อง (+1)
     btn.classList.add("correct-anim");
     currentScore++;
     sessionCorrect++;
     wordStats[currentWord.Vocabulary].correct++;
-    
-    // เล่นเสียงถูกต้อง
     if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg").play().catch(e=>{});
-    
     setTimeout(nextQuestion, 800);
   } else {
-    // ผิด (-1)
     btn.classList.add("wrong-anim");
     currentScore--;
     sessionWrong++;
     wordStats[currentWord.Vocabulary].wrong++;
-    
-    // เฉลยข้อที่ถูก
     allBtns.forEach(b => {
        if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim");
     });
-    
-    // เล่นเสียงผิด
     if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play().catch(e=>{});
-
     setTimeout(nextQuestion, 1500);
   }
 
-  // อัปเดตคะแนนบนหน้าจอ
   document.getElementById("liveScore").textContent = currentScore;
   localStorage.setItem("wordStats", JSON.stringify(wordStats));
+}
+
+// 📌 ฟังก์ชันใหม่: ส่งข้อมูลไป Google Sheets
+function sendDataToSheets(stars, wrongWords) {
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      totalStars: stars,
+      wrongWords: wrongWords
+    })
+  }).then(res => console.log("Sent to sheets"))
+    .catch(err => console.error("Error sending", err));
 }
 
 function finishGame() {
   clearInterval(gameTimerId);
   
-  // บันทึกสถิติ
   playRounds++;
-  totalStars += Math.max(0, currentScore); // ดาวเพิ่มตามคะแนน (ไม่ติดลบ)
+  totalStars += Math.max(0, currentScore);
   
-  // บันทึกประวัติรายวัน (วันที่: จำนวนรอบ)
+  // บันทึก Local
   const today = new Date().toLocaleDateString("th-TH");
   if(!playHistory[today]) playHistory[today] = 0;
   playHistory[today]++;
-  
   saveAllData();
 
-  // แสดงหน้าสรุป
+  // 🚀 ส่งข้อมูลไป Cloud (Google Sheets)
+  // รวบรวมคำที่ผิดในรอบนี้ (หรือสะสม) เพื่อส่งไปรายงาน
+  const wrongWordsSummary = Object.entries(wordStats)
+    .filter(([_, s]) => s.wrong > 0)
+    // เรียงตามจำนวนผิดมาก -> น้อย
+    .sort((a,b) => b[1].wrong - a[1].wrong)
+    // เอาแค่ 5 คำแรก
+    .slice(0, 5)
+    .map(([vocab, s]) => `${vocab}(${s.wrong})`)
+    .join(", ");
+
+  sendDataToSheets(currentScore, wrongWordsSummary);
+
   document.getElementById("finalScore").textContent = currentScore;
   document.getElementById("resultCorrect").textContent = sessionCorrect;
   document.getElementById("resultWrong").textContent = sessionWrong;
@@ -494,12 +493,9 @@ function startPractice() {
 
 function renderPractice() {
   const w = words[practiceIndex];
-  
-  // แสดงผล (ป้องกัน error ถ้าข้อมูลไม่ครบ)
   document.getElementById("pVocab").textContent = w.Vocabulary || "";
   document.getElementById("pReading").textContent = w["คำอ่านไทย"] ? "คำอ่าน: " + w["คำอ่านไทย"] : "";
   document.getElementById("pMeaning").textContent = w["คำแปล"] ? "แปลว่า: " + w["คำแปล"] : "";
-  
   speak(w.Vocabulary);
 }
 
@@ -514,32 +510,50 @@ function checkPin() {
   if(document.getElementById("pinInput").value === PARENT_PIN) {
     document.getElementById("pinInput").value = "";
     showPage('parentDashboard');
-    renderHistory();
-    renderMistakes();
+    renderHistory(); // เรียกฟังก์ชันดึงข้อมูลจาก Cloud
+    renderMistakes(); // แสดงคำผิด (จาก Local)
   } else { alert("รหัสผ่านไม่ถูกต้อง"); }
 }
 
-function renderHistory() {
+// 📌 ฟังก์ชันใหม่: ดึงข้อมูลจาก Google Sheets (Cloud)
+async function renderHistory() {
   const list = document.getElementById("historyList");
-  list.innerHTML = "";
-  const dates = Object.keys(playHistory).reverse(); // เรียงจากล่าสุด
-  
-  if(dates.length === 0) {
-    list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีประวัติการเล่น</li>";
-    return;
+  list.innerHTML = "<li>⏳ กำลังโหลดข้อมูลจาก Cloud...</li>";
+
+  try {
+    const response = await fetch(API_URL + "?action=getReport");
+    const data = await response.json();
+    
+    list.innerHTML = "";
+    if (!data.history || data.history.length === 0) {
+      list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีประวัติการเล่นบน Cloud</li>";
+      return;
+    }
+
+    data.history.forEach(item => {
+      // แปลงวันที่
+      const dateObj = new Date(item.timestamp);
+      const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
+      
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div style="text-align:left; width:100%;">
+          <div>${dateStr}</div>
+          <div style="font-size:0.75rem; color:#d63031; margin-top:4px;">${item.wrong ? '⚠️ ผิด: '+item.wrong : ''}</div>
+        </div>
+        <span class="count-label">⭐ ${item.stars}</span>
+      `;
+      list.appendChild(li);
+    });
+  } catch (e) {
+    console.error(e);
+    list.innerHTML = "<li style='color:red;'>เชื่อมต่อ Server ไม่สำเร็จ <br>(เช็กเน็ต หรือ URL Script)</li>";
   }
-  
-  dates.forEach(date => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span class="date-label">${date}</span> <span class="count-label">${playHistory[date]} รอบ</span>`;
-    list.appendChild(li);
-  });
 }
 
 function renderMistakes() {
   const list = document.getElementById("mistakeList");
   list.innerHTML = "";
-  // เรียงลำดับคำที่ผิดเยอะที่สุดขึ้นก่อน
   const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
   
   if(sorted.length === 0) { list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีข้อมูลคำศัพท์</li>"; return; }
@@ -554,7 +568,7 @@ function renderMistakes() {
 }
 
 function resetLocalData() {
-  if(confirm("ยืนยันลบประวัติทั้งหมดในเครื่องนี้?")) {
+  if(confirm("ยืนยันลบข้อมูลในเครื่องนี้? (ข้อมูลบน Cloud จะยังอยู่)")) {
     localStorage.clear();
     location.reload();
   }
