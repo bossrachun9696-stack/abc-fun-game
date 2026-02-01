@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>🐰 ABC Fun English</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -287,7 +290,7 @@
  * CONFIG & SETUP
  **********************************************/
 // *** สำคัญ: ตรวจสอบ URL นี้ให้ตรงกับ Web App URL ล่าสุดของคุณ ***
-const API_URL = "https://script.google.com/macros/s/AKfycbzFgFPVtbdv3wnkJWaO3prXMiP29mpsXSZUrccXQfB5CJXcgjfRvUVOH5eUzSWKPBKk/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbzfNeVpEL2R3sQsljaYsOjRqoFkjf2j6oM1KKXKvOi2Y0peu07j20A0ff4GZafUFg23/exec"; 
 const PARENT_PIN = "0932815229";
 const GAME_TIME = 120; // 2 นาที
 
@@ -300,8 +303,8 @@ const backupWords = [
 // ตัวแปรระบบ
 let words = [];
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
-let globalStars = 0;  // เปลี่ยนมาใช้ค่าจาก Cloud
-let globalRounds = 0; // เปลี่ยนมาใช้ค่าจาก Cloud
+let globalStars = 0;
+let globalRounds = 0;
 let isSoundEnabled = true;
 
 // ตัวแปรเกม
@@ -318,15 +321,18 @@ let practiceIndex = 0;
  **********************************************/
 window.onload = function() {
   toggleSoundUI();
-  fetchData(); // ดึงข้อมูลคำศัพท์ + ยอดรวมทันทีที่เปิดแอป
-
+  fetchData(); 
   window.speechSynthesis.getVoices();
 };
 
 function fetchData() {
     document.getElementById("loadingStatus").textContent = "กำลังเชื่อมต่อ Cloud...";
-    // ดึงข้อมูล Report เพื่อเอา Summary
-    fetch(API_URL + "?action=getReport")
+    
+    // *** เติมเวลาปัจจุบันลงไปใน URL เพื่อป้องกัน Cache ***
+    const nocache = "&t=" + new Date().getTime();
+
+    // ดึง Report
+    fetch(API_URL + "?action=getReport" + nocache)
     .then(res => res.json())
     .then(data => {
         if(data.summary) {
@@ -406,7 +412,6 @@ function showPage(id) {
 function updateUI() {
   document.getElementById("uiStars").textContent = globalStars;
   document.getElementById("uiRounds").textContent = globalRounds;
-  // อัปเดตในหน้า Parent ด้วย
   document.getElementById("cloudStars").textContent = globalStars;
   document.getElementById("cloudRounds").textContent = globalRounds;
 }
@@ -509,7 +514,6 @@ function checkAnswer(selected, btn) {
   localStorage.setItem("wordStats", JSON.stringify(wordStats));
 }
 
-// 📌 ฟังก์ชันใหม่: ส่งข้อมูลไป Google Sheets
 function sendDataToSheets(stars, wrongWords) {
   fetch(API_URL, {
     method: "POST",
@@ -520,15 +524,15 @@ function sendDataToSheets(stars, wrongWords) {
     })
   }).then(res => {
       console.log("Saved.");
-      // หลังจากบันทึกเสร็จ ให้ดึงข้อมูลล่าสุดมาอัปเดตหน้าจอทันที
-      fetchData(); 
+      // รอ 1 วินาทีก่อนดึงข้อมูลใหม่ เพื่อให้ Server บันทึกทัน
+      setTimeout(fetchData, 1000); 
   }).catch(err => console.error("Error sending", err));
 }
 
 function finishGame() {
   clearInterval(gameTimerId);
   
-  // อัปเดตชั่วคราวให้เด็กรู้สึกว่าคะแนนขึ้นทันที
+  // อัปเดต UI ทันที (Optimistic UI)
   globalRounds++;
   globalStars += Math.max(0, currentScore);
   updateUI();
@@ -572,7 +576,6 @@ function nextPractice() { practiceIndex = (practiceIndex + 1) % words.length; re
 function prevPractice() { practiceIndex = practiceIndex <= 0 ? words.length - 1 : practiceIndex - 1; renderPractice(); }
 function speakCurrentPractice() { speak(words[practiceIndex].Vocabulary); }
 
-// 📌 ฟังก์ชันใหม่: เปิดหน้าตารางคำศัพท์
 function openVocabList() {
     showPage('vocabListPage');
     const tbody = document.getElementById("vocabTableBody");
@@ -633,12 +636,13 @@ function checkPin() {
 async function renderHistory() {
   const list = document.getElementById("historyList");
   list.innerHTML = "<li>⏳ กำลังโหลดข้อมูลจาก Cloud...</li>";
+  
+  const nocache = "&t=" + new Date().getTime();
 
   try {
-    const response = await fetch(API_URL + "?action=getReport");
+    const response = await fetch(API_URL + "?action=getReport" + nocache);
     const data = await response.json();
     
-    // อัปเดต Summary ทันที
     if(data.summary) {
         globalStars = data.summary.stars;
         globalRounds = data.summary.rounds;
@@ -689,17 +693,14 @@ function renderMistakes() {
   });
 }
 
-// 📌 ฟังก์ชันใหม่: Reset Cloud Data
 function resetCloudData() {
   if(!confirm("⚠️ คำเตือน: การกระทำนี้จะลบประวัติการเล่นทั้งหมดบน Google Sheets และในเครื่องนี้\n\nยืนยันหรือไม่?")) return;
 
-  // ส่งคำสั่ง Reset ไป Cloud
   fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({ action: "reset" })
   }).then(res => {
       alert("ล้างข้อมูลเรียบร้อยแล้ว");
-      // ล้างข้อมูลในเครื่องด้วย
       localStorage.clear();
       globalStars = 0;
       globalRounds = 0;
@@ -709,10 +710,8 @@ function resetCloudData() {
   });
 }
 
-// ถ้าจะ Reset แค่ในเครื่อง (ปุ่มเดิม) ผมเอาออกแล้วใช้ปุ่มใหญ่ปุ่มเดียวข้างบนแทนตาม Requirement ที่ให้รวมศูนย์
-// แต่ถ้าอยากลบแค่ Local จริงๆ ให้ใช้ localStorage.removeItem("wordStats") แทน
 function resetLocalData() {
-    resetCloudData(); // ให้ปุ่มนี้ไปเรียก Reset ทั้งหมดแทน
+    resetCloudData(); 
 }
 </script>
 
