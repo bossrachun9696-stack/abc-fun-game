@@ -315,6 +315,7 @@ let currentScore = 0;
 let sessionCorrect = 0;
 let sessionWrong = 0;
 let practiceIndex = 0;
+let sessionWrongStats = {}; // เก็บคำผิดเฉพาะรอบนี้
 
 /**********************************************
  * STARTUP & UTILS
@@ -327,8 +328,6 @@ window.onload = function() {
 
 function fetchData() {
     document.getElementById("loadingStatus").textContent = "กำลังเชื่อมต่อ Cloud...";
-    
-    // *** เติมเวลาปัจจุบันลงไปใน URL เพื่อป้องกัน Cache ***
     const nocache = "&t=" + new Date().getTime();
 
     // ดึง Report
@@ -375,11 +374,11 @@ function toggleSound() {
 function toggleSoundUI() {
   const btn = document.getElementById("soundToggle");
   if(isSoundEnabled) {
-    btn.textContent = "เปิด";
+    btn.textContent = "เปิด (0.5 แต้ม)";
     btn.style.background = "var(--correct)";
     btn.style.color = "white";
   } else {
-    btn.textContent = "ปิด";
+    btn.textContent = "ปิด (1 แต้ม)";
     btn.style.background = "#ccc";
     btn.style.color = "#666";
   }
@@ -422,10 +421,12 @@ function updateUI() {
 function startGame() {
   if(words.length < 4) { alert("ข้อมูลกำลังโหลด รอสักครู่นะครับ"); return; }
   
+  // รีเซ็ตค่าสำหรับรอบใหม่
   currentScore = 0;
   sessionCorrect = 0;
   sessionWrong = 0;
   timeLeft = GAME_TIME;
+  sessionWrongStats = {}; // เคลียร์คำผิดรอบนี้ให้ว่าง
   
   document.getElementById("liveScore").textContent = "0";
   showPage('gamePage');
@@ -492,17 +493,26 @@ function checkAnswer(selected, btn) {
   }
 
   if(selected.Vocabulary === currentWord.Vocabulary) {
-    btn.classList.add("correct-anim");
-    currentScore++;
+    // 📌 แก้ไข: ระบบคะแนนใหม่
+    // ถ้าเปิดเสียงได้ 0.5, ปิดเสียงได้ 1
+    const points = isSoundEnabled ? 0.5 : 1;
+    currentScore += points;
     sessionCorrect++;
     wordStats[currentWord.Vocabulary].correct++;
+
+    btn.classList.add("correct-anim");
     if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg").play().catch(e=>{});
     setTimeout(nextQuestion, 800);
   } else {
     btn.classList.add("wrong-anim");
-    currentScore--;
+    currentScore -= 1; // ผิดลบ 1 เท่าเดิม
     sessionWrong++;
     wordStats[currentWord.Vocabulary].wrong++;
+
+    // 📌 เก็บคำผิดลง sessionWrongStats เพื่อส่งรายงาน (ไม่เอาคำเก่ามาปน)
+    if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0;
+    sessionWrongStats[currentWord.Vocabulary]++;
+
     allBtns.forEach(b => {
        if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim");
     });
@@ -524,7 +534,6 @@ function sendDataToSheets(stars, wrongWords) {
     })
   }).then(res => {
       console.log("Saved.");
-      // รอ 1 วินาทีก่อนดึงข้อมูลใหม่ เพื่อให้ Server บันทึกทัน
       setTimeout(fetchData, 1000); 
   }).catch(err => console.error("Error sending", err));
 }
@@ -532,16 +541,16 @@ function sendDataToSheets(stars, wrongWords) {
 function finishGame() {
   clearInterval(gameTimerId);
   
-  // อัปเดต UI ทันที (Optimistic UI)
+  // อัปเดต UI ทันที
   globalRounds++;
   globalStars += Math.max(0, currentScore);
   updateUI();
 
-  const wrongWordsSummary = Object.entries(wordStats)
-    .filter(([_, s]) => s.wrong > 0)
-    .sort((a,b) => b[1].wrong - a[1].wrong)
-    .slice(0, 5)
-    .map(([vocab, s]) => `${vocab}(${s.wrong})`)
+  // 📌 แก้ไข: ส่งเฉพาะคำที่ผิดในรอบนี้ (sessionWrongStats) ไปรายงาน
+  const wrongWordsSummary = Object.entries(sessionWrongStats)
+    .sort((a,b) => b[1] - a[1]) // เรียงมากไปน้อย
+    .slice(0, 10)
+    .map(([vocab, count]) => `${vocab}(${count})`)
     .join(", ");
 
   sendDataToSheets(currentScore, wrongWordsSummary);
@@ -680,6 +689,7 @@ async function renderHistory() {
 function renderMistakes() {
   const list = document.getElementById("mistakeList");
   list.innerHTML = "";
+  // ใช้ wordStats (สะสม) ในการแสดงจุดอ่อนเพื่อฝึกฝน
   const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
   
   if(sorted.length === 0) { list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีข้อมูลคำศัพท์</li>"; return; }
