@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🐰 ABC Fun English</title>
+<title>🐰 ABC Fun English (Full Option)</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -23,6 +23,8 @@
     --card: #FFFFFF;
     --wrong: #FF5A5F;
     --correct: #2EC4B6;
+    --marked-bg: #ffebee; /* สีพื้นหลังแถวที่ทำตำหนิ */
+    --marked-border: #ffcdd2;
   }
 
   body {
@@ -116,15 +118,52 @@
   .count-label { background: var(--secondary); color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.8rem;}
   .wrong-text { color: #d63031; font-size: 0.85rem; background: #fff0f0; padding: 5px; border-radius: 5px; margin-top: 5px;}
 
-  /* Vocab Table */
-  .vocab-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
-  .vocab-table th { background: var(--primary); color: white; padding: 8px; border: 1px solid #eee; }
-  .vocab-table td { border: 1px solid #eee; padding: 8px; vertical-align: middle; cursor: pointer; }
-  .vocab-table tr:nth-child(even) { background: #f9f9f9; }
-  .hidden-text { color: transparent !important; text-shadow: 0 0 8px rgba(0,0,0,0.3); background: #eee; border-radius: 5px; user-select: none; }
+  /* --- Vocab Table (New Style) --- */
+  .vocab-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 10px; font-size: 1.1rem; }
+  .vocab-table th { background: var(--primary); color: white; padding: 12px; border-radius: 10px 10px 0 0; }
+  .vocab-table td { 
+    background: #fff; padding: 15px 10px; vertical-align: middle; cursor: pointer; 
+    border-top: 2px solid #eee; border-bottom: 2px solid #eee;
+  }
+  .vocab-table tr td:first-child { border-left: 2px solid #eee; border-radius: 10px 0 0 10px; }
+  .vocab-table tr td:last-child { border-right: 2px solid #eee; border-radius: 0 10px 10px 0; }
   
-  .controls-bar { display: flex; justify-content: space-around; background: #fff; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #eee; font-size: 0.9rem; }
-  .checkbox-wrapper { display: flex; align-items: center; gap: 5px; }
+  /* แถวที่ทำตำหนิว่าอ่านไม่ได้ */
+  .vocab-table tr.marked-row td { 
+    background-color: var(--marked-bg) !important; 
+    border-color: var(--marked-border) !important;
+    color: #c62828;
+  }
+  
+  .hidden-text { opacity: 0.1; filter: blur(4px); transition: 0.3s; pointer-events: none; }
+  
+  .controls-bar { display: flex; justify-content: space-around; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); font-size: 1rem; font-weight: bold; }
+  .checkbox-wrapper { display: flex; align-items: center; gap: 8px; }
+
+  /* --- Modal Popup Style --- */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); z-index: 1000;
+    display: none; justify-content: center; align-items: center;
+    backdrop-filter: blur(5px);
+  }
+  .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+  
+  .modal-box {
+    background: white; width: 90%; max-width: 400px;
+    border-radius: 25px; padding: 30px; text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border: 5px solid var(--primary);
+    position: relative;
+  }
+  .modal-vocab { font-size: 3.5rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
+  .modal-read { font-size: 1.8rem; color: #555; margin-bottom: 10px; }
+  .modal-mean { font-size: 2.5rem; color: var(--secondary); font-weight: bold; background: #f0fdfc; padding: 10px; border-radius: 15px; display: block; margin: 10px 0;}
+  .close-modal-btn { 
+    position: absolute; top: 10px; right: 10px; 
+    background: #eee; color: #333; width: 35px; height: 35px; 
+    border-radius: 50%; font-size: 1.2rem; line-height: 35px; padding: 0;
+  }
 
   @keyframes popIn { from { transform: scale(0.5); opacity:0; } to { transform: scale(1); opacity:1; } }
   .correct-anim { background: var(--correct) !important; color: white !important; border-color: var(--correct) !important; transform: scale(1.05); }
@@ -212,27 +251,30 @@
   </div>
 
   <div id="vocabListPage" class="page">
-    <div class="card" style="padding: 15px;">
-      <h2>📜 คำศัพท์ทั้งหมด</h2>
+    <div class="card" style="padding: 10px; background: #f4f4f4;">
+      <h2 style="color:var(--primary)">📜 คำศัพท์ทั้งหมด</h2>
       
       <div class="controls-bar">
         <label class="checkbox-wrapper">
-            <input type="checkbox" id="showRead" checked onchange="toggleVocabColumn('read')"> แสดงคำอ่าน
+            <input type="checkbox" id="showRead" onchange="toggleVocabColumn('read')"> แสดงคำอ่าน
         </label>
         <label class="checkbox-wrapper">
-            <input type="checkbox" id="showMean" checked onchange="toggleVocabColumn('mean')"> แสดงคำแปล
+            <input type="checkbox" id="showMean" onchange="toggleVocabColumn('mean')"> แสดงคำแปล
         </label>
       </div>
-      <div style="font-size:0.8rem; color:#888; margin-bottom:10px;">💡 จิ้มที่คำเพื่อฟังเสียง</div>
+      <div style="font-size:0.9rem; color:#555; margin-bottom:10px; background:#fff; padding:10px; border-radius:10px;">
+        👆 <b>จิ้มที่แถว</b> เพื่อดูเฉลยและฟังเสียง<br>
+        (ถ้ากดดูแล้ว แถวจะเป็น<span style="color:red; font-weight:bold;">สีแดง</span>เพื่อเตือนว่าจำไม่ได้)
+      </div>
 
       <div style="overflow-x:auto;">
         <table class="vocab-table">
             <thead>
                 <tr>
                     <th style="width:10%">#</th>
-                    <th style="width:30%">Vocab</th>
+                    <th style="width:30%">ศัพท์</th>
                     <th style="width:30%">คำอ่าน</th>
-                    <th style="width:30%">คำแปล</th>
+                    <th style="width:30%">แปล</th>
                 </tr>
             </thead>
             <tbody id="vocabTableBody">
@@ -285,11 +327,26 @@
 
 </div>
 
+<div id="wordModal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" onclick="closeModal()">✕</button>
+        <div id="modalVocab" class="modal-vocab">Word</div>
+        <div id="modalRead" class="modal-read">reading...</div>
+        <div id="modalMean" class="modal-mean">Meaning</div>
+        
+        <button class="btn-sound" onclick="speakFromModal()" style="margin: 15px auto;">🔊</button>
+        
+        <div style="margin-top:20px; border-top:1px dashed #ccc; padding-top:15px;">
+            <p id="markStatusText" style="color:red; font-size:0.9rem;">🚩 คำนี้ถูกทำตำหนิไว้ (ยังจำไม่ได้)</p>
+            <button onclick="resetWordStatus()" style="background:#fff; border:1px solid #ccc; color:#555; font-size:0.9rem; padding:8px;">🔒 ลบสีแดง (ผู้ปกครอง)</button>
+        </div>
+    </div>
+</div>
+
 <script>
 /**********************************************
  * CONFIG & SETUP
  **********************************************/
-// *** สำคัญ: ตรวจสอบ URL นี้ให้ตรงกับ Web App URL ล่าสุดของคุณ ***
 const API_URL = "https://script.google.com/macros/s/AKfycbzfNeVpEL2R3sQsljaYsOjRqoFkjf2j6oM1KKXKvOi2Y0peu07j20A0ff4GZafUFg23/exec"; 
 const PARENT_PIN = "0932815229";
 const GAME_TIME = 120; // 2 นาที
@@ -303,19 +360,21 @@ const backupWords = [
 // ตัวแปรระบบ
 let words = [];
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
+let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {}; // เก็บคำที่ทำตำหนิแดง
 let globalStars = 0;
 let globalRounds = 0;
 let isSoundEnabled = true;
 
 // ตัวแปรเกม
 let currentWord = null;
+let currentModalWord = null; // คำที่แสดงใน Popup
 let gameTimerId = null;
 let timeLeft = 0;
 let currentScore = 0;
 let sessionCorrect = 0;
 let sessionWrong = 0;
 let practiceIndex = 0;
-let sessionWrongStats = {}; // เก็บคำผิดเฉพาะรอบนี้
+let sessionWrongStats = {}; 
 
 /**********************************************
  * STARTUP & UTILS
@@ -421,12 +480,11 @@ function updateUI() {
 function startGame() {
   if(words.length < 4) { alert("ข้อมูลกำลังโหลด รอสักครู่นะครับ"); return; }
   
-  // รีเซ็ตค่าสำหรับรอบใหม่
   currentScore = 0;
   sessionCorrect = 0;
   sessionWrong = 0;
   timeLeft = GAME_TIME;
-  sessionWrongStats = {}; // เคลียร์คำผิดรอบนี้ให้ว่าง
+  sessionWrongStats = {};
   
   document.getElementById("liveScore").textContent = "0";
   showPage('gamePage');
@@ -493,8 +551,6 @@ function checkAnswer(selected, btn) {
   }
 
   if(selected.Vocabulary === currentWord.Vocabulary) {
-    // 📌 แก้ไข: ระบบคะแนนใหม่
-    // ถ้าเปิดเสียงได้ 0.5, ปิดเสียงได้ 1
     const points = isSoundEnabled ? 0.5 : 1;
     currentScore += points;
     sessionCorrect++;
@@ -505,11 +561,10 @@ function checkAnswer(selected, btn) {
     setTimeout(nextQuestion, 800);
   } else {
     btn.classList.add("wrong-anim");
-    currentScore -= 1; // ผิดลบ 1 เท่าเดิม
+    currentScore -= 1;
     sessionWrong++;
     wordStats[currentWord.Vocabulary].wrong++;
 
-    // 📌 เก็บคำผิดลง sessionWrongStats เพื่อส่งรายงาน (ไม่เอาคำเก่ามาปน)
     if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0;
     sessionWrongStats[currentWord.Vocabulary]++;
 
@@ -541,14 +596,12 @@ function sendDataToSheets(stars, wrongWords) {
 function finishGame() {
   clearInterval(gameTimerId);
   
-  // อัปเดต UI ทันที
   globalRounds++;
   globalStars += Math.max(0, currentScore);
   updateUI();
 
-  // 📌 แก้ไข: ส่งเฉพาะคำที่ผิดในรอบนี้ (sessionWrongStats) ไปรายงาน
   const wrongWordsSummary = Object.entries(sessionWrongStats)
-    .sort((a,b) => b[1] - a[1]) // เรียงมากไปน้อย
+    .sort((a,b) => b[1] - a[1])
     .slice(0, 10)
     .map(([vocab, count]) => `${vocab}(${count})`)
     .join(", ");
@@ -564,7 +617,7 @@ function finishGame() {
 function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
 
 /**********************************************
- * PRACTICE MODE
+ * PRACTICE MODE & VOCAB TABLE
  **********************************************/
 function startPractice() {
   if(words.length === 0) return;
@@ -585,6 +638,7 @@ function nextPractice() { practiceIndex = (practiceIndex + 1) % words.length; re
 function prevPractice() { practiceIndex = practiceIndex <= 0 ? words.length - 1 : practiceIndex - 1; renderPractice(); }
 function speakCurrentPractice() { speak(words[practiceIndex].Vocabulary); }
 
+// --- New Table Logic ---
 function openVocabList() {
     showPage('vocabListPage');
     const tbody = document.getElementById("vocabTableBody");
@@ -593,22 +647,29 @@ function openVocabList() {
     words.forEach((w, index) => {
         const tr = document.createElement("tr");
         
+        // ตรวจสอบว่าคำนี้ถูก Mark เป็นสีแดงไหม
+        if(markedWords[w.Vocabulary]) {
+            tr.classList.add("marked-row");
+        }
+        
+        // เมื่อกดที่แถว ให้เปิด Popup
+        tr.onclick = () => openWordModal(w, tr);
+
         const tdIdx = document.createElement("td");
         tdIdx.textContent = index + 1;
+        tdIdx.style.fontWeight = "bold";
+        tdIdx.style.color = "#888";
         
         const tdVocab = document.createElement("td");
-        tdVocab.innerHTML = `<b>${w.Vocabulary}</b>`;
-        tdVocab.onclick = () => speak(w.Vocabulary, 'en-US');
+        tdVocab.innerHTML = `<b style="font-size:1.2rem; color:var(--primary)">${w.Vocabulary}</b>`;
 
         const tdRead = document.createElement("td");
-        tdRead.className = "col-read";
+        tdRead.className = "col-read hidden-text"; // ซ่อนไว้ก่อน
         tdRead.textContent = w["คำอ่านไทย"];
-        tdRead.onclick = () => speak(w["คำอ่านไทย"], 'th-TH');
 
         const tdMean = document.createElement("td");
-        tdMean.className = "col-mean";
+        tdMean.className = "col-mean hidden-text"; // ซ่อนไว้ก่อน
         tdMean.textContent = w["คำแปล"];
-        tdMean.onclick = () => speak(w["คำแปล"], 'th-TH');
 
         tr.appendChild(tdIdx);
         tr.appendChild(tdVocab);
@@ -617,8 +678,9 @@ function openVocabList() {
         tbody.appendChild(tr);
     });
 
-    toggleVocabColumn('read');
-    toggleVocabColumn('mean');
+    // Reset Checkbox
+    document.getElementById('showRead').checked = false;
+    document.getElementById('showMean').checked = false;
 }
 
 function toggleVocabColumn(type) {
@@ -628,6 +690,62 @@ function toggleVocabColumn(type) {
         if(isChecked) cell.classList.remove('hidden-text');
         else cell.classList.add('hidden-text');
     });
+}
+
+// --- Modal & Marking System ---
+
+function openWordModal(wordObj, trElement) {
+    currentModalWord = wordObj;
+    
+    // ใส่ข้อมูลใน Modal
+    document.getElementById('modalVocab').textContent = wordObj.Vocabulary;
+    document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"];
+    document.getElementById('modalMean').textContent = wordObj["คำแปล"];
+    
+    // ตรวจสอบสถานะ Mark
+    const statusText = document.getElementById('markStatusText');
+    if(markedWords[wordObj.Vocabulary]) {
+        statusText.style.display = "block";
+    } else {
+        // ถ้ายังไม่ Mark -> Mark ทันทีเพราะกดดูเฉลย
+        markedWords[wordObj.Vocabulary] = true;
+        localStorage.setItem("markedWords", JSON.stringify(markedWords));
+        trElement.classList.add("marked-row"); // เปลี่ยนสีแถวทันที
+        statusText.style.display = "block";
+        statusText.textContent = "🚩 บันทึกแล้ว: น้องกดดูเฉลย";
+    }
+
+    document.getElementById('wordModal').classList.add('active');
+    speak(wordObj.Vocabulary);
+}
+
+function closeModal(event) {
+    if(event && event.target.id !== "wordModal" && !event.target.classList.contains('close-modal-btn')) return;
+    document.getElementById('wordModal').classList.remove('active');
+    
+    // Refresh Table เพื่ออัปเดตสี (กรณีมีการเปลี่ยนแปลง)
+    openVocabList();
+}
+
+function speakFromModal() {
+    if(currentModalWord) speak(currentModalWord.Vocabulary);
+}
+
+function resetWordStatus() {
+    if(!currentModalWord) return;
+    
+    const pin = prompt("กรุณาใส่รหัสผ่านผู้ปกครองเพื่อลบสถานะ:");
+    if(pin === PARENT_PIN) {
+        // ลบออกจาก Memory และ LocalStorage
+        delete markedWords[currentModalWord.Vocabulary];
+        localStorage.setItem("markedWords", JSON.stringify(markedWords));
+        
+        alert("✅ ลบสถานะสีแดงเรียบร้อยแล้ว");
+        document.getElementById('markStatusText').style.display = "none";
+        closeModal(); // ปิด Modal แล้วตารางจะ Refresh เอง
+    } else if (pin !== null) {
+        alert("❌ รหัสผ่านไม่ถูกต้อง");
+    }
 }
 
 /**********************************************
@@ -689,7 +807,6 @@ async function renderHistory() {
 function renderMistakes() {
   const list = document.getElementById("mistakeList");
   list.innerHTML = "";
-  // ใช้ wordStats (สะสม) ในการแสดงจุดอ่อนเพื่อฝึกฝน
   const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
   
   if(sorted.length === 0) { list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีข้อมูลคำศัพท์</li>"; return; }
@@ -712,6 +829,7 @@ function resetCloudData() {
   }).then(res => {
       alert("ล้างข้อมูลเรียบร้อยแล้ว");
       localStorage.clear();
+      markedWords = {}; // Clear marks too
       globalStars = 0;
       globalRounds = 0;
       location.reload();
