@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🐰 ABC Fun English (Full Option)</title>
+<title>🐰 ABC Fun English (V2.5 Filter & Range)</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -59,6 +59,17 @@
 
   h1 { color: var(--primary); margin: 0 0 10px 0; text-shadow: 2px 2px 0px #ffe5b4; font-size: 2.2rem; }
   
+  /* Input Styles */
+  .input-range-group {
+    display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0;
+  }
+  .input-box {
+    width: 60px; padding: 8px; text-align: center; border: 2px solid #ddd; border-radius: 10px; font-size: 1.1rem; font-weight: bold; color: var(--primary);
+  }
+  .search-box {
+    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 15px; font-size: 1rem; box-sizing: border-box; margin-bottom: 10px;
+  }
+
   /* Timer & Score */
   .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
   
@@ -86,8 +97,10 @@
   .btn-main { background: var(--primary); color: white; font-size: 1.5rem; padding: 18px; box-shadow: 0 5px 0 #e08e19; }
   .btn-practice { background: var(--secondary); color: white; font-size: 1.2rem; padding: 12px; box-shadow: 0 5px 0 #259f93; }
   .btn-info { background: #3498db; color: white; font-size: 1rem; padding: 10px; margin-top: 10px; }
+  .btn-filter { background: #9b59b6; color: white; width:auto; padding: 5px 15px; font-size: 0.9rem; border-radius: 15px; position:absolute; top: 20px; right: 20px; box-shadow: 0 3px 0 #8e44ad; }
   .btn-parent { background: #95a5a6; color: white; width: auto; font-size: 0.9rem; padding: 8px 20px; margin-top: 15px; }
   .btn-back { background: #f1f2f6; color: #7f8c8d; width: auto; display: inline-block; padding: 8px 20px; }
+  .btn-apply { background: var(--secondary); color: white; font-size: 1.1rem; padding: 10px; margin-top: 10px; }
   
   .btn-sound {
     background: #FFBF69; color: #fff; width: 80px; height: 80px;
@@ -118,37 +131,21 @@
   .count-label { background: var(--secondary); color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.8rem;}
   .wrong-text { color: #d63031; font-size: 0.85rem; background: #fff0f0; padding: 5px; border-radius: 5px; margin-top: 5px;}
 
-  /* --- Vocab Table (New Style with Sticky Header) --- */
-  
-  /* ปรับ Card ให้เต็มจอแนวตั้งเพื่อรองรับการ scroll ภายใน */
+  /* --- Vocab Table --- */
   #vocabListPage .card {
-    display: flex;
-    flex-direction: column;
-    height: 85vh; /* ความสูงคงที่เพื่อให้ scroll ได้ */
-    padding: 15px;
-    background: #f4f4f4;
+    display: flex; flex-direction: column; height: 85vh; padding: 15px; background: #f4f4f4;
   }
 
   .table-wrapper {
-    flex-grow: 1; /* ขยายให้เต็มพื้นที่ที่เหลือ */
-    overflow-y: auto; /* ให้ scroll เฉพาะส่วนนี้ */
-    margin-bottom: 10px;
-    border-radius: 10px;
-    background: #fff;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+    flex-grow: 1; overflow-y: auto; margin-bottom: 10px;
+    border-radius: 10px; background: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
   }
 
   .vocab-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 1.1rem; }
   
-  /* Sticky Header: หัวตารางติดด้านบน */
   .vocab-table th { 
-    background: var(--primary); 
-    color: white; 
-    padding: 12px; 
-    position: sticky; 
-    top: 0; 
-    z-index: 5;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background: var(--primary); color: white; padding: 12px; 
+    position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
 
   .vocab-table td { 
@@ -156,11 +153,8 @@
     border-bottom: 1px solid #eee;
   }
   
-  /* แถวที่ทำตำหนิว่าอ่านไม่ได้ */
   .vocab-table tr.marked-row td { 
-    background-color: var(--marked-bg) !important; 
-    border-color: var(--marked-border) !important;
-    color: #c62828;
+    background-color: var(--marked-bg) !important; border-color: var(--marked-border) !important; color: #c62828;
   }
   
   .hidden-text { opacity: 0.1; filter: blur(4px); transition: 0.3s; pointer-events: none; }
@@ -190,12 +184,22 @@
   }
   .modal-vocab { font-size: 3.5rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
   .modal-read { font-size: 1.8rem; color: #555; margin-bottom: 10px; }
-  .modal-mean { font-size: 2.5rem; color: var(--secondary); font-weight: bold; background: #f0fdfc; padding: 10px; border-radius: 15px; display: block; margin: 10px 0;}
+  .modal-mean { 
+      font-size: 2.5rem; color: var(--secondary); font-weight: bold; 
+      background: #f0fdfc; padding: 10px; border-radius: 15px; 
+      display: block; margin: 10px 0; cursor: pointer; border: 2px dashed var(--secondary);
+  }
+  .modal-mean:active { transform: scale(0.95); background: #b2dfdb; }
+
   .close-modal-btn { 
     position: absolute; top: 10px; right: 10px; 
     background: #eee; color: #333; width: 35px; height: 35px; 
     border-radius: 50%; font-size: 1.2rem; line-height: 35px; padding: 0;
   }
+
+  /* Filter Modal specific */
+  .filter-group { text-align: left; margin-bottom: 15px; }
+  .filter-label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
 
   @keyframes popIn { from { transform: scale(0.5); opacity:0; } to { transform: scale(1); opacity:1; } }
   .correct-anim { background: var(--correct) !important; color: white !important; border-color: var(--correct) !important; transform: scale(1.05); }
@@ -219,15 +223,22 @@
   <div id="homePage" class="page active">
     <div class="card">
       <h1>🐰 ABC Fun</h1>
-      <p style="color:#777; margin-bottom: 20px;">เก่งศัพท์อังกฤษฉบับหนูน้อย</p>
+      <p style="color:#777; margin-bottom: 10px;">เก่งศัพท์อังกฤษฉบับหนูน้อย</p>
       
       <div style="background:#f9f9f9; padding:10px; border-radius:15px; margin-bottom:15px; display:flex; justify-content:center; align-items:center; gap:10px;">
         <span>🔊 เสียง:</span>
         <button id="soundToggle" onclick="toggleSound()" style="width:auto; padding:5px 20px; font-size:1rem; margin:0;">เปิด</button>
       </div>
 
-      <div id="loadingStatus" style="color: orange; font-style: italic; margin-bottom: 15px; font-size: 0.9rem;">กำลังโหลดข้อมูล...</div>
+      <div id="loadingStatus" style="color: orange; font-style: italic; margin-bottom: 5px; font-size: 0.9rem;">กำลังโหลดข้อมูล...</div>
       
+      <div class="input-range-group">
+        <span>เล่นคำที่:</span>
+        <input type="number" id="gameStartIdx" class="input-box" value="1">
+        <span>ถึง</span>
+        <input type="number" id="gameEndIdx" class="input-box" value="...">
+      </div>
+
       <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (จับเวลา)</button>
       <button class="btn-practice" onclick="startPractice()">📖 ฝึกท่องศัพท์</button>
       
@@ -277,7 +288,7 @@
         <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="nextPractice()">ถัดไป ➡️</button>
       </div>
       
-      <button class="btn-info" onclick="openVocabList()">📜 ดูคำศัพท์ทั้งหมด (ตาราง)</button>
+      <button class="btn-info" onclick="openVocabList()">📜 ดูคำศัพท์ทั้งหมด</button>
     </div>
     <button class="btn-back" onclick="showPage('homePage')">🏠 กลับหน้าหลัก</button>
   </div>
@@ -285,6 +296,7 @@
   <div id="vocabListPage" class="page">
     <div class="card">
       <h2 style="color:var(--primary); margin-top:0;">📜 คำศัพท์ทั้งหมด</h2>
+      <button class="btn-filter" onclick="openFilterModal()">🔍 Filter</button>
       
       <div class="controls-bar">
         <label class="checkbox-wrapper">
@@ -299,9 +311,9 @@
         <table class="vocab-table">
             <thead>
                 <tr>
-                    <th style="width:10%">#</th>
+                    <th style="width:15%">#</th>
                     <th style="width:30%">ศัพท์</th>
-                    <th style="width:30%">คำอ่าน</th>
+                    <th style="width:25%">คำอ่าน</th>
                     <th style="width:30%">แปล</th>
                 </tr>
             </thead>
@@ -361,13 +373,47 @@
         <button class="close-modal-btn" onclick="closeModal()">✕</button>
         <div id="modalVocab" class="modal-vocab">Word</div>
         <div id="modalRead" class="modal-read">reading...</div>
-        <div id="modalMean" class="modal-mean">Meaning</div>
+        <div id="modalMean" class="modal-mean" title="กดเพื่อฟังภาษาไทย">Meaning</div>
+        <div style="font-size:0.8rem; color:#888;">(กดที่คำแปลเพื่อฟังภาษาไทย)</div>
         
         <button class="btn-sound" onclick="speakFromModal()" style="margin: 15px auto;">🔊</button>
         
         <div style="margin-top:20px; border-top:1px dashed #ccc; padding-top:15px;">
             <p id="markStatusText" style="color:red; font-size:0.9rem;">🚩 คำนี้ถูกทำตำหนิไว้ (ยังจำไม่ได้)</p>
             <button onclick="resetWordStatus()" style="background:#fff; border:1px solid #ccc; color:#555; font-size:0.9rem; padding:8px;">🔒 ลบสีแดง (ผู้ปกครอง)</button>
+        </div>
+    </div>
+</div>
+
+<div id="filterModal" class="modal-overlay" onclick="closeFilterModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()" style="text-align:left;">
+        <button class="close-modal-btn" onclick="closeFilterModal()">✕</button>
+        <h2 style="color:var(--secondary); text-align:center; margin-top:0;">🔍 ตัวกรองคำศัพท์</h2>
+        
+        <div class="filter-group">
+            <label class="filter-label">🔤 ค้นหาคำ:</label>
+            <input type="text" id="filterSearch" class="search-box" placeholder="พิมพ์ศัพท์ หรือ คำแปล...">
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">🔢 ช่วงลำดับคำ:</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <input type="number" id="filterStart" class="input-box" style="width:100%" placeholder="เริ่ม">
+                <span>ถึง</span>
+                <input type="number" id="filterEnd" class="input-box" style="width:100%" placeholder="สิ้นสุด">
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" id="filterMarkedOnly" style="transform:scale(1.5);">
+                <span style="color:red; font-weight:bold;">🚩 แสดงเฉพาะคำที่จำไม่ได้ (สีแดง)</span>
+            </label>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button class="btn-back" onclick="resetFilters()">ล้างค่า</button>
+            <button class="btn-apply" onclick="applyFilters()">✅ ตกลง</button>
         </div>
     </div>
 </div>
@@ -380,7 +426,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzfNeVpEL2R3sQsljaYsOjR
 const PARENT_PIN = "0932815229";
 const GAME_TIME = 120; // 2 นาที
 
-// ข้อมูลสำรอง (กรณีเน็ตหลุด)
+// ข้อมูลสำรอง
 const backupWords = [
   {Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},
   {Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}
@@ -388,10 +434,18 @@ const backupWords = [
 
 // ตัวแปรระบบ
 let words = [];
+let gamePool = []; // Words active for the current game session
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
-let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {}; // เก็บคำที่ทำตำหนิแดง
-// Load User Settings (Default to True)
+let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {};
 let userSettings = JSON.parse(localStorage.getItem("userSettings")) || { showRead: true, showMean: true };
+
+// Filter Settings
+let currentFilters = {
+    search: "",
+    start: null,
+    end: null,
+    markedOnly: false
+};
 
 let globalStars = 0;
 let globalRounds = 0;
@@ -399,7 +453,7 @@ let isSoundEnabled = true;
 
 // ตัวแปรเกม
 let currentWord = null;
-let currentModalWord = null; // คำที่แสดงใน Popup
+let currentModalWord = null; 
 let gameTimerId = null;
 let timeLeft = 0;
 let currentScore = 0;
@@ -421,7 +475,6 @@ function fetchData() {
     document.getElementById("loadingStatus").textContent = "กำลังเชื่อมต่อ Cloud...";
     const nocache = "&t=" + new Date().getTime();
 
-    // ดึง Report
     fetch(API_URL + "?action=getReport" + nocache)
     .then(res => res.json())
     .then(data => {
@@ -430,10 +483,8 @@ function fetchData() {
             globalRounds = data.summary.rounds;
             updateUI();
         }
-    })
-    .catch(console.error);
+    }).catch(console.error);
 
-    // ดึงคำศัพท์
     fetch(API_URL)
     .then(res => res.json())
     .then(data => {
@@ -444,12 +495,16 @@ function fetchData() {
             document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
             document.getElementById("onlineIndicator").textContent = "🟢 Online (Synced)";
             document.getElementById("onlineIndicator").style.color = "green";
+            
+            // Set Default Range for Game
+            document.getElementById("gameEndIdx").value = words.length;
         }
     })
     .catch(e => {
         words = backupWords;
         document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์ (ใช้ข้อมูลเดิม)";
         document.getElementById("onlineIndicator").textContent = "🔴 Offline";
+        document.getElementById("gameEndIdx").value = words.length;
     });
 }
 
@@ -511,6 +566,23 @@ function updateUI() {
  **********************************************/
 function startGame() {
   if(words.length < 4) { alert("ข้อมูลกำลังโหลด รอสักครู่นะครับ"); return; }
+
+  // 1. Get Range
+  let start = parseInt(document.getElementById("gameStartIdx").value);
+  let end = parseInt(document.getElementById("gameEndIdx").value);
+
+  if(isNaN(start) || start < 1) start = 1;
+  if(isNaN(end) || end > words.length) end = words.length;
+  if(start > end) { alert("ช่วงคำศัพท์ไม่ถูกต้อง"); return; }
+  
+  // 2. Filter words for game pool
+  // Array index starts at 0, so subtract 1 from start
+  gamePool = words.slice(start - 1, end);
+
+  if(gamePool.length < 4) {
+      alert("กรุณาเลือกช่วงที่มีคำศัพท์อย่างน้อย 4 คำครับ");
+      return;
+  }
   
   currentScore = 0;
   sessionCorrect = 0;
@@ -539,8 +611,9 @@ function updateTimerDisplay() {
 }
 
 function getWeightedWord() {
+  // Use gamePool instead of all words
   let pool = [];
-  words.forEach(w => {
+  gamePool.forEach(w => {
     pool.push(w);
     const stat = wordStats[w.Vocabulary];
     if (stat && stat.wrong > stat.correct) { 
@@ -559,7 +632,9 @@ function nextQuestion() {
 
   let choices = [currentWord];
   while(choices.length < 4) {
-    let w = words[Math.floor(Math.random() * words.length)];
+    // Choices should also come from gamePool ideally, but fallback to all words if pool is small?
+    // Let's stick to gamePool to keep focus within range.
+    let w = gamePool[Math.floor(Math.random() * gamePool.length)];
     if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w);
   }
   
@@ -649,7 +724,7 @@ function finishGame() {
 function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
 
 /**********************************************
- * PRACTICE MODE & VOCAB TABLE
+ * PRACTICE MODE
  **********************************************/
 function startPractice() {
   if(words.length === 0) return;
@@ -670,25 +745,52 @@ function nextPractice() { practiceIndex = (practiceIndex + 1) % words.length; re
 function prevPractice() { practiceIndex = practiceIndex <= 0 ? words.length - 1 : practiceIndex - 1; renderPractice(); }
 function speakCurrentPractice() { speak(words[practiceIndex].Vocabulary); }
 
-// --- New Table Logic ---
+/**********************************************
+ * VOCAB LIST & FILTER
+ **********************************************/
 function openVocabList() {
     showPage('vocabListPage');
+    renderVocabTable();
+
+    // Restore Settings
+    document.getElementById('showRead').checked = userSettings.showRead;
+    document.getElementById('showMean').checked = userSettings.showMean;
+    toggleVocabColumn('read', false); 
+    toggleVocabColumn('mean', false);
+}
+
+function renderVocabTable() {
     const tbody = document.getElementById("vocabTableBody");
     tbody.innerHTML = "";
 
     words.forEach((w, index) => {
-        const tr = document.createElement("tr");
+        const realIndex = index + 1;
+        const isMarked = markedWords[w.Vocabulary];
         
-        // ตรวจสอบว่าคำนี้ถูก Mark เป็นสีแดงไหม
-        if(markedWords[w.Vocabulary]) {
-            tr.classList.add("marked-row");
+        // --- FILTER LOGIC ---
+        // 1. Range
+        if(currentFilters.start && realIndex < currentFilters.start) return;
+        if(currentFilters.end && realIndex > currentFilters.end) return;
+        
+        // 2. Marked Only
+        if(currentFilters.markedOnly && !isMarked) return;
+        
+        // 3. Search
+        if(currentFilters.search) {
+            const term = currentFilters.search.toLowerCase();
+            const match = w.Vocabulary.toLowerCase().includes(term) || 
+                          w["คำแปล"].includes(term) || 
+                          (w["คำอ่านไทย"] && w["คำอ่านไทย"].includes(term));
+            if(!match) return;
         }
-        
-        // เมื่อกดที่แถว ให้เปิด Popup
+        // --------------------
+
+        const tr = document.createElement("tr");
+        if(isMarked) tr.classList.add("marked-row");
         tr.onclick = () => openWordModal(w, tr);
 
         const tdIdx = document.createElement("td");
-        tdIdx.textContent = index + 1;
+        tdIdx.textContent = realIndex;
         tdIdx.style.fontWeight = "bold";
         tdIdx.style.color = "#888";
         
@@ -709,21 +811,50 @@ function openVocabList() {
         tr.appendChild(tdMean);
         tbody.appendChild(tr);
     });
+}
 
-    // Restore Settings from Memory
-    document.getElementById('showRead').checked = userSettings.showRead;
-    document.getElementById('showMean').checked = userSettings.showMean;
+// Filter Modal Functions
+function openFilterModal() {
+    document.getElementById('filterModal').classList.add('active');
+    // Pre-fill
+    document.getElementById('filterSearch').value = currentFilters.search;
+    document.getElementById('filterStart').value = currentFilters.start || '';
+    document.getElementById('filterEnd').value = currentFilters.end || '';
+    document.getElementById('filterMarkedOnly').checked = currentFilters.markedOnly;
+}
+
+function closeFilterModal(event) {
+    if(event && event.target.id !== "filterModal" && !event.target.classList.contains('close-modal-btn')) return;
+    document.getElementById('filterModal').classList.remove('active');
+}
+
+function applyFilters() {
+    currentFilters.search = document.getElementById('filterSearch').value.trim();
+    const s = parseInt(document.getElementById('filterStart').value);
+    const e = parseInt(document.getElementById('filterEnd').value);
+    currentFilters.start = isNaN(s) ? null : s;
+    currentFilters.end = isNaN(e) ? null : e;
+    currentFilters.markedOnly = document.getElementById('filterMarkedOnly').checked;
     
-    // Apply Settings
-    toggleVocabColumn('read', false); 
-    toggleVocabColumn('mean', false);
+    renderVocabTable();
+    closeFilterModal();
+}
+
+function resetFilters() {
+    currentFilters = { search: "", start: null, end: null, markedOnly: false };
+    document.getElementById('filterSearch').value = "";
+    document.getElementById('filterStart').value = "";
+    document.getElementById('filterEnd').value = "";
+    document.getElementById('filterMarkedOnly').checked = false;
+    
+    renderVocabTable();
+    closeFilterModal();
 }
 
 function toggleVocabColumn(type, isUserAction = true) {
     const checkboxId = type === 'read' ? 'showRead' : 'showMean';
     const isChecked = document.getElementById(checkboxId).checked;
     
-    // Save to settings if initiated by user
     if(isUserAction) {
         userSettings[type === 'read' ? 'showRead' : 'showMean'] = isChecked;
         localStorage.setItem("userSettings", JSON.stringify(userSettings));
@@ -737,24 +868,26 @@ function toggleVocabColumn(type, isUserAction = true) {
 }
 
 // --- Modal & Marking System ---
-
 function openWordModal(wordObj, trElement) {
     currentModalWord = wordObj;
     
-    // ใส่ข้อมูลใน Modal
     document.getElementById('modalVocab').textContent = wordObj.Vocabulary;
     document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"];
-    document.getElementById('modalMean').textContent = wordObj["คำแปล"];
+    const meanElem = document.getElementById('modalMean');
+    meanElem.textContent = wordObj["คำแปล"];
     
-    // ตรวจสอบสถานะ Mark
+    // Feature: Click translation to speak Thai
+    meanElem.onclick = function() {
+        speak(wordObj["คำแปล"], 'th-TH');
+    };
+    
     const statusText = document.getElementById('markStatusText');
     if(markedWords[wordObj.Vocabulary]) {
         statusText.style.display = "block";
     } else {
-        // ถ้ายังไม่ Mark -> Mark ทันทีเพราะกดดูเฉลย
         markedWords[wordObj.Vocabulary] = true;
         localStorage.setItem("markedWords", JSON.stringify(markedWords));
-        trElement.classList.add("marked-row"); // เปลี่ยนสีแถวทันที
+        if(trElement) trElement.classList.add("marked-row");
         statusText.style.display = "block";
         statusText.textContent = "🚩 บันทึกแล้ว: น้องกดดูเฉลย";
     }
@@ -766,9 +899,8 @@ function openWordModal(wordObj, trElement) {
 function closeModal(event) {
     if(event && event.target.id !== "wordModal" && !event.target.classList.contains('close-modal-btn')) return;
     document.getElementById('wordModal').classList.remove('active');
-    
-    // Refresh Table เพื่ออัปเดตสี (กรณีมีการเปลี่ยนแปลง)
-    openVocabList();
+    // Refresh table to show red color immediately
+    renderVocabTable(); 
 }
 
 function speakFromModal() {
@@ -780,13 +912,12 @@ function resetWordStatus() {
     
     const pin = prompt("กรุณาใส่รหัสผ่านผู้ปกครองเพื่อลบสถานะ:");
     if(pin === PARENT_PIN) {
-        // ลบออกจาก Memory และ LocalStorage
         delete markedWords[currentModalWord.Vocabulary];
         localStorage.setItem("markedWords", JSON.stringify(markedWords));
         
         alert("✅ ลบสถานะสีแดงเรียบร้อยแล้ว");
         document.getElementById('markStatusText').style.display = "none";
-        closeModal(); // ปิด Modal แล้วตารางจะ Refresh เอง
+        closeModal(); 
     } else if (pin !== null) {
         alert("❌ รหัสผ่านไม่ถูกต้อง");
     }
@@ -807,7 +938,6 @@ function checkPin() {
 async function renderHistory() {
   const list = document.getElementById("historyList");
   list.innerHTML = "<li>⏳ กำลังโหลดข้อมูลจาก Cloud...</li>";
-  
   const nocache = "&t=" + new Date().getTime();
 
   try {
@@ -829,7 +959,6 @@ async function renderHistory() {
     data.history.forEach(item => {
       const dateObj = new Date(item.timestamp);
       const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
-      
       const li = document.createElement("li");
       li.innerHTML = `
         <div class="history-header">
@@ -873,8 +1002,9 @@ function resetCloudData() {
   }).then(res => {
       alert("ล้างข้อมูลเรียบร้อยแล้ว");
       localStorage.clear();
-      markedWords = {}; // Clear marks too
-      userSettings = { showRead: true, showMean: true }; // Reset settings
+      markedWords = {};
+      userSettings = { showRead: true, showMean: true }; 
+      currentFilters = { search: "", start: null, end: null, markedOnly: false };
       globalStars = 0;
       globalRounds = 0;
       location.reload();
@@ -883,9 +1013,7 @@ function resetCloudData() {
   });
 }
 
-function resetLocalData() {
-    resetCloudData(); 
-}
+function resetLocalData() { resetCloudData(); }
 </script>
 
 </body>
