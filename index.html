@@ -352,6 +352,15 @@
         </div>
       </div>
       
+      <div style="background:#fff; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ddd; text-align:center;">
+        <h3 style="margin-top:0; color:#555; font-size:1.1rem;">⚙️ ปรับเพิ่ม/ลดคะแนน (ดาว)</h3>
+        <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+          <input type="number" id="manualScoreInput" placeholder="จำนวน" style="padding:10px; width:80px; border-radius:10px; border:2px solid #ddd; font-size:1.1rem; text-align:center;">
+          <button onclick="adjustScore(1)" style="background:var(--correct); color:white; width:auto; padding:10px 15px; margin:0; font-size:1rem; border-radius:10px; box-shadow: 0 3px 0 #259f93;">+ เพิ่ม</button>
+          <button onclick="adjustScore(-1)" style="background:var(--wrong); color:white; width:auto; padding:10px 15px; margin:0; font-size:1rem; border-radius:10px; box-shadow: 0 3px 0 #d9534f;">- ลด</button>
+        </div>
+        <div style="font-size:0.8rem; color:#888; margin-top:10px;">* ข้อมูลจะซิงค์ไปยัง Cloud อัตโนมัติ</div>
+      </div>
       <div style="text-align:left; margin-top:10px;">📅 <b>ประวัติการเล่นล่าสุด:</b></div>
       <ul id="historyList" class="history-list">
         <li>กำลังโหลด...</li>
@@ -434,7 +443,7 @@ const backupWords = [
 
 // ตัวแปรระบบ
 let words = [];
-let gamePool = []; // Words active for the current game session
+let gamePool = []; 
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
 let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {};
 let userSettings = JSON.parse(localStorage.getItem("userSettings")) || { showRead: true, showMean: true };
@@ -576,7 +585,6 @@ function startGame() {
   if(start > end) { alert("ช่วงคำศัพท์ไม่ถูกต้อง"); return; }
   
   // 2. Filter words for game pool
-  // Array index starts at 0, so subtract 1 from start
   gamePool = words.slice(start - 1, end);
 
   if(gamePool.length < 4) {
@@ -611,7 +619,6 @@ function updateTimerDisplay() {
 }
 
 function getWeightedWord() {
-  // Use gamePool instead of all words
   let pool = [];
   gamePool.forEach(w => {
     pool.push(w);
@@ -632,8 +639,6 @@ function nextQuestion() {
 
   let choices = [currentWord];
   while(choices.length < 4) {
-    // Choices should also come from gamePool ideally, but fallback to all words if pool is small?
-    // Let's stick to gamePool to keep focus within range.
     let w = gamePool[Math.floor(Math.random() * gamePool.length)];
     if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w);
   }
@@ -899,7 +904,6 @@ function openWordModal(wordObj, trElement) {
 function closeModal(event) {
     if(event && event.target.id !== "wordModal" && !event.target.classList.contains('close-modal-btn')) return;
     document.getElementById('wordModal').classList.remove('active');
-    // Refresh table to show red color immediately
     renderVocabTable(); 
 }
 
@@ -924,7 +928,7 @@ function resetWordStatus() {
 }
 
 /**********************************************
- * PARENT MODE
+ * PARENT MODE & NEW FUNCTIONS
  **********************************************/
 function checkPin() {
   if(document.getElementById("pinInput").value === PARENT_PIN) {
@@ -933,6 +937,33 @@ function checkPin() {
     renderHistory(); 
     renderMistakes(); 
   } else { alert("รหัสผ่านไม่ถูกต้อง"); }
+}
+
+// ฟังก์ชันใหม่ สำหรับให้ผู้ปกครองเพิ่ม/ลดคะแนน
+function adjustScore(multiplier) {
+    const inputVal = parseInt(document.getElementById("manualScoreInput").value);
+    
+    if (isNaN(inputVal) || inputVal <= 0) {
+        alert("กรุณาใส่จำนวนดาวที่ต้องการ (มากกว่า 0)");
+        return;
+    }
+    
+    const amount = inputVal * multiplier;
+    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
+    
+    if (!confirm(`ยืนยันการ${actionText}คะแนนจำนวน ${inputVal} ดาว?`)) return;
+
+    // อัปเดต UI ทันที
+    globalStars += amount;
+    if(globalStars < 0) globalStars = 0; // ป้องกันดาวติดลบ
+    updateUI();
+    
+    // ส่งข้อมูลไปที่ Cloud
+    const note = `[ผู้ปกครอง${actionText}คะแนนให้]`;
+    sendDataToSheets(amount, note);
+    
+    document.getElementById("manualScoreInput").value = "";
+    alert(`บันทึกการ${actionText}คะแนนเรียบร้อยแล้ว (กำลังอัปเดตระบบ Cloud)`);
 }
 
 async function renderHistory() {
@@ -967,7 +998,7 @@ async function renderHistory() {
                 <span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span>
             </div>
         </div>
-        ${item.wrong ? `<div class="wrong-text">❌ ผิด: ${item.wrong}</div>` : ''}
+        ${item.wrong ? `<div class="wrong-text">❌ ${item.wrong}</div>` : ''}
       `;
       list.appendChild(li);
     });
