@@ -3,23 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🐰 ABC Fun English (V2.5 Filter & Range)</title>
+<title>🌟 Family Games Hub (Diamond Edition)</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ABC Fun">
-<link rel="apple-touch-icon" href="https://img.icons8.com/color/180/abc.png">
+<meta name="theme-color" content="#2196f3">
 
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&family=Sarabun:wght@400;600;800&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <style>
   :root {
     --primary: #FF9F1C;
     --secondary: #2EC4B6;
-    --bg: #CBF3F0;
+    --bg: #eef5ff;
     --card: #FFFFFF;
     --wrong: #FF5A5F;
     --correct: #2EC4B6;
@@ -39,53 +41,18 @@
 
   .container { width: 100%; max-width: 600px; text-align: center; padding-bottom: 50px; }
 
-  /* Header Stats */
-  .header-bar {
-    background: var(--card); padding: 10px 15px; border-radius: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px;
-    display: flex; justify-content: space-between; align-items: center; font-weight: bold;
-  }
-  .stat-pill { background: #f0f2f5; padding: 5px 12px; border-radius: 15px; font-size: 0.9rem; }
-
   /* Pages */
   .page { display: none; animation: fadeIn 0.3s ease; }
   .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* Cards */
-  .card {
+  /* Cards & General UI */
+  .card, .math-box {
     background: var(--card); padding: 25px 20px; border-radius: 25px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 15px; position: relative;
   }
-
   h1 { color: var(--primary); margin: 0 0 10px 0; text-shadow: 2px 2px 0px #ffe5b4; font-size: 2.2rem; }
   
-  /* Input Styles */
-  .input-range-group {
-    display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0;
-  }
-  .input-box {
-    width: 60px; padding: 8px; text-align: center; border: 2px solid #ddd; border-radius: 10px; font-size: 1.1rem; font-weight: bold; color: var(--primary);
-  }
-  .search-box {
-    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 15px; font-size: 1rem; box-sizing: border-box; margin-bottom: 10px;
-  }
-
-  /* Timer & Score */
-  .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-  
-  .timer-box {
-    font-size: 1.8rem; font-weight: 800; color: #555;
-    background: #fff; padding: 5px 15px; border-radius: 15px;
-    border: 3px solid #ddd;
-  }
-  
-  .score-box {
-    font-size: 2rem; font-weight: 800; color: #fff;
-    background: var(--primary); padding: 5px 20px; border-radius: 15px;
-    box-shadow: 0 4px 0 #e08e19;
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
   /* Buttons */
   button {
     border: none; outline: none; cursor: pointer; font-family: 'Kanit', sans-serif;
@@ -94,6 +61,14 @@
   }
   button:active { transform: scale(0.96); }
   
+  /* ABC App Specific Styles */
+  .header-bar { background: var(--card); padding: 10px 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+  .stat-pill { background: #f0f2f5; padding: 5px 12px; border-radius: 15px; font-size: 0.9rem; }
+  .input-range-group { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0; }
+  .input-box { width: 60px; padding: 8px; text-align: center; border: 2px solid #ddd; border-radius: 10px; font-size: 1.1rem; font-weight: bold; color: var(--primary); }
+  .search-box { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 15px; font-size: 1rem; box-sizing: border-box; margin-bottom: 10px; }
+
+  /* Buttons Theme */
   .btn-main { background: var(--primary); color: white; font-size: 1.5rem; padding: 18px; box-shadow: 0 5px 0 #e08e19; }
   .btn-practice { background: var(--secondary); color: white; font-size: 1.2rem; padding: 12px; box-shadow: 0 5px 0 #259f93; }
   .btn-info { background: #3498db; color: white; font-size: 1rem; padding: 10px; margin-top: 10px; }
@@ -101,103 +76,61 @@
   .btn-parent { background: #95a5a6; color: white; width: auto; font-size: 0.9rem; padding: 8px 20px; margin-top: 15px; }
   .btn-back { background: #f1f2f6; color: #7f8c8d; width: auto; display: inline-block; padding: 8px 20px; }
   .btn-apply { background: var(--secondary); color: white; font-size: 1.1rem; padding: 10px; margin-top: 10px; }
+  .btn-sound { background: #FFBF69; color: #fff; width: 80px; height: 80px; border-radius: 50%; font-size: 2.2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 4px 0 #e0a85c; }
+
+  /* Math Specific Styles */
+  #mathPage .math-box { font-family: 'Sarabun', sans-serif; }
+  #mathPage button { font-family: 'Sarabun', sans-serif; font-size: 18px; padding: 12px 20px; border-radius: 18px; margin: 5px; }
+  #mathPage button.back { background: #ff9800; width: 90%; color: white; }
+  #mathPage .btn-lv { background: #d1d9e6; color: #444; border: 2px solid #b0b8c4; width: 80px; font-weight: bold; }
+  #mathPage .btn-lv.sel { background: #0d47a1 !important; color: #fff !important; border: 3px solid #002171 !important; transform: scale(1.1); }
+  #mathPage button.num { font-size: 30px; width: 70px; height: 70px; border-radius: 50%; background: #f0f0f0; color: #333; }
+  #mathPage input#ans { font-size: 35px; width: 80%; padding: 10px; border-radius: 15px; border: 3px solid #2196f3; text-align: center; margin-bottom: 10px; background: #fff; }
+  #mathPage .timer { font-size: 26px; color: red; font-weight: bold; margin-bottom: 10px; }
+  .mathScoreBox { position: fixed; top: 10px; right: 10px; background: #ff9800; color: #fff; padding: 8px 15px; border-radius: 15px; z-index: 999; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
   
-  .btn-sound {
-    background: #FFBF69; color: #fff; width: 80px; height: 80px;
-    border-radius: 50%; font-size: 2.2rem; display: flex; align-items: center; 
-    justify-content: center; margin: 0 auto; box-shadow: 0 4px 0 #e0a85c;
-  }
+  /* Parent & Hub Styles */
+  .history-card { text-align: left; background: #f1f8e9; padding: 12px; margin: 8px 0; border-radius: 12px; border-left: 6px solid #4caf50; font-size: 14px; }
+  .btn-reset { background: #d32f2f; font-size: 14px; margin-top: 10px; width: 100%; color: white; padding: 10px; border-radius: 15px;}
+  .score-mgmt-box { background: #fff; border: 2px solid #ddd; border-radius: 15px; padding: 15px; margin-bottom: 15px; text-align: left; }
 
   /* Game Elements */
+  .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+  .timer-box { font-size: 1.8rem; font-weight: 800; color: #555; background: #fff; padding: 5px 15px; border-radius: 15px; border: 3px solid #ddd; }
+  .score-box { font-size: 2rem; font-weight: 800; color: #fff; background: var(--primary); padding: 5px 20px; border-radius: 15px; box-shadow: 0 4px 0 #e08e19; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   .vocab-display { font-size: 3.5rem; font-weight: 800; color: var(--primary); margin: 10px 0; line-height: 1.1; text-shadow: 2px 2px 0 #f0f0f0;}
   .practice-vocab { font-size: 4rem; font-weight: 800; color: var(--secondary); margin: 15px 0; }
-  
   .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
-  .choice-btn {
-    background: white; border: 3px solid var(--secondary); color: var(--secondary);
-    border-radius: 20px; padding: 10px; font-size: 1.3rem; min-height: 90px;
-    display: flex; align-items: center; justify-content: center;
-  }
+  .choice-btn { background: white; border: 3px solid var(--secondary); color: var(--secondary); border-radius: 20px; padding: 10px; font-size: 1.3rem; min-height: 90px; display: flex; align-items: center; justify-content: center; }
 
-  /* History Table */
-  .history-list { list-style: none; padding: 0; text-align: left; max-height: 300px; overflow-y: auto; }
-  .history-list li { 
-    display: flex; flex-direction: column; padding: 15px; 
-    border-bottom: 1px dashed #ccc; font-size: 0.95rem; background: #fdfdfd; margin-bottom: 5px; border-radius: 10px;
-  }
+  /* Table & List Settings (ABC) */
+  .history-list { list-style: none; padding: 0; text-align: left; overflow-y: auto; }
+  .history-list li { display: flex; flex-direction: column; padding: 15px; border-bottom: 1px dashed #ccc; font-size: 0.95rem; background: #fdfdfd; margin-bottom: 5px; border-radius: 10px; }
   .history-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px;}
   .date-label { color: #555; font-weight: bold; }
   .badge-group { display: flex; gap: 5px; }
   .count-label { background: var(--secondary); color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.8rem;}
   .wrong-text { color: #d63031; font-size: 0.85rem; background: #fff0f0; padding: 5px; border-radius: 5px; margin-top: 5px;}
-
-  /* --- Vocab Table --- */
-  #vocabListPage .card {
-    display: flex; flex-direction: column; height: 85vh; padding: 15px; background: #f4f4f4;
-  }
-
-  .table-wrapper {
-    flex-grow: 1; overflow-y: auto; margin-bottom: 10px;
-    border-radius: 10px; background: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-  }
-
+  
+  #vocabListPage .card { display: flex; flex-direction: column; height: 85vh; padding: 15px; background: #f4f4f4; }
+  .table-wrapper { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
   .vocab-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 1.1rem; }
-  
-  .vocab-table th { 
-    background: var(--primary); color: white; padding: 12px; 
-    position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-
-  .vocab-table td { 
-    background: #fff; padding: 15px 10px; vertical-align: middle; cursor: pointer; 
-    border-bottom: 1px solid #eee;
-  }
-  
-  .vocab-table tr.marked-row td { 
-    background-color: var(--marked-bg) !important; border-color: var(--marked-border) !important; color: #c62828;
-  }
-  
+  .vocab-table th { background: var(--primary); color: white; padding: 12px; position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  .vocab-table td { background: #fff; padding: 15px 10px; vertical-align: middle; cursor: pointer; border-bottom: 1px solid #eee; }
+  .vocab-table tr.marked-row td { background-color: var(--marked-bg) !important; border-color: var(--marked-border) !important; color: #c62828; }
   .hidden-text { opacity: 0.1; filter: blur(4px); transition: 0.3s; pointer-events: none; }
-  
-  .controls-bar { 
-    display: flex; justify-content: space-around; background: #fff; padding: 15px; 
-    border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-    font-size: 1rem; font-weight: bold; flex-shrink: 0;
-  }
+  .controls-bar { display: flex; justify-content: space-around; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); font-size: 1rem; font-weight: bold; flex-shrink: 0; }
   .checkbox-wrapper { display: flex; align-items: center; gap: 8px; }
 
-  /* --- Modal Popup Style --- */
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); z-index: 1000;
-    display: none; justify-content: center; align-items: center;
-    backdrop-filter: blur(5px);
-  }
+  /* Modals */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
   .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
-  
-  .modal-box {
-    background: white; width: 90%; max-width: 400px;
-    border-radius: 25px; padding: 30px; text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    border: 5px solid var(--primary);
-    position: relative;
-  }
+  .modal-box { background: white; width: 90%; max-width: 400px; border-radius: 25px; padding: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 5px solid var(--primary); position: relative; }
   .modal-vocab { font-size: 3.5rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
   .modal-read { font-size: 1.8rem; color: #555; margin-bottom: 10px; }
-  .modal-mean { 
-      font-size: 2.5rem; color: var(--secondary); font-weight: bold; 
-      background: #f0fdfc; padding: 10px; border-radius: 15px; 
-      display: block; margin: 10px 0; cursor: pointer; border: 2px dashed var(--secondary);
-  }
+  .modal-mean { font-size: 2.5rem; color: var(--secondary); font-weight: bold; background: #f0fdfc; padding: 10px; border-radius: 15px; display: block; margin: 10px 0; cursor: pointer; border: 2px dashed var(--secondary); }
   .modal-mean:active { transform: scale(0.95); background: #b2dfdb; }
-
-  .close-modal-btn { 
-    position: absolute; top: 10px; right: 10px; 
-    background: #eee; color: #333; width: 35px; height: 35px; 
-    border-radius: 50%; font-size: 1.2rem; line-height: 35px; padding: 0;
-  }
-
-  /* Filter Modal specific */
+  .close-modal-btn { position: absolute; top: 10px; right: 10px; background: #eee; color: #333; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; line-height: 35px; padding: 0; }
   .filter-group { text-align: left; margin-bottom: 15px; }
   .filter-label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
 
@@ -205,22 +138,111 @@
   .correct-anim { background: var(--correct) !important; color: white !important; border-color: var(--correct) !important; transform: scale(1.05); }
   .wrong-anim { background: var(--wrong) !important; color: white !important; border-color: var(--wrong) !important; animation: shake 0.4s; }
   @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-
-  #mistakeList { text-align: left; max-height: 200px; overflow-y: auto; padding: 0; list-style: none; }
+  #mistakeList { text-align: left; padding: 0; list-style: none; }
   #mistakeList li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; }
+
 </style>
 </head>
 <body>
 
 <div class="container">
-  
-  <div class="header-bar">
-    <div class="stat-pill">⭐ รวม: <span id="uiStars">...</span></div>
-    <div class="stat-pill">🏆 เล่น: <span id="uiRounds">...</span> รอบ</div>
-    <div id="onlineIndicator" style="font-size:0.7rem; color:#ccc;">⚪ Check...</div>
+
+  <div id="portalPage" class="page active">
+    <div class="card" style="text-align: center; border: 5px solid #2196f3;">
+      <h1 style="color: #e91e63; font-size: 2.8rem;">🎮 Family Hub 🎮</h1>
+      
+      <div style="background: #fff3e0; padding: 20px; border-radius: 20px; margin: 20px 0; border: 3px dashed #ffb74d;">
+          <h2 style="margin: 0; color: #ff9800;">⭐ คะแนนรวม ไดมอนด์ ⭐</h2>
+          <div id="grandTotalScore" style="font-size: 4rem; font-weight: 900; color: #f57c00;">0</div>
+          <div style="display: flex; justify-content: space-around; font-size: 1rem; color: #666; margin-top: 10px;">
+              <span>🐰 ABC: <span id="portalAbcScore">0</span></span>
+              <span>🧮 Math: <span id="portalMathScore">0</span></span>
+          </div>
+      </div>
+
+      <p style="color:#777; margin-bottom: 10px;">เลือกเกมที่ต้องการเล่น</p>
+      
+      <button class="btn-main" style="background: var(--primary); margin-bottom: 10px;" onclick="showPage('homePage')">
+          🐰 ABC Fun English
+      </button>
+      
+      <button class="btn-main" style="background: #2196f3; box-shadow: 0 5px 0 #1565c0; margin-bottom: 20px;" onclick="openMathGame()">
+          🧮 เกมคิดเลขครอบครัว
+      </button>
+
+      <button class="btn-parent" style="width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 10px;" onclick="showPage('hubParentLogin')">
+          🔒 โซนผู้ปกครอง
+      </button>
+
+      <div id="hubStatus" style="color: #888; font-size: 0.8rem; margin-top: 20px;">กำลังตรวจสอบการเชื่อมต่อ...</div>
+    </div>
   </div>
 
-  <div id="homePage" class="page active">
+  <div id="hubParentLogin" class="page">
+    <div class="card">
+      <h2>🔒 โซนผู้ปกครอง</h2>
+      <input type="password" id="hubPinInput" placeholder="รหัสผ่าน" style="padding:15px; font-size:1.2rem; text-align:center; width:80%; border:2px solid #ddd; border-radius:15px;">
+      <br><br>
+      <button class="btn-main" style="width: auto; padding: 10px 40px;" onclick="checkHubPin()">ตกลง</button>
+      <br>
+      <button class="btn-back" onclick="showPage('portalPage')">กลับ</button>
+    </div>
+  </div>
+
+  <div id="hubParentDashboard" class="page">
+    <div class="card">
+       <h2 style="color:#673ab7;">👨‍👩‍👧 การจัดการครอบครัว</h2>
+       
+       <div style="background: #f0f4f8; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #9c27b0;">
+           <span style="font-size: 1.1rem;">⭐ คะแนนรวมสุทธิ:</span>
+           <div id="dashGrandTotal" style="font-size: 3rem; font-weight: bold; color: #9c27b0;">0</div>
+       </div>
+
+       <div class="score-mgmt-box">
+          <h4 style="margin:0 0 10px 0; color:var(--primary);">🐰 คะแนนเกม ABC (Google Sheets)</h4>
+          <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashAbcScore">0</b> ดาว</div>
+          <div style="display:flex; gap:5px; align-items:center;">
+              <input type="number" id="abcAdjInput" placeholder="จำนวนดาว" style="padding:10px; width:100px; border-radius:10px; border:2px solid #ddd; text-align:center;">
+              <button style="background:var(--correct); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustAbcScore(1)">+ เพิ่ม</button>
+              <button style="background:var(--wrong); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustAbcScore(-1)">- ลด</button>
+          </div>
+       </div>
+
+       <div class="score-mgmt-box">
+          <h4 style="margin:0 0 10px 0; color:#2196f3;">🧮 คะแนนเกมคิดเลข (Firebase)</h4>
+          <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashMathScore">0</b> ดาว</div>
+          <div style="display:flex; gap:5px; align-items:center;">
+              <input type="number" id="mathAdjInput" placeholder="จำนวนดาว" style="padding:10px; width:100px; border-radius:10px; border:2px solid #ddd; text-align:center;">
+              <button style="background:var(--correct); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustMathScore(1)">+ เพิ่ม</button>
+              <button style="background:var(--wrong); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustMathScore(-1)">- ลด</button>
+          </div>
+       </div>
+
+       <div style="background:#f0f8ff; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ddd;">
+          <h4 style="margin:0 0 10px 0; color:#555;">📊 ประวัติ ABC ล่าสุด</h4>
+          <ul id="historyList" class="history-list" style="max-height:180px;"><li>กำลังโหลด...</li></ul>
+          <h4 style="margin:15px 0 10px 0; color:#555;">📌 คำที่ผิดบ่อย</h4>
+          <ul id="mistakeList" style="max-height:180px; overflow-y:auto;"></ul>
+       </div>
+
+       <div style="border: 2px dashed #f44336; padding: 15px; border-radius: 15px; text-align:left;">
+          <h4 style="color:#f44336; margin-top:0;">🛑 ล้างข้อมูล (Danger Zone)</h4>
+          <button class="btn-reset" onclick="mathResetScores()">🗑️ รีเซ็ตคะแนน Math</button>
+          <button class="btn-reset" onclick="resetCloudData()" style="margin-top:5px;">🗑️ ล้างข้อมูล ABC</button>
+       </div>
+       
+       <br>
+       <button class="btn-back" style="width:100%; border: 2px solid #ddd;" onclick="showPage('portalPage')">🏠 กลับเมนูหลัก</button>
+    </div>
+  </div>
+
+
+  <div id="homePage" class="page">
+    <div class="header-bar">
+      <div class="stat-pill">⭐ รวม: <span id="uiStars">...</span></div>
+      <div class="stat-pill">🏆 เล่น: <span id="uiRounds">...</span> รอบ</div>
+      <div id="onlineIndicator" style="font-size:0.7rem; color:#ccc;">⚪ Check...</div>
+    </div>
     <div class="card">
       <h1>🐰 ABC Fun</h1>
       <p style="color:#777; margin-bottom: 10px;">เก่งศัพท์อังกฤษฉบับหนูน้อย</p>
@@ -241,8 +263,8 @@
 
       <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (จับเวลา)</button>
       <button class="btn-practice" onclick="startPractice()">📖 ฝึกท่องศัพท์</button>
-      
-      <button class="btn-parent" onclick="showPage('parentLogin')">🔒 ผู้ปกครอง</button>
+      <br><br>
+      <button class="btn-back" style="width:100%; border: 2px solid #ddd;" onclick="showPage('portalPage')">⬅️ กลับหน้าเมนูหลัก</button>
     </div>
   </div>
 
@@ -271,7 +293,8 @@
         <span style="color:green">✔ ถูก: <span id="resultCorrect">0</span></span>
         <span style="color:red">❌ ผิด: <span id="resultWrong">0</span></span>
       </div>
-      <button class="btn-main" onclick="showPage('homePage')" style="margin-top:20px;">เล่นอีกครั้ง</button>
+      <button class="btn-main" onclick="showPage('homePage')" style="margin-top:20px;">กลับเมนู ABC</button>
+      <button class="btn-back" onclick="showPage('portalPage')" style="width:100%; border: 2px solid #ddd;">⬅️ กลับหน้าเมนูหลัก</button>
     </div>
   </div>
 
@@ -281,98 +304,42 @@
       <div id="pReading" style="color:#666; font-size: 1.8rem; margin-bottom: 10px;">...</div>
       <div id="pMeaning" style="color:var(--primary); font-size: 2.5rem; font-weight:bold; margin:10px 0; background: #fff8e1; padding: 10px; border-radius: 15px;">...</div>
       
-      <button class="btn-sound" onclick="speakCurrentPractice()" style="margin: 20px auto;">🔊 ฟังเสียง</button>
+      <button class="btn-sound" onclick="speakCurrentPractice()" style="margin: 20px auto;">🔊</button>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-        <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="prevPractice()">⬅️ ถอยหลัง</button>
+        <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="prevPractice()">⬅️ ถอย</button>
         <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="nextPractice()">ถัดไป ➡️</button>
       </div>
-      
       <button class="btn-info" onclick="openVocabList()">📜 ดูคำศัพท์ทั้งหมด</button>
     </div>
-    <button class="btn-back" onclick="showPage('homePage')">🏠 กลับหน้าหลัก</button>
+    <button class="btn-back" onclick="showPage('homePage')">🏠 กลับเมนู ABC</button>
   </div>
 
   <div id="vocabListPage" class="page">
     <div class="card">
       <h2 style="color:var(--primary); margin-top:0;">📜 คำศัพท์ทั้งหมด</h2>
       <button class="btn-filter" onclick="openFilterModal()">🔍 Filter</button>
-      
       <div class="controls-bar">
-        <label class="checkbox-wrapper">
-            <input type="checkbox" id="showRead" onchange="toggleVocabColumn('read')"> แสดงคำอ่าน
-        </label>
-        <label class="checkbox-wrapper">
-            <input type="checkbox" id="showMean" onchange="toggleVocabColumn('mean')"> แสดงคำแปล
-        </label>
+        <label class="checkbox-wrapper"><input type="checkbox" id="showRead" onchange="toggleVocabColumn('read')"> แสดงคำอ่าน</label>
+        <label class="checkbox-wrapper"><input type="checkbox" id="showMean" onchange="toggleVocabColumn('mean')"> แสดงคำแปล</label>
       </div>
-      
       <div class="table-wrapper">
         <table class="vocab-table">
             <thead>
-                <tr>
-                    <th style="width:15%">#</th>
-                    <th style="width:30%">ศัพท์</th>
-                    <th style="width:25%">คำอ่าน</th>
-                    <th style="width:30%">แปล</th>
-                </tr>
+                <tr><th style="width:15%">#</th><th style="width:30%">ศัพท์</th><th style="width:25%">คำอ่าน</th><th style="width:30%">แปล</th></tr>
             </thead>
-            <tbody id="vocabTableBody">
-                </tbody>
+            <tbody id="vocabTableBody"></tbody>
         </table>
       </div>
-      
       <div style="font-size:0.85rem; color:#888; margin: 5px 0;">👆 จิ้มที่แถวเพื่อดูเฉลยและฟังเสียง</div>
       <button class="btn-back" onclick="showPage('practicePage')" style="flex-shrink:0;">⬅️ กลับ</button>
     </div>
   </div>
 
-  <div id="parentLogin" class="page">
-    <div class="card">
-      <h2>🔒 โซนผู้ปกครอง</h2>
-      <input type="password" id="pinInput" placeholder="รหัสผ่าน" style="padding:15px; font-size:1.2rem; text-align:center; width:80%; border:2px solid #ddd; border-radius:15px;">
-      <br><br>
-      <button class="btn-main" style="width: auto; padding: 10px 40px;" onclick="checkPin()">ตกลง</button>
-      <br>
-      <button class="btn-back" onclick="showPage('homePage')">กลับ</button>
-    </div>
-  </div>
-
-  <div id="parentDashboard" class="page">
-    <div class="card">
-      <h2>📊 รายงานผล (Cloud)</h2>
-      <div style="display:flex; justify-content:space-around; background:#f0f8ff; padding:15px; border-radius:15px; margin-bottom:15px;">
-        <div style="text-align:center;">
-            <div style="font-size:0.8rem; color:#666;">⭐ ดาวทั้งหมด</div>
-            <div id="cloudStars" style="font-size:2rem; font-weight:bold; color:var(--primary);">...</div>
-        </div>
-        <div style="text-align:center;">
-            <div style="font-size:0.8rem; color:#666;">🏆 เล่นไป (รอบ)</div>
-            <div id="cloudRounds" style="font-size:2rem; font-weight:bold; color:var(--secondary);">...</div>
-        </div>
+  <div id="mathPage" class="page">
+      <div class="math-box" id="mathAppContent">
+          กำลังโหลดระบบออนไลน์ของคณิตศาสตร์...
       </div>
-      
-      <div style="background:#fff; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ddd; text-align:center;">
-        <h3 style="margin-top:0; color:#555; font-size:1.1rem;">⚙️ ปรับเพิ่ม/ลดคะแนน (ดาว)</h3>
-        <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
-          <input type="number" id="manualScoreInput" placeholder="จำนวน" style="padding:10px; width:80px; border-radius:10px; border:2px solid #ddd; font-size:1.1rem; text-align:center;">
-          <button onclick="adjustScore(1)" style="background:var(--correct); color:white; width:auto; padding:10px 15px; margin:0; font-size:1rem; border-radius:10px; box-shadow: 0 3px 0 #259f93;">+ เพิ่ม</button>
-          <button onclick="adjustScore(-1)" style="background:var(--wrong); color:white; width:auto; padding:10px 15px; margin:0; font-size:1rem; border-radius:10px; box-shadow: 0 3px 0 #d9534f;">- ลด</button>
-        </div>
-        <div style="font-size:0.8rem; color:#888; margin-top:10px;">* ข้อมูลจะซิงค์ไปยัง Cloud อัตโนมัติ</div>
-      </div>
-      <div style="text-align:left; margin-top:10px;">📅 <b>ประวัติการเล่นล่าสุด:</b></div>
-      <ul id="historyList" class="history-list">
-        <li>กำลังโหลด...</li>
-      </ul>
-
-      <div style="text-align:left; margin-top:20px;">📌 <b>คำที่ผิดบ่อย (ในเครื่องนี้):</b></div>
-      <ul id="mistakeList"></ul>
-
-      <button class="btn-back" onclick="resetCloudData()" style="color:red; font-size: 0.9rem; margin-top:20px; border: 1px solid red; background:#fff0f0;">🗑️ ล้างข้อมูลทั้งหมด (Reset Cloud)</button>
-      <br>
-      <button class="btn-back" onclick="showPage('homePage')">🏠 กลับหน้าหลัก</button>
-    </div>
   </div>
 
 </div>
@@ -384,9 +351,7 @@
         <div id="modalRead" class="modal-read">reading...</div>
         <div id="modalMean" class="modal-mean" title="กดเพื่อฟังภาษาไทย">Meaning</div>
         <div style="font-size:0.8rem; color:#888;">(กดที่คำแปลเพื่อฟังภาษาไทย)</div>
-        
         <button class="btn-sound" onclick="speakFromModal()" style="margin: 15px auto;">🔊</button>
-        
         <div style="margin-top:20px; border-top:1px dashed #ccc; padding-top:15px;">
             <p id="markStatusText" style="color:red; font-size:0.9rem;">🚩 คำนี้ถูกทำตำหนิไว้ (ยังจำไม่ได้)</p>
             <button onclick="resetWordStatus()" style="background:#fff; border:1px solid #ccc; color:#555; font-size:0.9rem; padding:8px;">🔒 ลบสีแดง (ผู้ปกครอง)</button>
@@ -398,12 +363,10 @@
     <div class="modal-box" onclick="event.stopPropagation()" style="text-align:left;">
         <button class="close-modal-btn" onclick="closeFilterModal()">✕</button>
         <h2 style="color:var(--secondary); text-align:center; margin-top:0;">🔍 ตัวกรองคำศัพท์</h2>
-        
         <div class="filter-group">
             <label class="filter-label">🔤 ค้นหาคำ:</label>
             <input type="text" id="filterSearch" class="search-box" placeholder="พิมพ์ศัพท์ หรือ คำแปล...">
         </div>
-
         <div class="filter-group">
             <label class="filter-label">🔢 ช่วงลำดับคำ:</label>
             <div style="display:flex; gap:10px; align-items:center;">
@@ -412,14 +375,12 @@
                 <input type="number" id="filterEnd" class="input-box" style="width:100%" placeholder="สิ้นสุด">
             </div>
         </div>
-
         <div class="filter-group">
             <label class="filter-label" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                 <input type="checkbox" id="filterMarkedOnly" style="transform:scale(1.5);">
                 <span style="color:red; font-weight:bold;">🚩 แสดงเฉพาะคำที่จำไม่ได้ (สีแดง)</span>
             </label>
         </div>
-
         <div style="display:flex; gap:10px;">
             <button class="btn-back" onclick="resetFilters()">ล้างค่า</button>
             <button class="btn-apply" onclick="applyFilters()">✅ ตกลง</button>
@@ -429,87 +390,276 @@
 
 <script>
 /**********************************************
- * CONFIG & SETUP
+ * FAMILY HUB GLOBAL SYSTEM
+ **********************************************/
+let mathScoreGlobal = 0; // คะแนนจาก Math (Firebase)
+let abcScoreGlobal = 0;  // คะแนนจาก ABC (Google Sheets)
+
+const mathPlayer = "ไดมอนด์"; // ล็อคชื่อผู้เล่น
+const mathAvatar = "👦"; // ล็อคตัวละคร
+
+function showPage(id) {
+    if(id !== 'mathPage') {
+        const mathSb = document.getElementById("mathScoreBox");
+        if(mathSb) mathSb.remove();
+    }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    updateGrandTotal();
+}
+
+function updateGrandTotal() {
+    let total = abcScoreGlobal + mathScoreGlobal;
+    document.getElementById('portalAbcScore').textContent = abcScoreGlobal;
+    document.getElementById('portalMathScore').textContent = mathScoreGlobal;
+    document.getElementById('grandTotalScore').textContent = total.toLocaleString();
+    
+    // อัปเดตในหน้า Parent ด้วย
+    if(document.getElementById('dashGrandTotal')) document.getElementById('dashGrandTotal').textContent = total.toLocaleString();
+    if(document.getElementById('dashAbcScore')) document.getElementById('dashAbcScore').textContent = abcScoreGlobal;
+    if(document.getElementById('dashMathScore')) document.getElementById('dashMathScore').textContent = mathScoreGlobal;
+}
+
+/**********************************************
+ * MATH GAME LOGIC (Firebase - Separated logic)
+ **********************************************/
+const firebaseConfig = {
+    apiKey: "AIzaSyD5Nhoo-gr8PopUEJK7YWRny-AY2ezKgAY",
+    authDomain: "mathgamefamily.firebaseapp.com",
+    databaseURL: "https://mathgamefamily-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "mathgamefamily"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let mathLevel=1, mathAnswer=0, mathCurrentScore=0, mathQCount=0, mathTimeLeft=120, mathTimerId=null;
+const mathTotalQ = 7;
+
+// อัปเดตคะแนนคณิตศาสตร์แบบเรียลไทม์ (เฉพาะของไดมอนด์)
+db.ref('scores/' + mathPlayer).on('value', snap => {
+    mathScoreGlobal = snap.exists() ? (snap.val().score || 0) : 0;
+    updateGrandTotal();
+});
+
+function openMathGame() {
+    showPage('mathPage');
+    mathHomeInit();
+}
+
+function mathHomeInit(){
+    document.getElementById("mathScoreBox")?.remove();
+    document.getElementById("mathAppContent").innerHTML = `
+        <h2 style="color:#1565c0">🧮 คิดเลขออนไลน์</h2>
+        <div style="font-size:30px; margin-bottom:15px; background:#e3f2fd; padding:10px; border-radius:15px; border:2px solid #2196f3;">
+            ${mathAvatar} <b>${mathPlayer}</b>
+        </div>
+        🎓 <b>เลือกระดับชั้น:</b> <br><br>
+        <button id="lv1" class="btn-lv ${mathLevel==1?'sel':''}" onclick="mathPickLevel(1)">ป.1</button>
+        <button id="lv2" class="btn-lv ${mathLevel==2?'sel':''}" onclick="mathPickLevel(2)">ป.2</button>
+        <button id="lv3" class="btn-lv ${mathLevel==3?'sel':''}" onclick="mathPickLevel(3)">ป.3</button><br><br>
+        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.1 (+2/-1), ป.2 (+5/-2), ป.3 (+10/-3)</div>
+        <button style="width:90%; background:#4caf50;" onclick="mathStart()">▶ เริ่มเล่น</button><br>
+        <button class="back" style="width:100%; margin-top:15px; border: 2px solid #e65100;" onclick="showPage('portalPage')">⬅ กลับหน้าเมนูหลัก</button>
+    `;
+}
+
+function mathPickLevel(l){ mathLevel=l; document.querySelectorAll("#mathPage .btn-lv").forEach(b=>b.classList.remove("sel")); document.getElementById("lv"+l).classList.add("sel"); }
+
+function mathStart(){ 
+    mathCurrentScore=0; mathQCount=0; 
+    mathNextQ(); 
+}
+
+function mathNextQ(){
+    if(mathQCount >= mathTotalQ){ mathSummary(); return; }
+    mathQCount++; clearInterval(mathTimerId); mathUpdateScoreUI();
+    
+    let a, b, op="+";
+    if(mathLevel==1){ a=mathR(1,20); b=mathR(1,10); op="+"; }
+    else if(mathLevel==2){ a=mathR(10,90); b=mathR(10,50); op=Math.random()>0.5?"+":"-"; }
+    else if(mathLevel==3){ a=mathR(2,12); b=mathR(2,12); op="×"; }
+
+    if(op=="+") mathAnswer=a+b; 
+    if(op=="-"){ if(b>a)[a,b]=[b,a]; mathAnswer=a-b; } 
+    if(op=="×") mathAnswer=a*b;
+    
+    mathTimeLeft = 120;
+    document.getElementById("mathAppContent").innerHTML = `
+        <div class="timer">⏳ <span id="t-val">${mathTimeLeft}</span> วินาที</div>
+        <div style="font-size:18px; color:#666">ข้อที่ ${mathQCount} / ${mathTotalQ}</div>
+        <h1 style="font-size:55px; margin:10px 0;">${a} ${op} ${b}</h1>
+        <input id="ans" type="number" readonly placeholder="?"><br><br>
+        <div>
+            ${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button class="num" onclick="mathPress(${n})">${n}</button>`).join("")}
+            <button class="num" style="background:#f44336; color:#fff" onclick="document.getElementById('ans').value=''">C</button>
+        </div><br>
+        <button style="width:90%; background:#4caf50; height:60px; font-size:24px;" onclick="mathCheck()">ส่งคำตอบ</button>
+    `;
+    mathTimerId = setInterval(() => { 
+        mathTimeLeft--; document.getElementById('t-val').innerText=mathTimeLeft; 
+        if(mathTimeLeft<=0) mathCheck(); // หมดเวลาถือว่าตรวจเลย (ผิด)
+    }, 1000);
+}
+
+function mathPress(n){ document.getElementById('ans').value += n; }
+function mathR(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+function mathUpdateScoreUI(){
+    let sb = document.getElementById("mathScoreBox") || (document.body.insertAdjacentHTML("beforeend", `<div id="mathScoreBox" class="mathScoreBox"></div>`), document.getElementById("mathScoreBox"));
+    sb.innerText = "⭐ " + mathCurrentScore;
+}
+
+function mathCheck(){
+    clearInterval(mathTimerId);
+    let userAns = parseInt(document.getElementById("ans").value);
+    
+    // คำนวณคะแนนตามระดับชั้น (ตามที่ตกลง)
+    let ptsEarned = mathLevel == 1 ? 2 : (mathLevel == 2 ? 5 : 10);
+    let ptsPenalty = mathLevel == 1 ? 1 : (mathLevel == 2 ? 2 : 3);
+
+    if(userAns === mathAnswer){
+        mathCurrentScore += ptsEarned;
+        mathNextQ(); // ไปข้อถัดไปทันทีถ้าถูก
+    } else {
+        mathCurrentScore -= ptsPenalty; // หักคะแนน
+        document.getElementById("mathAppContent").innerHTML = `
+            <h2 style="color:red">❌ ผิดจ้า!</h2>
+            <h1 style="font-size:30px">คำตอบที่ถูกคือ <span style="color:green; font-size:50px">${mathAnswer}</span></h1>
+            <p style="color:#f44336; font-size:22px; font-weight:bold;">โดนหัก ${ptsPenalty} ดาว 😢</p>
+            <button style="width:90%; background:#2196f3;" onclick="mathNextQ()">ข้อต่อไป ▶</button>
+        `;
+    }
+}
+
+function mathSummary(){
+    document.getElementById("mathScoreBox")?.remove();
+    
+    db.ref('scores/'+mathPlayer).once('value', snap => {
+        let oldScore = snap.exists() ? snap.val().score : 0;
+        let newTotal = oldScore + mathCurrentScore;
+        
+        db.ref('scores/'+mathPlayer).set({
+            name: mathPlayer, score: newTotal, avatar: mathAvatar,
+            lastPlayed: new Date().toLocaleString('th-TH')
+        });
+
+        document.getElementById("mathAppContent").innerHTML = `
+            <div style="padding:20px;">
+                <h2 style="color:#4caf50">🎊 จบเกมแล้ว!</h2>
+                <h1 style="font-size:60px">${mathAvatar}</h1>
+                <h3>คุณ ${mathPlayer}</h3>
+                <p>รอบนี้ทำได้ (หักลบแล้ว): <b>${mathCurrentScore > 0 ? '+' : ''}${mathCurrentScore}</b> แต้ม</p>
+                <h2 style="color:#0d47a1">แต้ม Math: ${newTotal.toLocaleString()} ⭐</h2>
+                <button style="width:90%; background:#607d8b;" onclick="mathHomeInit()">กลับเมนู Math</button>
+            </div>
+        `;
+    });
+}
+
+function mathResetScores(){
+    if(confirm("🛑 คุณต้องการลบคะแนนฝั่งเกมคณิตศาสตร์เป็นศูนย์ใช่หรือไม่?")){
+        db.ref('scores/'+mathPlayer).remove(); 
+        alert("ล้างข้อมูลเรียบร้อย!"); 
+    }
+}
+
+
+/**********************************************
+ * UNIFIED PARENT ZONE
+ **********************************************/
+const PARENT_PIN = "0932815229";
+
+function checkHubPin() {
+    if(document.getElementById("hubPinInput").value === PARENT_PIN) {
+        document.getElementById("hubPinInput").value = "";
+        showPage('hubParentDashboard');
+        renderHistory();  // โหลดประวัติของ ABC
+        renderMistakes(); // โหลดคำผิดของ ABC
+    } else { 
+        alert("รหัสผ่านไม่ถูกต้อง"); 
+    }
+}
+
+function adjustAbcScore(multiplier) {
+    const inputVal = parseInt(document.getElementById("abcAdjInput").value);
+    if (isNaN(inputVal) || inputVal <= 0) { alert("กรุณาใส่จำนวนดาวที่ต้องการ"); return; }
+    
+    const amount = inputVal * multiplier; 
+    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
+    if (!confirm(`ยืนยันการ${actionText}คะแนนฝั่ง ABC จำนวน ${inputVal} ดาว?`)) return;
+    
+    abcScoreGlobal += amount; 
+    if(abcScoreGlobal < 0) abcScoreGlobal = 0; 
+    
+    updateAbcUI(); 
+    updateGrandTotal();
+    sendDataToSheets(amount, `[ผู้ปกครอง${actionText}คะแนน]`);
+    
+    document.getElementById("abcAdjInput").value = ""; 
+    alert(`บันทึกการ${actionText}คะแนน ABC เรียบร้อย (กำลังอัปเดตระบบ Cloud)`);
+}
+
+function adjustMathScore(multiplier) {
+    const inputVal = parseInt(document.getElementById("mathAdjInput").value);
+    if (isNaN(inputVal) || inputVal <= 0) { alert("กรุณาใส่จำนวนดาวที่ต้องการ"); return; }
+    
+    const amount = inputVal * multiplier; 
+    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
+    if (!confirm(`ยืนยันการ${actionText}คะแนนฝั่งคณิตศาสตร์ จำนวน ${inputVal} ดาว?`)) return;
+    
+    db.ref('scores/'+mathPlayer+'/score').once('value', sn => {
+        let curMath = sn.val() || 0;
+        let newScore = curMath + amount;
+        db.ref('scores/'+mathPlayer+'/score').set(newScore);
+        document.getElementById("mathAdjInput").value = ""; 
+        alert(`บันทึกการ${actionText}คะแนนคณิตศาสตร์เรียบร้อย`);
+    });
+}
+
+
+/**********************************************
+ * ABC FUN ENGLISH LOGIC (Google Sheets)
  **********************************************/
 const API_URL = "https://script.google.com/macros/s/AKfycbzfNeVpEL2R3sQsljaYsOjRqoFkjf2j6oM1KKXKvOi2Y0peu07j20A0ff4GZafUFg23/exec"; 
-const PARENT_PIN = "0932815229";
 const GAME_TIME = 120; // 2 นาที
 
-// ข้อมูลสำรอง
 const backupWords = [
   {Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},
   {Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}
 ];
 
-// ตัวแปรระบบ
-let words = [];
-let gamePool = []; 
+let words = []; let gamePool = []; 
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
 let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {};
 let userSettings = JSON.parse(localStorage.getItem("userSettings")) || { showRead: true, showMean: true };
+let currentFilters = { search: "", start: null, end: null, markedOnly: false };
 
-// Filter Settings
-let currentFilters = {
-    search: "",
-    start: null,
-    end: null,
-    markedOnly: false
-};
+let globalRounds = 0; let isSoundEnabled = true;
+let currentWord = null; let currentModalWord = null; 
+let abcTimerId = null; let abcTimeLeft = 0; let abcCurrentScore = 0;
+let sessionCorrect = 0; let sessionWrong = 0; let practiceIndex = 0; let sessionWrongStats = {}; 
 
-let globalStars = 0;
-let globalRounds = 0;
-let isSoundEnabled = true;
-
-// ตัวแปรเกม
-let currentWord = null;
-let currentModalWord = null; 
-let gameTimerId = null;
-let timeLeft = 0;
-let currentScore = 0;
-let sessionCorrect = 0;
-let sessionWrong = 0;
-let practiceIndex = 0;
-let sessionWrongStats = {}; 
-
-/**********************************************
- * STARTUP & UTILS
- **********************************************/
-window.onload = function() {
-  toggleSoundUI();
-  fetchData(); 
-  window.speechSynthesis.getVoices();
-};
-
-function fetchData() {
-    document.getElementById("loadingStatus").textContent = "กำลังเชื่อมต่อ Cloud...";
+function fetchAbcData() {
     const nocache = "&t=" + new Date().getTime();
-
-    fetch(API_URL + "?action=getReport" + nocache)
-    .then(res => res.json())
-    .then(data => {
+    fetch(API_URL + "?action=getReport" + nocache).then(res => res.json()).then(data => {
         if(data.summary) {
-            globalStars = data.summary.stars;
+            abcScoreGlobal = data.summary.stars;
             globalRounds = data.summary.rounds;
-            updateUI();
+            updateAbcUI(); updateGrandTotal();
         }
     }).catch(console.error);
 
-    fetch(API_URL)
-    .then(res => res.json())
-    .then(data => {
-        if(data.words) words = data.words;
-        else if(Array.isArray(data)) words = data;
-        
+    fetch(API_URL).then(res => res.json()).then(data => {
+        if(data.words) words = data.words; else if(Array.isArray(data)) words = data;
         if(words.length > 0) {
             document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
             document.getElementById("onlineIndicator").textContent = "🟢 Online (Synced)";
             document.getElementById("onlineIndicator").style.color = "green";
-            
-            // Set Default Range for Game
             document.getElementById("gameEndIdx").value = words.length;
+            document.getElementById("hubStatus").textContent = "✅ เชื่อมต่อระบบ Cloud ครบสมบูรณ์แล้ว";
+            document.getElementById("hubStatus").style.color = "green";
         }
-    })
-    .catch(e => {
+    }).catch(e => {
         words = backupWords;
         document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์ (ใช้ข้อมูลเดิม)";
         document.getElementById("onlineIndicator").textContent = "🔴 Offline";
@@ -517,535 +667,190 @@ function fetchData() {
     });
 }
 
-function toggleSound() {
-  isSoundEnabled = !isSoundEnabled;
-  toggleSoundUI();
-  if(isSoundEnabled) {
-    const u = new SpeechSynthesisUtterance("");
-    window.speechSynthesis.speak(u);
-  }
-}
-
+function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
 function toggleSoundUI() {
   const btn = document.getElementById("soundToggle");
-  if(isSoundEnabled) {
-    btn.textContent = "เปิด (0.5 แต้ม)";
-    btn.style.background = "var(--correct)";
-    btn.style.color = "white";
-  } else {
-    btn.textContent = "ปิด (1 แต้ม)";
-    btn.style.background = "#ccc";
-    btn.style.color = "#666";
-  }
+  if(isSoundEnabled) { btn.textContent = "เปิด (0.5 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } 
+  else { btn.textContent = "ปิด (1 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
 }
 
 function speak(text, lang = "en-US") {
-  if(!isSoundEnabled) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang;
-  u.rate = 0.8;
-  
+  if(!isSoundEnabled) return; window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.8;
   const voices = window.speechSynthesis.getVoices();
-  if(lang === "en-US") {
-     const femaleVoice = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English"));
-     if(femaleVoice) u.voice = femaleVoice;
-  } else if (lang === "th-TH") {
-     const thaiVoice = voices.find(v => v.lang === "th-TH" || v.name.includes("Thai"));
-     if(thaiVoice) u.voice = thaiVoice;
-  }
-
+  if(lang === "en-US") { const f = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English")); if(f) u.voice = f; } 
+  else if (lang === "th-TH") { const t = voices.find(v => v.lang === "th-TH" || v.name.includes("Thai")); if(t) u.voice = t; }
   window.speechSynthesis.speak(u);
 }
 
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-function updateUI() {
-  document.getElementById("uiStars").textContent = globalStars;
+function updateAbcUI() {
+  document.getElementById("uiStars").textContent = abcScoreGlobal;
   document.getElementById("uiRounds").textContent = globalRounds;
-  document.getElementById("cloudStars").textContent = globalStars;
-  document.getElementById("cloudRounds").textContent = globalRounds;
 }
 
-/**********************************************
- * GAME LOGIC
- **********************************************/
 function startGame() {
   if(words.length < 4) { alert("ข้อมูลกำลังโหลด รอสักครู่นะครับ"); return; }
-
-  // 1. Get Range
   let start = parseInt(document.getElementById("gameStartIdx").value);
   let end = parseInt(document.getElementById("gameEndIdx").value);
-
-  if(isNaN(start) || start < 1) start = 1;
-  if(isNaN(end) || end > words.length) end = words.length;
+  if(isNaN(start) || start < 1) start = 1; if(isNaN(end) || end > words.length) end = words.length;
   if(start > end) { alert("ช่วงคำศัพท์ไม่ถูกต้อง"); return; }
-  
-  // 2. Filter words for game pool
   gamePool = words.slice(start - 1, end);
-
-  if(gamePool.length < 4) {
-      alert("กรุณาเลือกช่วงที่มีคำศัพท์อย่างน้อย 4 คำครับ");
-      return;
-  }
+  if(gamePool.length < 4) { alert("กรุณาเลือกช่วงที่มีคำศัพท์อย่างน้อย 4 คำครับ"); return; }
   
-  currentScore = 0;
-  sessionCorrect = 0;
-  sessionWrong = 0;
-  timeLeft = GAME_TIME;
-  sessionWrongStats = {};
+  abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
+  document.getElementById("liveScore").textContent = "0"; showPage('gamePage'); updateTimerDisplay();
   
-  document.getElementById("liveScore").textContent = "0";
-  showPage('gamePage');
-  updateTimerDisplay();
-  
-  clearInterval(gameTimerId);
-  gameTimerId = setInterval(() => {
-    timeLeft--;
-    updateTimerDisplay();
-    if(timeLeft <= 0) finishGame();
-  }, 1000);
-
+  clearInterval(abcTimerId);
+  abcTimerId = setInterval(() => { abcTimeLeft--; updateTimerDisplay(); if(abcTimeLeft <= 0) finishGame(); }, 1000);
   nextQuestion();
 }
 
 function updateTimerDisplay() {
-  const m = Math.floor(timeLeft / 60);
-  const s = timeLeft % 60;
+  const m = Math.floor(abcTimeLeft / 60); const s = abcTimeLeft % 60;
   document.getElementById("timerDisplay").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
 
 function getWeightedWord() {
   let pool = [];
-  gamePool.forEach(w => {
-    pool.push(w);
-    const stat = wordStats[w.Vocabulary];
-    if (stat && stat.wrong > stat.correct) { 
-      pool.push(w); pool.push(w); 
-    }
-  });
+  gamePool.forEach(w => { pool.push(w); const stat = wordStats[w.Vocabulary]; if (stat && stat.wrong > stat.correct) { pool.push(w); pool.push(w); }});
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function nextQuestion() {
-  if(timeLeft <= 0) return;
-  
-  currentWord = getWeightedWord();
-  document.getElementById("gameVocab").textContent = currentWord.Vocabulary;
-  speak(currentWord.Vocabulary);
-
+  if(abcTimeLeft <= 0) return; currentWord = getWeightedWord();
+  document.getElementById("gameVocab").textContent = currentWord.Vocabulary; speak(currentWord.Vocabulary);
   let choices = [currentWord];
-  while(choices.length < 4) {
-    let w = gamePool[Math.floor(Math.random() * gamePool.length)];
-    if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w);
-  }
-  
-  const box = document.getElementById("choicesBox");
-  box.innerHTML = "";
+  while(choices.length < 4) { let w = gamePool[Math.floor(Math.random() * gamePool.length)]; if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); }
+  const box = document.getElementById("choicesBox"); box.innerHTML = "";
   choices.sort(() => Math.random() - 0.5).forEach(w => {
-    const btn = document.createElement("button");
-    btn.className = "choice-btn";
-    btn.textContent = w["คำแปล"];
-    btn.onclick = () => checkAnswer(w, btn);
-    box.appendChild(btn);
+    const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
+    btn.onclick = () => checkAnswer(w, btn); box.appendChild(btn);
   });
 }
 
 function checkAnswer(selected, btn) {
-  const allBtns = document.querySelectorAll('.choice-btn');
-  allBtns.forEach(b => b.disabled = true);
-  
-  if(!wordStats[currentWord.Vocabulary]) {
-    wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
-  }
-
+  const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
+  if(!wordStats[currentWord.Vocabulary]) wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
   if(selected.Vocabulary === currentWord.Vocabulary) {
-    const points = isSoundEnabled ? 0.5 : 1;
-    currentScore += points;
-    sessionCorrect++;
-    wordStats[currentWord.Vocabulary].correct++;
-
+    abcCurrentScore += isSoundEnabled ? 0.5 : 1; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
     btn.classList.add("correct-anim");
     if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg").play().catch(e=>{});
     setTimeout(nextQuestion, 800);
   } else {
-    btn.classList.add("wrong-anim");
-    currentScore -= 1;
-    sessionWrong++;
-    wordStats[currentWord.Vocabulary].wrong++;
-
-    if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0;
-    sessionWrongStats[currentWord.Vocabulary]++;
-
-    allBtns.forEach(b => {
-       if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim");
-    });
+    btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++; wordStats[currentWord.Vocabulary].wrong++;
+    if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0; sessionWrongStats[currentWord.Vocabulary]++;
+    allBtns.forEach(b => { if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim"); });
     if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play().catch(e=>{});
     setTimeout(nextQuestion, 1500);
   }
-
-  document.getElementById("liveScore").textContent = currentScore;
-  localStorage.setItem("wordStats", JSON.stringify(wordStats));
+  document.getElementById("liveScore").textContent = abcCurrentScore; localStorage.setItem("wordStats", JSON.stringify(wordStats));
 }
 
 function sendDataToSheets(stars, wrongWords) {
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: 'save',
-      totalStars: stars,
-      wrongWords: wrongWords
-    })
-  }).then(res => {
-      console.log("Saved.");
-      setTimeout(fetchData, 1000); 
-  }).catch(err => console.error("Error sending", err));
+  fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save', totalStars: stars, wrongWords: wrongWords }) })
+  .then(res => { console.log("Saved."); setTimeout(fetchAbcData, 1000); }).catch(err => console.error(err));
 }
 
 function finishGame() {
-  clearInterval(gameTimerId);
-  
-  globalRounds++;
-  globalStars += Math.max(0, currentScore);
-  updateUI();
-
-  const wrongWordsSummary = Object.entries(sessionWrongStats)
-    .sort((a,b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([vocab, count]) => `${vocab}(${count})`)
-    .join(", ");
-
-  sendDataToSheets(currentScore, wrongWordsSummary);
-
-  document.getElementById("finalScore").textContent = currentScore;
-  document.getElementById("resultCorrect").textContent = sessionCorrect;
-  document.getElementById("resultWrong").textContent = sessionWrong;
-  showPage('resultPage');
+  clearInterval(abcTimerId); globalRounds++; abcScoreGlobal += Math.max(0, abcCurrentScore); updateAbcUI(); updateGrandTotal();
+  const wrongWordsSummary = Object.entries(sessionWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([v, c]) => `${v}(${c})`).join(", ");
+  sendDataToSheets(abcCurrentScore, wrongWordsSummary);
+  document.getElementById("finalScore").textContent = abcCurrentScore; document.getElementById("resultCorrect").textContent = sessionCorrect;
+  document.getElementById("resultWrong").textContent = sessionWrong; showPage('resultPage');
 }
 
 function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
 
-/**********************************************
- * PRACTICE MODE
- **********************************************/
-function startPractice() {
-  if(words.length === 0) return;
-  practiceIndex = 0;
-  showPage('practicePage');
-  renderPractice();
-}
-
+function startPractice() { if(words.length === 0) return; practiceIndex = 0; showPage('practicePage'); renderPractice(); }
 function renderPractice() {
   const w = words[practiceIndex];
-  document.getElementById("pVocab").textContent = w.Vocabulary || "";
-  document.getElementById("pReading").textContent = w["คำอ่านไทย"] ? "คำอ่าน: " + w["คำอ่านไทย"] : "";
-  document.getElementById("pMeaning").textContent = w["คำแปล"] ? "แปลว่า: " + w["คำแปล"] : "";
-  speak(w.Vocabulary);
+  document.getElementById("pVocab").textContent = w.Vocabulary || ""; document.getElementById("pReading").textContent = w["คำอ่านไทย"] ? "คำอ่าน: " + w["คำอ่านไทย"] : "";
+  document.getElementById("pMeaning").textContent = w["คำแปล"] ? "แปลว่า: " + w["คำแปล"] : ""; speak(w.Vocabulary);
 }
-
 function nextPractice() { practiceIndex = (practiceIndex + 1) % words.length; renderPractice(); }
 function prevPractice() { practiceIndex = practiceIndex <= 0 ? words.length - 1 : practiceIndex - 1; renderPractice(); }
 function speakCurrentPractice() { speak(words[practiceIndex].Vocabulary); }
 
-/**********************************************
- * VOCAB LIST & FILTER
- **********************************************/
-function openVocabList() {
-    showPage('vocabListPage');
-    renderVocabTable();
-
-    // Restore Settings
-    document.getElementById('showRead').checked = userSettings.showRead;
-    document.getElementById('showMean').checked = userSettings.showMean;
-    toggleVocabColumn('read', false); 
-    toggleVocabColumn('mean', false);
-}
-
+function openVocabList() { showPage('vocabListPage'); renderVocabTable(); document.getElementById('showRead').checked = userSettings.showRead; document.getElementById('showMean').checked = userSettings.showMean; toggleVocabColumn('read', false); toggleVocabColumn('mean', false); }
 function renderVocabTable() {
-    const tbody = document.getElementById("vocabTableBody");
-    tbody.innerHTML = "";
-
+    const tbody = document.getElementById("vocabTableBody"); tbody.innerHTML = "";
     words.forEach((w, index) => {
-        const realIndex = index + 1;
-        const isMarked = markedWords[w.Vocabulary];
-        
-        // --- FILTER LOGIC ---
-        // 1. Range
-        if(currentFilters.start && realIndex < currentFilters.start) return;
-        if(currentFilters.end && realIndex > currentFilters.end) return;
-        
-        // 2. Marked Only
+        const realIndex = index + 1; const isMarked = markedWords[w.Vocabulary];
+        if(currentFilters.start && realIndex < currentFilters.start) return; if(currentFilters.end && realIndex > currentFilters.end) return;
         if(currentFilters.markedOnly && !isMarked) return;
-        
-        // 3. Search
-        if(currentFilters.search) {
-            const term = currentFilters.search.toLowerCase();
-            const match = w.Vocabulary.toLowerCase().includes(term) || 
-                          w["คำแปล"].includes(term) || 
-                          (w["คำอ่านไทย"] && w["คำอ่านไทย"].includes(term));
-            if(!match) return;
-        }
-        // --------------------
-
-        const tr = document.createElement("tr");
-        if(isMarked) tr.classList.add("marked-row");
-        tr.onclick = () => openWordModal(w, tr);
-
-        const tdIdx = document.createElement("td");
-        tdIdx.textContent = realIndex;
-        tdIdx.style.fontWeight = "bold";
-        tdIdx.style.color = "#888";
-        
-        const tdVocab = document.createElement("td");
-        tdVocab.innerHTML = `<b style="font-size:1.2rem; color:var(--primary)">${w.Vocabulary}</b>`;
-
-        const tdRead = document.createElement("td");
-        tdRead.className = "col-read hidden-text"; 
-        tdRead.textContent = w["คำอ่านไทย"];
-
-        const tdMean = document.createElement("td");
-        tdMean.className = "col-mean hidden-text"; 
-        tdMean.textContent = w["คำแปล"];
-
-        tr.appendChild(tdIdx);
-        tr.appendChild(tdVocab);
-        tr.appendChild(tdRead);
-        tr.appendChild(tdMean);
-        tbody.appendChild(tr);
+        if(currentFilters.search) { const t = currentFilters.search.toLowerCase(); const match = w.Vocabulary.toLowerCase().includes(t) || w["คำแปล"].includes(t) || (w["คำอ่านไทย"] && w["คำอ่านไทย"].includes(t)); if(!match) return; }
+        const tr = document.createElement("tr"); if(isMarked) tr.classList.add("marked-row"); tr.onclick = () => openWordModal(w, tr);
+        const tdIdx = document.createElement("td"); tdIdx.textContent = realIndex; tdIdx.style.fontWeight = "bold"; tdIdx.style.color = "#888";
+        const tdVocab = document.createElement("td"); tdVocab.innerHTML = `<b style="font-size:1.2rem; color:var(--primary)">${w.Vocabulary}</b>`;
+        const tdRead = document.createElement("td"); tdRead.className = "col-read hidden-text"; tdRead.textContent = w["คำอ่านไทย"];
+        const tdMean = document.createElement("td"); tdMean.className = "col-mean hidden-text"; tdMean.textContent = w["คำแปล"];
+        tr.append(tdIdx, tdVocab, tdRead, tdMean); tbody.appendChild(tr);
     });
 }
 
-// Filter Modal Functions
-function openFilterModal() {
-    document.getElementById('filterModal').classList.add('active');
-    // Pre-fill
-    document.getElementById('filterSearch').value = currentFilters.search;
-    document.getElementById('filterStart').value = currentFilters.start || '';
-    document.getElementById('filterEnd').value = currentFilters.end || '';
-    document.getElementById('filterMarkedOnly').checked = currentFilters.markedOnly;
-}
-
-function closeFilterModal(event) {
-    if(event && event.target.id !== "filterModal" && !event.target.classList.contains('close-modal-btn')) return;
-    document.getElementById('filterModal').classList.remove('active');
-}
-
+function openFilterModal() { document.getElementById('filterModal').classList.add('active'); document.getElementById('filterSearch').value = currentFilters.search; document.getElementById('filterStart').value = currentFilters.start || ''; document.getElementById('filterEnd').value = currentFilters.end || ''; document.getElementById('filterMarkedOnly').checked = currentFilters.markedOnly; }
+function closeFilterModal(event) { if(event && event.target.id !== "filterModal" && !event.target.classList.contains('close-modal-btn')) return; document.getElementById('filterModal').classList.remove('active'); }
 function applyFilters() {
-    currentFilters.search = document.getElementById('filterSearch').value.trim();
-    const s = parseInt(document.getElementById('filterStart').value);
-    const e = parseInt(document.getElementById('filterEnd').value);
-    currentFilters.start = isNaN(s) ? null : s;
-    currentFilters.end = isNaN(e) ? null : e;
-    currentFilters.markedOnly = document.getElementById('filterMarkedOnly').checked;
-    
-    renderVocabTable();
-    closeFilterModal();
+    currentFilters.search = document.getElementById('filterSearch').value.trim(); const s = parseInt(document.getElementById('filterStart').value); const e = parseInt(document.getElementById('filterEnd').value); currentFilters.start = isNaN(s) ? null : s; currentFilters.end = isNaN(e) ? null : e; currentFilters.markedOnly = document.getElementById('filterMarkedOnly').checked;
+    renderVocabTable(); closeFilterModal();
 }
-
-function resetFilters() {
-    currentFilters = { search: "", start: null, end: null, markedOnly: false };
-    document.getElementById('filterSearch').value = "";
-    document.getElementById('filterStart').value = "";
-    document.getElementById('filterEnd').value = "";
-    document.getElementById('filterMarkedOnly').checked = false;
-    
-    renderVocabTable();
-    closeFilterModal();
-}
-
+function resetFilters() { currentFilters = { search: "", start: null, end: null, markedOnly: false }; document.getElementById('filterSearch').value = ""; document.getElementById('filterStart').value = ""; document.getElementById('filterEnd').value = ""; document.getElementById('filterMarkedOnly').checked = false; renderVocabTable(); closeFilterModal(); }
 function toggleVocabColumn(type, isUserAction = true) {
-    const checkboxId = type === 'read' ? 'showRead' : 'showMean';
-    const isChecked = document.getElementById(checkboxId).checked;
-    
-    if(isUserAction) {
-        userSettings[type === 'read' ? 'showRead' : 'showMean'] = isChecked;
-        localStorage.setItem("userSettings", JSON.stringify(userSettings));
-    }
-
-    const cells = document.querySelectorAll(type === 'read' ? '.col-read' : '.col-mean');
-    cells.forEach(cell => {
-        if(isChecked) cell.classList.remove('hidden-text');
-        else cell.classList.add('hidden-text');
-    });
+    const cbId = type === 'read' ? 'showRead' : 'showMean'; const isChecked = document.getElementById(cbId).checked;
+    if(isUserAction) { userSettings[cbId] = isChecked; localStorage.setItem("userSettings", JSON.stringify(userSettings)); }
+    const cells = document.querySelectorAll(type === 'read' ? '.col-read' : '.col-mean'); cells.forEach(c => { if(isChecked) c.classList.remove('hidden-text'); else c.classList.add('hidden-text'); });
 }
 
-// --- Modal & Marking System ---
 function openWordModal(wordObj, trElement) {
-    currentModalWord = wordObj;
-    
-    document.getElementById('modalVocab').textContent = wordObj.Vocabulary;
-    document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"];
-    const meanElem = document.getElementById('modalMean');
-    meanElem.textContent = wordObj["คำแปล"];
-    
-    // Feature: Click translation to speak Thai
-    meanElem.onclick = function() {
-        speak(wordObj["คำแปล"], 'th-TH');
-    };
-    
+    currentModalWord = wordObj; document.getElementById('modalVocab').textContent = wordObj.Vocabulary; document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"];
+    const meanElem = document.getElementById('modalMean'); meanElem.textContent = wordObj["คำแปล"]; meanElem.onclick = function() { speak(wordObj["คำแปล"], 'th-TH'); };
     const statusText = document.getElementById('markStatusText');
-    if(markedWords[wordObj.Vocabulary]) {
-        statusText.style.display = "block";
-    } else {
-        markedWords[wordObj.Vocabulary] = true;
-        localStorage.setItem("markedWords", JSON.stringify(markedWords));
-        if(trElement) trElement.classList.add("marked-row");
-        statusText.style.display = "block";
-        statusText.textContent = "🚩 บันทึกแล้ว: น้องกดดูเฉลย";
-    }
-
-    document.getElementById('wordModal').classList.add('active');
-    speak(wordObj.Vocabulary);
+    if(markedWords[wordObj.Vocabulary]) { statusText.style.display = "block"; } else { markedWords[wordObj.Vocabulary] = true; localStorage.setItem("markedWords", JSON.stringify(markedWords)); if(trElement) trElement.classList.add("marked-row"); statusText.style.display = "block"; statusText.textContent = "🚩 บันทึกแล้ว: น้องกดดูเฉลย"; }
+    document.getElementById('wordModal').classList.add('active'); speak(wordObj.Vocabulary);
 }
-
-function closeModal(event) {
-    if(event && event.target.id !== "wordModal" && !event.target.classList.contains('close-modal-btn')) return;
-    document.getElementById('wordModal').classList.remove('active');
-    renderVocabTable(); 
-}
-
-function speakFromModal() {
-    if(currentModalWord) speak(currentModalWord.Vocabulary);
-}
-
+function closeModal(event) { if(event && event.target.id !== "wordModal" && !event.target.classList.contains('close-modal-btn')) return; document.getElementById('wordModal').classList.remove('active'); renderVocabTable(); }
+function speakFromModal() { if(currentModalWord) speak(currentModalWord.Vocabulary); }
 function resetWordStatus() {
-    if(!currentModalWord) return;
-    
-    const pin = prompt("กรุณาใส่รหัสผ่านผู้ปกครองเพื่อลบสถานะ:");
-    if(pin === PARENT_PIN) {
-        delete markedWords[currentModalWord.Vocabulary];
-        localStorage.setItem("markedWords", JSON.stringify(markedWords));
-        
-        alert("✅ ลบสถานะสีแดงเรียบร้อยแล้ว");
-        document.getElementById('markStatusText').style.display = "none";
-        closeModal(); 
-    } else if (pin !== null) {
-        alert("❌ รหัสผ่านไม่ถูกต้อง");
-    }
-}
-
-/**********************************************
- * PARENT MODE & NEW FUNCTIONS
- **********************************************/
-function checkPin() {
-  if(document.getElementById("pinInput").value === PARENT_PIN) {
-    document.getElementById("pinInput").value = "";
-    showPage('parentDashboard');
-    renderHistory(); 
-    renderMistakes(); 
-  } else { alert("รหัสผ่านไม่ถูกต้อง"); }
-}
-
-// ฟังก์ชันใหม่ สำหรับให้ผู้ปกครองเพิ่ม/ลดคะแนน
-function adjustScore(multiplier) {
-    const inputVal = parseInt(document.getElementById("manualScoreInput").value);
-    
-    if (isNaN(inputVal) || inputVal <= 0) {
-        alert("กรุณาใส่จำนวนดาวที่ต้องการ (มากกว่า 0)");
-        return;
-    }
-    
-    const amount = inputVal * multiplier;
-    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
-    
-    if (!confirm(`ยืนยันการ${actionText}คะแนนจำนวน ${inputVal} ดาว?`)) return;
-
-    // อัปเดต UI ทันที
-    globalStars += amount;
-    if(globalStars < 0) globalStars = 0; // ป้องกันดาวติดลบ
-    updateUI();
-    
-    // ส่งข้อมูลไปที่ Cloud
-    const note = `[ผู้ปกครอง${actionText}คะแนนให้]`;
-    sendDataToSheets(amount, note);
-    
-    document.getElementById("manualScoreInput").value = "";
-    alert(`บันทึกการ${actionText}คะแนนเรียบร้อยแล้ว (กำลังอัปเดตระบบ Cloud)`);
+    if(!currentModalWord) return; const pin = prompt("กรุณาใส่รหัสผ่านผู้ปกครองเพื่อลบสถานะ:");
+    if(pin === PARENT_PIN) { delete markedWords[currentModalWord.Vocabulary]; localStorage.setItem("markedWords", JSON.stringify(markedWords)); alert("✅ ลบสถานะสีแดงเรียบร้อยแล้ว"); document.getElementById('markStatusText').style.display = "none"; closeModal(); } else if (pin !== null) { alert("❌ รหัสผ่านไม่ถูกต้อง"); }
 }
 
 async function renderHistory() {
-  const list = document.getElementById("historyList");
-  list.innerHTML = "<li>⏳ กำลังโหลดข้อมูลจาก Cloud...</li>";
-  const nocache = "&t=" + new Date().getTime();
-
+  const list = document.getElementById("historyList"); list.innerHTML = "<li>⏳ กำลังโหลดข้อมูลจาก Cloud...</li>";
   try {
-    const response = await fetch(API_URL + "?action=getReport" + nocache);
-    const data = await response.json();
-    
-    if(data.summary) {
-        globalStars = data.summary.stars;
-        globalRounds = data.summary.rounds;
-        updateUI();
-    }
-    
-    list.innerHTML = "";
-    if (!data.history || data.history.length === 0) {
-      list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีประวัติการเล่นบน Cloud</li>";
-      return;
-    }
-
+    const nocache = "&t=" + new Date().getTime(); const res = await fetch(API_URL + "?action=getReport" + nocache); const data = await res.json();
+    if(data.summary) { abcScoreGlobal = data.summary.stars; globalRounds = data.summary.rounds; updateAbcUI(); updateGrandTotal(); }
+    list.innerHTML = ""; if (!data.history || data.history.length === 0) { list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีประวัติการเล่นบน Cloud</li>"; return; }
     data.history.forEach(item => {
-      const dateObj = new Date(item.timestamp);
-      const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
+      const dateObj = new Date(item.timestamp); const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
       const li = document.createElement("li");
-      li.innerHTML = `
-        <div class="history-header">
-            <span class="date-label">${dateStr}</span>
-            <div class="badge-group">
-                <span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span>
-            </div>
-        </div>
-        ${item.wrong ? `<div class="wrong-text">❌ ${item.wrong}</div>` : ''}
-      `;
+      li.innerHTML = `<div class="history-header"><span class="date-label">${dateStr}</span><div class="badge-group"><span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span></div></div>${item.wrong ? `<div class="wrong-text">❌ ${item.wrong}</div>` : ''}`;
       list.appendChild(li);
     });
-  } catch (e) {
-    console.error(e);
-    list.innerHTML = "<li style='color:red;'>เชื่อมต่อ Server ไม่สำเร็จ</li>";
-  }
+  } catch (e) { console.error(e); list.innerHTML = "<li style='color:red;'>เชื่อมต่อ Server ไม่สำเร็จ</li>"; }
 }
 
 function renderMistakes() {
-  const list = document.getElementById("mistakeList");
-  list.innerHTML = "";
+  const list = document.getElementById("mistakeList"); list.innerHTML = "";
   const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
-  
   if(sorted.length === 0) { list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีข้อมูลคำศัพท์</li>"; return; }
-  
-  sorted.forEach(([vocab, s]) => {
-    if(s.wrong > 0) {
-      const li = document.createElement("li");
-      li.innerHTML = `<span><b>${vocab}</b> (${s.meaning})</span> <span style="color:red">ผิด ${s.wrong}</span>`;
-      list.appendChild(li);
-    }
-  });
+  sorted.forEach(([vocab, s]) => { if(s.wrong > 0) { const li = document.createElement("li"); li.innerHTML = `<span><b>${vocab}</b> (${s.meaning})</span> <span style="color:red">ผิด ${s.wrong}</span>`; list.appendChild(li); }});
 }
 
 function resetCloudData() {
-  if(!confirm("⚠️ คำเตือน: การกระทำนี้จะลบประวัติการเล่นทั้งหมดบน Google Sheets และในเครื่องนี้\n\nยืนยันหรือไม่?")) return;
-
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ action: "reset" })
-  }).then(res => {
-      alert("ล้างข้อมูลเรียบร้อยแล้ว");
-      localStorage.clear();
-      markedWords = {};
-      userSettings = { showRead: true, showMean: true }; 
-      currentFilters = { search: "", start: null, end: null, markedOnly: false };
-      globalStars = 0;
-      globalRounds = 0;
-      location.reload();
-  }).catch(err => {
-      alert("เกิดข้อผิดพลาดในการลบข้อมูลบน Cloud");
-  });
+  if(!confirm("⚠️ คำเตือน: การกระทำนี้จะลบประวัติการเล่น ABC ทั้งหมดบน Google Sheets\n\nยืนยันหรือไม่?")) return;
+  fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "reset" }) }).then(res => {
+      alert("ล้างข้อมูลเรียบร้อยแล้ว"); localStorage.clear(); markedWords = {}; userSettings = { showRead: true, showMean: true }; currentFilters = { search: "", start: null, end: null, markedOnly: false }; abcScoreGlobal = 0; globalRounds = 0; location.reload();
+  }).catch(err => { alert("เกิดข้อผิดพลาดในการลบข้อมูลบน Cloud"); });
 }
 
-function resetLocalData() { resetCloudData(); }
-</script>
+// Initial Bootup Hook
+window.onload = function() {
+    toggleSoundUI();
+    fetchAbcData(); // Pull Google Sheet data
+    window.speechSynthesis.getVoices();
+};
 
+</script>
 </body>
 </html>
