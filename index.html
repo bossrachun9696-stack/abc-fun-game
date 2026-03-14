@@ -218,6 +218,14 @@
           </div>
        </div>
 
+       <div style="background:#fff3e0; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ffb74d;">
+          <h4 style="margin:0 0 10px 0; color:#f57c00;">📜 ประวัติการเพิ่ม/หักคะแนน</h4>
+          <ul id="scoreManageHistory" class="history-list" style="max-height:200px; overflow-y:auto; font-size: 0.9rem; padding:0; margin:0; list-style:none;">
+              <li style="color:#888; text-align:center; padding:10px;">ยังไม่มีประวัติ</li>
+          </ul>
+          <button class="btn-back" style="font-size: 0.8rem; padding: 5px 10px; margin-top: 10px; background:#ffe0b2; color:#d84315;" onclick="clearScoreHistory()">🗑️ ล้างประวัติ</button>
+       </div>
+
        <div style="background:#f0f8ff; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ddd;">
           <h4 style="margin:0 0 10px 0; color:#555;">📊 ประวัติ ABC ล่าสุด</h4>
           <ul id="historyList" class="history-list" style="max-height:180px;"><li>กำลังโหลด...</li></ul>
@@ -235,7 +243,6 @@
        <button class="btn-back" style="width:100%; border: 2px solid #ddd;" onclick="showPage('portalPage')">🏠 กลับเมนูหลัก</button>
     </div>
   </div>
-
 
   <div id="homePage" class="page">
     <div class="header-bar">
@@ -457,7 +464,7 @@ function mathHomeInit(){
         <button id="lv1" class="btn-lv ${mathLevel==1?'sel':''}" onclick="mathPickLevel(1)">ป.1</button>
         <button id="lv2" class="btn-lv ${mathLevel==2?'sel':''}" onclick="mathPickLevel(2)">ป.2</button>
         <button id="lv3" class="btn-lv ${mathLevel==3?'sel':''}" onclick="mathPickLevel(3)">ป.3</button><br><br>
-        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.1 (+2/-1), ป.2 (+5/-2), ป.3 (+10/-3)</div>
+        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.1 (+1/-1), ป.2 (+2/-1), ป.3 (+3/-2)</div>
         <button style="width:90%; background:#4caf50;" onclick="mathStart()">▶ เริ่มเล่น</button><br>
         <button class="back" style="width:100%; margin-top:15px; border: 2px solid #e65100;" onclick="showPage('portalPage')">⬅ กลับหน้าเมนูหลัก</button>
     `;
@@ -513,9 +520,9 @@ function mathCheck(){
     clearInterval(mathTimerId);
     let userAns = parseInt(document.getElementById("ans").value);
     
-    // คำนวณคะแนนตามระดับชั้น (ตามที่ตกลง)
-    let ptsEarned = mathLevel == 1 ? 2 : (mathLevel == 2 ? 5 : 10);
-    let ptsPenalty = mathLevel == 1 ? 1 : (mathLevel == 2 ? 2 : 3);
+    // คำนวณคะแนนตามระดับชั้น (ปรับลดคะแนนลงแล้ว)
+    let ptsEarned = mathLevel == 1 ? 1 : (mathLevel == 2 ? 2 : 3);
+    let ptsPenalty = mathLevel == 1 ? 1 : (mathLevel == 2 ? 1 : 2);
 
     if(userAns === mathAnswer){
         mathCurrentScore += ptsEarned;
@@ -565,16 +572,77 @@ function mathResetScores(){
 
 
 /**********************************************
- * UNIFIED PARENT ZONE
+ * UNIFIED PARENT ZONE (และระบบประวัติคะแนน)
  **********************************************/
 const PARENT_PIN = "0932815229";
 
+// ฟังก์ชันเซฟและแสดงประวัติคะแนนที่เพิ่มเข้ามาใหม่
+function saveScoreHistory(gameName, action, amount) {
+    let history = JSON.parse(localStorage.getItem('scoreManageHistory') || '[]');
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH');
+    
+    history.unshift({
+        game: gameName,
+        action: action, 
+        amount: amount,
+        timestamp: dateStr
+    });
+    
+    if (history.length > 50) history.pop(); // เก็บย้อนหลัง 50 รายการ
+    
+    localStorage.setItem('scoreManageHistory', JSON.stringify(history));
+    renderScoreHistory();
+}
+
+function renderScoreHistory() {
+    const list = document.getElementById('scoreManageHistory');
+    if (!list) return;
+    
+    let history = JSON.parse(localStorage.getItem('scoreManageHistory') || '[]');
+    if (history.length === 0) {
+        list.innerHTML = '<li style="color:#888; text-align:center; padding:10px;">ยังไม่มีประวัติ</li>';
+        return;
+    }
+    
+    list.innerHTML = '';
+    history.forEach(item => {
+        const li = document.createElement('li');
+        li.style.cssText = "background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; flex-direction: column; border-radius: 8px; margin-bottom: 5px;";
+        
+        const color = item.action === 'add' ? '#4caf50' : '#f44336';
+        const sign = item.action === 'add' ? '+' : '-';
+        const actionText = item.action === 'add' ? 'เพิ่มคะแนน' : 'หักคะแนน';
+        
+        li.innerHTML = `
+            <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:4px;">
+                <span style="font-weight:bold; color:#333;">${item.game}</span>
+                <span style="color:${color}; font-weight:bold; font-size:1.1rem;">${sign}${item.amount}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#888;">
+                <span>${actionText}</span>
+                <span>🕒 ${item.timestamp}</span>
+            </div>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function clearScoreHistory() {
+    if(confirm("⚠️ ต้องการล้างประวัติการปรับคะแนน (เพิ่ม/หัก) ทั้งหมดใช่หรือไม่?")) {
+        localStorage.removeItem('scoreManageHistory');
+        renderScoreHistory();
+    }
+}
+
+// ตรวจสอบรหัสผ่าน
 function checkHubPin() {
     if(document.getElementById("hubPinInput").value === PARENT_PIN) {
         document.getElementById("hubPinInput").value = "";
         showPage('hubParentDashboard');
         renderHistory();  // โหลดประวัติของ ABC
         renderMistakes(); // โหลดคำผิดของ ABC
+        renderScoreHistory(); // โหลดประวัติการปรับคะแนน
     } else { 
         alert("รหัสผ่านไม่ถูกต้อง"); 
     }
@@ -595,6 +663,9 @@ function adjustAbcScore(multiplier) {
     updateGrandTotal();
     sendDataToSheets(amount, `[ผู้ปกครอง${actionText}คะแนน]`);
     
+    // บันทึกประวัติ
+    saveScoreHistory('🐰 เกม ABC', multiplier > 0 ? 'add' : 'deduct', inputVal);
+    
     document.getElementById("abcAdjInput").value = ""; 
     alert(`บันทึกการ${actionText}คะแนน ABC เรียบร้อย (กำลังอัปเดตระบบ Cloud)`);
 }
@@ -611,6 +682,10 @@ function adjustMathScore(multiplier) {
         let curMath = sn.val() || 0;
         let newScore = curMath + amount;
         db.ref('scores/'+mathPlayer+'/score').set(newScore);
+        
+        // บันทึกประวัติ
+        saveScoreHistory('🧮 เกมคิดเลข', multiplier > 0 ? 'add' : 'deduct', inputVal);
+
         document.getElementById("mathAdjInput").value = ""; 
         alert(`บันทึกการ${actionText}คะแนนคณิตศาสตร์เรียบร้อย`);
     });
