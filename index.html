@@ -268,7 +268,7 @@
         <input type="number" id="gameEndIdx" class="input-box" value="...">
       </div>
 
-      <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (จับเวลา)</button>
+      <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (จับเวลา 4 นาที)</button>
       <button class="btn-practice" onclick="startPractice()">📖 ฝึกท่องศัพท์</button>
       <br><br>
       <button class="btn-back" style="width:100%; border: 2px solid #ddd;" onclick="showPage('portalPage')">⬅️ กลับหน้าเมนูหลัก</button>
@@ -277,7 +277,7 @@
 
   <div id="gamePage" class="page">
     <div class="game-header">
-      <div class="timer-box">⏳ <span id="timerDisplay">02:00</span></div>
+      <div class="timer-box">⏳ <span id="timerDisplay">04:00</span></div>
       <div class="score-box">คะแนน: <span id="liveScore">0</span></div>
     </div>
 
@@ -286,12 +286,12 @@
       <button class="btn-sound" onclick="repeatSound()">🔊</button>
       <div id="choicesBox" class="choices-grid"></div>
     </div>
-    <p style="color:#888; font-size: 0.8rem;">สู้ๆ นะคนเก่ง! หมดเวลาถึงจะจบเกมน้า</p>
+    <p style="color:#888; font-size: 0.8rem;">สู้ๆ นะคนเก่ง! หมดเวลาหรือตอบครบหมดถึงจะจบเกมน้า</p>
   </div>
 
   <div id="resultPage" class="page">
     <div class="card">
-      <h1 style="color:var(--primary)">หมดเวลาแล้ว! ⏰</h1>
+      <h1 style="color:var(--primary)">สรุปผลการเล่น! ⏰</h1>
       <div style="font-size: 1.5rem; margin: 20px 0; background:#f0f8ff; padding:20px; border-radius:20px;">
         คะแนนรวมรอบนี้<br>
         <span id="finalScore" style="font-size: 4rem; color:var(--primary); font-weight:800;">0</span>
@@ -399,11 +399,11 @@
 /**********************************************
  * FAMILY HUB GLOBAL SYSTEM
  **********************************************/
-let mathScoreGlobal = 0; // คะแนนจาก Math (Firebase)
-let abcScoreGlobal = 0;  // คะแนนจาก ABC (Google Sheets)
+let mathScoreGlobal = 0; 
+let abcScoreGlobal = 0;  
 
-const mathPlayer = "ไดมอนด์"; // ล็อคชื่อผู้เล่น
-const mathAvatar = "👦"; // ล็อคตัวละคร
+const mathPlayer = "ไดมอนด์"; 
+const mathAvatar = "👦"; 
 
 function showPage(id) {
     if(id !== 'mathPage') {
@@ -421,7 +421,6 @@ function updateGrandTotal() {
     document.getElementById('portalMathScore').textContent = mathScoreGlobal;
     document.getElementById('grandTotalScore').textContent = total.toLocaleString();
     
-    // อัปเดตในหน้า Parent ด้วย
     if(document.getElementById('dashGrandTotal')) document.getElementById('dashGrandTotal').textContent = total.toLocaleString();
     if(document.getElementById('dashAbcScore')) document.getElementById('dashAbcScore').textContent = abcScoreGlobal;
     if(document.getElementById('dashMathScore')) document.getElementById('dashMathScore').textContent = mathScoreGlobal;
@@ -436,13 +435,12 @@ const firebaseConfig = {
     databaseURL: "https://mathgamefamily-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "mathgamefamily"
 };
-firebase.initializeApp(firebaseConfig);
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let mathLevel=1, mathAnswer=0, mathCurrentScore=0, mathQCount=0, mathTimeLeft=120, mathTimerId=null;
+let mathLevel=3, mathAnswer=0, mathCurrentScore=0, mathQCount=0, mathTimeLeft=120, mathTimerId=null;
 const mathTotalQ = 7;
 
-// อัปเดตคะแนนคณิตศาสตร์แบบเรียลไทม์ (เฉพาะของไดมอนด์)
 db.ref('scores/' + mathPlayer).on('value', snap => {
     mathScoreGlobal = snap.exists() ? (snap.val().score || 0) : 0;
     updateGrandTotal();
@@ -460,11 +458,9 @@ function mathHomeInit(){
         <div style="font-size:30px; margin-bottom:15px; background:#e3f2fd; padding:10px; border-radius:15px; border:2px solid #2196f3;">
             ${mathAvatar} <b>${mathPlayer}</b>
         </div>
-        🎓 <b>เลือกระดับชั้น:</b> <br><br>
-        <button id="lv1" class="btn-lv ${mathLevel==1?'sel':''}" onclick="mathPickLevel(1)">ป.1</button>
-        <button id="lv2" class="btn-lv ${mathLevel==2?'sel':''}" onclick="mathPickLevel(2)">ป.2</button>
-        <button id="lv3" class="btn-lv ${mathLevel==3?'sel':''}" onclick="mathPickLevel(3)">ป.3</button><br><br>
-        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.1 (+1/-1), ป.2 (+2/-1), ป.3 (+3/-2)</div>
+        🎓 <b>ระดับชั้น:</b> <br><br>
+        <button id="lv3" class="btn-lv sel" onclick="mathPickLevel(3)">ป.3</button><br><br>
+        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.3 (+3/-1)<br>(ตอบถูกได้ 3 คะแนน / ตอบผิดหัก 1 คะแนน)</div>
         <button style="width:90%; background:#4caf50;" onclick="mathStart()">▶ เริ่มเล่น</button><br>
         <button class="back" style="width:100%; margin-top:15px; border: 2px solid #e65100;" onclick="showPage('portalPage')">⬅ กลับหน้าเมนูหลัก</button>
     `;
@@ -477,24 +473,79 @@ function mathStart(){
     mathNextQ(); 
 }
 
+function mathR(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
 function mathNextQ(){
     if(mathQCount >= mathTotalQ){ mathSummary(); return; }
     mathQCount++; clearInterval(mathTimerId); mathUpdateScoreUI();
     
-    let a, b, op="+";
-    if(mathLevel==1){ a=mathR(1,20); b=mathR(1,10); op="+"; }
-    else if(mathLevel==2){ a=mathR(10,90); b=mathR(10,50); op=Math.random()>0.5?"+":"-"; }
-    else if(mathLevel==3){ a=mathR(2,12); b=mathR(2,12); op="×"; }
+    let ops = ["+", "-", "×", "÷"];
+    let op = ops[Math.floor(Math.random() * ops.length)];
+    let a, b, c, op1, op2, expressionStr;
 
-    if(op=="+") mathAnswer=a+b; 
-    if(op=="-"){ if(b>a)[a,b]=[b,a]; mathAnswer=a-b; } 
-    if(op=="×") mathAnswer=a*b;
+    // ฟังก์ชันช่วยสุ่มเลข ให้ผสมระหว่าง 2 หลัก และ 3 หลัก
+    const getMixedNum = () => Math.random() > 0.5 ? mathR(10, 99) : mathR(100, 999);
+
+    if (op === "+" || op === "-") {
+        // สุ่มว่าจะเป็นโจทย์ 3 จำนวน หรือ 2 จำนวน (50/50)
+        let isThreeTerms = Math.random() > 0.5;
+
+        if (isThreeTerms) {
+            a = getMixedNum(); b = getMixedNum(); c = getMixedNum();
+            op1 = Math.random() > 0.5 ? "+" : "-";
+            op2 = Math.random() > 0.5 ? "+" : "-";
+
+            let tempAns = 0;
+            if (op1 === "-") {
+                if (b > a) [a, b] = [b, a]; // ป้องกันการลบติดลบ
+                tempAns = a - b;
+            } else {
+                tempAns = a + b;
+            }
+
+            if (op2 === "-") {
+                if (c > tempAns) { 
+                    op2 = "+"; // ถ้าลบแล้วจะติดลบให้แอบเปลี่ยนเป็นบวก
+                    mathAnswer = tempAns + c; 
+                }
+                else { mathAnswer = tempAns - c; }
+            } else {
+                mathAnswer = tempAns + c;
+            }
+            expressionStr = `${a} ${op1} ${b} ${op2} ${c}`;
+        } else {
+            // กรณีเป็นโจทย์ 2 จำนวน
+            a = getMixedNum(); b = getMixedNum();
+            op1 = Math.random() > 0.5 ? "+" : "-";
+            
+            if (op1 === "-") {
+                if (b > a) [a, b] = [b, a]; // ป้องกันการลบติดลบ
+                mathAnswer = a - b;
+            } else {
+                mathAnswer = a + b;
+            }
+            expressionStr = `${a} ${op1} ${b}`;
+        }
+    } else if (op === "×") {
+        // คูณ ใช้เลข 2 หลัก
+        a = mathR(10, 99);
+        b = mathR(10, 99);
+        mathAnswer = a * b;
+        expressionStr = `${a} × ${b}`;
+    } else if (op === "÷") {
+        // หาร ใช้เลข 2 หลัก (หารลงตัว)
+        b = mathR(10, 99); 
+        let ans = mathR(2, 50); 
+        a = b * ans; 
+        mathAnswer = ans;
+        expressionStr = `${a} ÷ ${b}`;
+    }
     
     mathTimeLeft = 120;
     document.getElementById("mathAppContent").innerHTML = `
         <div class="timer">⏳ <span id="t-val">${mathTimeLeft}</span> วินาที</div>
         <div style="font-size:18px; color:#666">ข้อที่ ${mathQCount} / ${mathTotalQ}</div>
-        <h1 style="font-size:55px; margin:10px 0;">${a} ${op} ${b}</h1>
+        <h1 style="font-size:45px; margin:10px 0;">${expressionStr}</h1>
         <input id="ans" type="number" readonly placeholder="?"><br><br>
         <div>
             ${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button class="num" onclick="mathPress(${n})">${n}</button>`).join("")}
@@ -504,12 +555,11 @@ function mathNextQ(){
     `;
     mathTimerId = setInterval(() => { 
         mathTimeLeft--; document.getElementById('t-val').innerText=mathTimeLeft; 
-        if(mathTimeLeft<=0) mathCheck(); // หมดเวลาถือว่าตรวจเลย (ผิด)
+        if(mathTimeLeft<=0) mathCheck(); 
     }, 1000);
 }
 
 function mathPress(n){ document.getElementById('ans').value += n; }
-function mathR(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 
 function mathUpdateScoreUI(){
     let sb = document.getElementById("mathScoreBox") || (document.body.insertAdjacentHTML("beforeend", `<div id="mathScoreBox" class="mathScoreBox"></div>`), document.getElementById("mathScoreBox"));
@@ -520,15 +570,14 @@ function mathCheck(){
     clearInterval(mathTimerId);
     let userAns = parseInt(document.getElementById("ans").value);
     
-    // คำนวณคะแนนตามระดับชั้น (ปรับลดคะแนนลงแล้ว)
-    let ptsEarned = mathLevel == 1 ? 1 : (mathLevel == 2 ? 2 : 3);
-    let ptsPenalty = mathLevel == 1 ? 1 : (mathLevel == 2 ? 1 : 2);
+    let ptsEarned = 3; // ตอบถูกได้ 3 คะแนน (ป.3)
+    let ptsPenalty = 1; // ลบ 1 คะแนนเสมอ
 
     if(userAns === mathAnswer){
         mathCurrentScore += ptsEarned;
-        mathNextQ(); // ไปข้อถัดไปทันทีถ้าถูก
+        mathNextQ(); 
     } else {
-        mathCurrentScore -= ptsPenalty; // หักคะแนน
+        mathCurrentScore -= ptsPenalty; 
         document.getElementById("mathAppContent").innerHTML = `
             <h2 style="color:red">❌ ผิดจ้า!</h2>
             <h1 style="font-size:30px">คำตอบที่ถูกคือ <span style="color:green; font-size:50px">${mathAnswer}</span></h1>
@@ -589,7 +638,7 @@ function saveScoreHistory(gameName, action, amount) {
         timestamp: dateStr
     });
     
-    if (history.length > 50) history.pop(); // เก็บย้อนหลัง 50 รายการ
+    if (history.length > 50) history.pop(); 
     
     localStorage.setItem('scoreManageHistory', JSON.stringify(history));
     renderScoreHistory();
@@ -640,9 +689,9 @@ function checkHubPin() {
     if(document.getElementById("hubPinInput").value === PARENT_PIN) {
         document.getElementById("hubPinInput").value = "";
         showPage('hubParentDashboard');
-        renderHistory();  // โหลดประวัติของ ABC
-        renderMistakes(); // โหลดคำผิดของ ABC
-        renderScoreHistory(); // โหลดประวัติการปรับคะแนน
+        renderHistory();  
+        renderMistakes(); 
+        renderScoreHistory(); 
     } else { 
         alert("รหัสผ่านไม่ถูกต้อง"); 
     }
@@ -696,14 +745,14 @@ function adjustMathScore(multiplier) {
  * ABC FUN ENGLISH LOGIC (Google Sheets)
  **********************************************/
 const API_URL = "https://script.google.com/macros/s/AKfycbzfNeVpEL2R3sQsljaYsOjRqoFkjf2j6oM1KKXKvOi2Y0peu07j20A0ff4GZafUFg23/exec"; 
-const GAME_TIME = 120; // 2 นาที
+const GAME_TIME = 240; // 4 นาที
 
 const backupWords = [
   {Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},
   {Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}
 ];
 
-let words = []; let gamePool = []; 
+let words = []; let gamePool = []; let currentRoundWords = [];
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
 let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {};
 let userSettings = JSON.parse(localStorage.getItem("userSettings")) || { showRead: true, showMean: true };
@@ -745,8 +794,8 @@ function fetchAbcData() {
 function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
 function toggleSoundUI() {
   const btn = document.getElementById("soundToggle");
-  if(isSoundEnabled) { btn.textContent = "เปิด (0.5 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } 
-  else { btn.textContent = "ปิด (1 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
+  if(isSoundEnabled) { btn.textContent = "เปิด (1.5 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } 
+  else { btn.textContent = "ปิด (2.5 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
 }
 
 function speak(text, lang = "en-US") {
@@ -772,6 +821,10 @@ function startGame() {
   gamePool = words.slice(start - 1, end);
   if(gamePool.length < 4) { alert("กรุณาเลือกช่วงที่มีคำศัพท์อย่างน้อย 4 คำครับ"); return; }
   
+  // สุ่มคำศัพท์แบบไม่ซ้ำ
+  currentRoundWords = [...gamePool];
+  currentRoundWords.sort(() => Math.random() - 0.5);
+
   abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
   document.getElementById("liveScore").textContent = "0"; showPage('gamePage'); updateTimerDisplay();
   
@@ -785,17 +838,26 @@ function updateTimerDisplay() {
   document.getElementById("timerDisplay").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
 
-function getWeightedWord() {
-  let pool = [];
-  gamePool.forEach(w => { pool.push(w); const stat = wordStats[w.Vocabulary]; if (stat && stat.wrong > stat.correct) { pool.push(w); pool.push(w); }});
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
 function nextQuestion() {
-  if(abcTimeLeft <= 0) return; currentWord = getWeightedWord();
+  if(abcTimeLeft <= 0) return; 
+  
+  // ตัดจบเกมถ้าคำศัพท์หมดแล้ว
+  if(currentRoundWords.length === 0) {
+      finishGame();
+      return;
+  }
+  
+  // ดึงคำศัพท์ทีละคำ
+  currentWord = currentRoundWords.pop();
+  
   document.getElementById("gameVocab").textContent = currentWord.Vocabulary; speak(currentWord.Vocabulary);
+  
   let choices = [currentWord];
-  while(choices.length < 4) { let w = gamePool[Math.floor(Math.random() * gamePool.length)]; if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); }
+  while(choices.length < 4) { 
+      let w = gamePool[Math.floor(Math.random() * gamePool.length)]; 
+      if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); 
+  }
+  
   const box = document.getElementById("choicesBox"); box.innerHTML = "";
   choices.sort(() => Math.random() - 0.5).forEach(w => {
     const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
@@ -806,12 +868,17 @@ function nextQuestion() {
 function checkAnswer(selected, btn) {
   const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
   if(!wordStats[currentWord.Vocabulary]) wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
+  
   if(selected.Vocabulary === currentWord.Vocabulary) {
-    abcCurrentScore += isSoundEnabled ? 0.5 : 1; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
+    // ให้แต้มตามระบบใหม่ (เปิดเสียงได้ 1.5, ปิดเสียงได้ 2.5)
+    abcCurrentScore += isSoundEnabled ? 1.5 : 2.5; 
+    sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
+    
     btn.classList.add("correct-anim");
     if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg").play().catch(e=>{});
     setTimeout(nextQuestion, 800);
   } else {
+    // ตอบผิดโดนหัก 1 แต้ม
     btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++; wordStats[currentWord.Vocabulary].wrong++;
     if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0; sessionWrongStats[currentWord.Vocabulary]++;
     allBtns.forEach(b => { if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim"); });
@@ -919,10 +986,9 @@ function resetCloudData() {
   }).catch(err => { alert("เกิดข้อผิดพลาดในการลบข้อมูลบน Cloud"); });
 }
 
-// Initial Bootup Hook
 window.onload = function() {
     toggleSoundUI();
-    fetchAbcData(); // Pull Google Sheet data
+    fetchAbcData(); 
     window.speechSynthesis.getVoices();
 };
 
