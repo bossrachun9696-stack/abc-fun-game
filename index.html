@@ -460,7 +460,7 @@ function mathHomeInit(){
         </div>
         🎓 <b>ระดับชั้น:</b> <br><br>
         <button id="lv3" class="btn-lv sel" onclick="mathPickLevel(3)">ป.3</button><br><br>
-        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.3 (+3/-1)<br>(ตอบถูกได้ 3 คะแนน / ตอบผิดหัก 1 คะแนน)</div>
+        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.3 (+3 คะแนน)<br>(ตอบถูกได้ 3 คะแนน / ตอบผิดไม่หักคะแนน)</div>
         <button style="width:90%; background:#4caf50;" onclick="mathStart()">▶ เริ่มเล่น</button><br>
         <button class="back" style="width:100%; margin-top:15px; border: 2px solid #e65100;" onclick="showPage('portalPage')">⬅ กลับหน้าเมนูหลัก</button>
     `;
@@ -502,18 +502,15 @@ function mathNextQ(){
             expressionStr = `${a} ${op1} ${b}`;
         }
     } else if (op === "×") {
-        // --- แก้ไขการคูณ: เน้นเลขหลักเดียว คูณ เลขไม่เกิน 2 หลัก (ง่ายกว่าเดิม) ---
-        // เช่น 9x9, 2x12, 18x3
-        a = mathR(2, 9); // เลขหลักเดียว
-        b = mathR(2, 19); // เลขไม่เกิน 2 หลัก
+        a = mathR(2, 9); 
+        b = mathR(2, 19); 
         if (Math.random() > 0.5) [a, b] = [b, a]; 
         mathAnswer = a * b;
         expressionStr = `${a} × ${b}`;
     } else if (op === "÷") {
-        // --- แก้ไขการหาร: สุ่มให้ตัวหารเป็นหลักเดียวและลงตัว (ง่ายกว่าเดิม) ---
-        mathAnswer = mathR(2, 19); // คำตอบไม่ยากเกินไป
-        b = mathR(2, 9); // ตัวหารเป็นหลักเดียว
-        a = b * mathAnswer; // ตัวตั้ง
+        mathAnswer = mathR(2, 19); 
+        b = mathR(2, 9); 
+        a = b * mathAnswer; 
         expressionStr = `${a} ÷ ${b}`;
     }
     
@@ -546,17 +543,16 @@ function mathCheck(){
     clearInterval(mathTimerId);
     let userAns = parseInt(document.getElementById("ans").value);
     let ptsEarned = 3; 
-    let ptsPenalty = 1; 
 
     if(userAns === mathAnswer){
         mathCurrentScore += ptsEarned;
         mathNextQ(); 
     } else {
-        mathCurrentScore -= ptsPenalty; 
+        // เอาการหักคะแนนออก (mathCurrentScore -= ptsPenalty;)
         document.getElementById("mathAppContent").innerHTML = `
-            <h2 style="color:red">❌ ผิดจ้า!</h2>
+            <h2 style="color:red">❌ ยังไม่ถูกจ้า</h2>
             <h1 style="font-size:30px">คำตอบที่ถูกคือ <span style="color:green; font-size:50px">${mathAnswer}</span></h1>
-            <p style="color:#f44336; font-size:22px; font-weight:bold;">โดนหัก ${ptsPenalty} ดาว 😢</p>
+            <p style="color:#2196f3; font-size:20px; font-weight:bold;">ไม่เป็นไรนะ ไม่มีการหักดาว สู้ๆ! ✌️</p>
             <button style="width:90%; background:#2196f3;" onclick="mathNextQ()">ข้อต่อไป ▶</button>
         `;
     }
@@ -576,7 +572,7 @@ function mathSummary(){
                 <h2 style="color:#4caf50">🎊 จบเกมแล้ว!</h2>
                 <h1 style="font-size:60px">${mathAvatar}</h1>
                 <h3>คุณ ${mathPlayer}</h3>
-                <p>รอบนี้ทำได้ (หักลบแล้ว): <b>${mathCurrentScore > 0 ? '+' : ''}${mathCurrentScore}</b> แต้ม</p>
+                <p>รอบนี้ทำเพิ่มไปได้: <b>+${mathCurrentScore}</b> แต้ม</p>
                 <h2 style="color:#0d47a1">แต้ม Math: ${newTotal.toLocaleString()} ⭐</h2>
                 <button style="width:90%; background:#607d8b;" onclick="mathHomeInit()">กลับเมนู Math</button>
             </div>
