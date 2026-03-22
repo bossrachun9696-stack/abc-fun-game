@@ -483,61 +483,37 @@ function mathNextQ(){
     let op = ops[Math.floor(Math.random() * ops.length)];
     let a, b, c, op1, op2, expressionStr;
 
-    // ฟังก์ชันช่วยสุ่มเลข ให้ผสมระหว่าง 2 หลัก และ 3 หลัก
     const getMixedNum = () => Math.random() > 0.5 ? mathR(10, 99) : mathR(100, 999);
 
     if (op === "+" || op === "-") {
-        // สุ่มว่าจะเป็นโจทย์ 3 จำนวน หรือ 2 จำนวน (50/50)
         let isThreeTerms = Math.random() > 0.5;
-
         if (isThreeTerms) {
             a = getMixedNum(); b = getMixedNum(); c = getMixedNum();
             op1 = Math.random() > 0.5 ? "+" : "-";
             op2 = Math.random() > 0.5 ? "+" : "-";
-
             let tempAns = 0;
-            if (op1 === "-") {
-                if (b > a) [a, b] = [b, a]; // ป้องกันการลบติดลบ
-                tempAns = a - b;
-            } else {
-                tempAns = a + b;
-            }
-
-            if (op2 === "-") {
-                if (c > tempAns) { 
-                    op2 = "+"; // ถ้าลบแล้วจะติดลบให้แอบเปลี่ยนเป็นบวก
-                    mathAnswer = tempAns + c; 
-                }
-                else { mathAnswer = tempAns - c; }
-            } else {
-                mathAnswer = tempAns + c;
-            }
+            if (op1 === "-") { if (b > a) [a, b] = [b, a]; tempAns = a - b; } else { tempAns = a + b; }
+            if (op2 === "-") { if (c > tempAns) { op2 = "+"; mathAnswer = tempAns + c; } else { mathAnswer = tempAns - c; } } else { mathAnswer = tempAns + c; }
             expressionStr = `${a} ${op1} ${b} ${op2} ${c}`;
         } else {
-            // กรณีเป็นโจทย์ 2 จำนวน
             a = getMixedNum(); b = getMixedNum();
             op1 = Math.random() > 0.5 ? "+" : "-";
-            
-            if (op1 === "-") {
-                if (b > a) [a, b] = [b, a]; // ป้องกันการลบติดลบ
-                mathAnswer = a - b;
-            } else {
-                mathAnswer = a + b;
-            }
+            if (op1 === "-") { if (b > a) [a, b] = [b, a]; mathAnswer = a - b; } else { mathAnswer = a + b; }
             expressionStr = `${a} ${op1} ${b}`;
         }
     } else if (op === "×") {
-        // คูณ ใช้เลข 2 หลัก
-        a = mathR(10, 99);
-        b = mathR(10, 99);
+        // --- แก้ไขการคูณ: เน้นเลขหลักเดียว คูณ เลขไม่เกิน 2 หลัก (ง่ายกว่าเดิม) ---
+        // เช่น 9x9, 2x12, 18x3
+        a = mathR(2, 9); // เลขหลักเดียว
+        b = mathR(2, 19); // เลขไม่เกิน 2 หลัก
+        if (Math.random() > 0.5) [a, b] = [b, a]; 
         mathAnswer = a * b;
         expressionStr = `${a} × ${b}`;
     } else if (op === "÷") {
-        // หาร ใช้เลข 2 หลัก (หารลงตัว)
-        b = mathR(10, 99); 
-        let ans = mathR(2, 50); 
-        a = b * ans; 
-        mathAnswer = ans;
+        // --- แก้ไขการหาร: สุ่มให้ตัวหารเป็นหลักเดียวและลงตัว (ง่ายกว่าเดิม) ---
+        mathAnswer = mathR(2, 19); // คำตอบไม่ยากเกินไป
+        b = mathR(2, 9); // ตัวหารเป็นหลักเดียว
+        a = b * mathAnswer; // ตัวตั้ง
         expressionStr = `${a} ÷ ${b}`;
     }
     
@@ -569,9 +545,8 @@ function mathUpdateScoreUI(){
 function mathCheck(){
     clearInterval(mathTimerId);
     let userAns = parseInt(document.getElementById("ans").value);
-    
-    let ptsEarned = 3; // ตอบถูกได้ 3 คะแนน (ป.3)
-    let ptsPenalty = 1; // ลบ 1 คะแนนเสมอ
+    let ptsEarned = 3; 
+    let ptsPenalty = 1; 
 
     if(userAns === mathAnswer){
         mathCurrentScore += ptsEarned;
@@ -589,16 +564,13 @@ function mathCheck(){
 
 function mathSummary(){
     document.getElementById("mathScoreBox")?.remove();
-    
     db.ref('scores/'+mathPlayer).once('value', snap => {
         let oldScore = snap.exists() ? snap.val().score : 0;
         let newTotal = oldScore + mathCurrentScore;
-        
         db.ref('scores/'+mathPlayer).set({
             name: mathPlayer, score: newTotal, avatar: mathAvatar,
             lastPlayed: new Date().toLocaleString('th-TH')
         });
-
         document.getElementById("mathAppContent").innerHTML = `
             <div style="padding:20px;">
                 <h2 style="color:#4caf50">🎊 จบเกมแล้ว!</h2>
@@ -619,27 +591,17 @@ function mathResetScores(){
     }
 }
 
-
 /**********************************************
  * UNIFIED PARENT ZONE (และระบบประวัติคะแนน)
  **********************************************/
 const PARENT_PIN = "0932815229";
 
-// ฟังก์ชันเซฟและแสดงประวัติคะแนนที่เพิ่มเข้ามาใหม่
 function saveScoreHistory(gameName, action, amount) {
     let history = JSON.parse(localStorage.getItem('scoreManageHistory') || '[]');
     const now = new Date();
     const dateStr = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH');
-    
-    history.unshift({
-        game: gameName,
-        action: action, 
-        amount: amount,
-        timestamp: dateStr
-    });
-    
+    history.unshift({ game: gameName, action: action, amount: amount, timestamp: dateStr });
     if (history.length > 50) history.pop(); 
-    
     localStorage.setItem('scoreManageHistory', JSON.stringify(history));
     renderScoreHistory();
 }
@@ -647,22 +609,15 @@ function saveScoreHistory(gameName, action, amount) {
 function renderScoreHistory() {
     const list = document.getElementById('scoreManageHistory');
     if (!list) return;
-    
     let history = JSON.parse(localStorage.getItem('scoreManageHistory') || '[]');
-    if (history.length === 0) {
-        list.innerHTML = '<li style="color:#888; text-align:center; padding:10px;">ยังไม่มีประวัติ</li>';
-        return;
-    }
-    
+    if (history.length === 0) { list.innerHTML = '<li style="color:#888; text-align:center; padding:10px;">ยังไม่มีประวัติ</li>'; return; }
     list.innerHTML = '';
     history.forEach(item => {
         const li = document.createElement('li');
         li.style.cssText = "background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; flex-direction: column; border-radius: 8px; margin-bottom: 5px;";
-        
         const color = item.action === 'add' ? '#4caf50' : '#f44336';
         const sign = item.action === 'add' ? '+' : '-';
         const actionText = item.action === 'add' ? 'เพิ่มคะแนน' : 'หักคะแนน';
-        
         li.innerHTML = `
             <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:4px;">
                 <span style="font-weight:bold; color:#333;">${item.game}</span>
@@ -677,80 +632,46 @@ function renderScoreHistory() {
     });
 }
 
-function clearScoreHistory() {
-    if(confirm("⚠️ ต้องการล้างประวัติการปรับคะแนน (เพิ่ม/หัก) ทั้งหมดใช่หรือไม่?")) {
-        localStorage.removeItem('scoreManageHistory');
-        renderScoreHistory();
-    }
-}
+function clearScoreHistory() { if(confirm("⚠️ ล้างประวัติการปรับคะแนน?")) { localStorage.removeItem('scoreManageHistory'); renderScoreHistory(); } }
 
-// ตรวจสอบรหัสผ่าน
-function checkHubPin() {
-    if(document.getElementById("hubPinInput").value === PARENT_PIN) {
-        document.getElementById("hubPinInput").value = "";
-        showPage('hubParentDashboard');
-        renderHistory();  
-        renderMistakes(); 
-        renderScoreHistory(); 
-    } else { 
-        alert("รหัสผ่านไม่ถูกต้อง"); 
-    }
-}
+function checkHubPin() { if(document.getElementById("hubPinInput").value === PARENT_PIN) { document.getElementById("hubPinInput").value = ""; showPage('hubParentDashboard'); renderHistory(); renderMistakes(); renderScoreHistory(); } else { alert("รหัสผ่านไม่ถูกต้อง"); } }
 
 function adjustAbcScore(multiplier) {
     const inputVal = parseInt(document.getElementById("abcAdjInput").value);
-    if (isNaN(inputVal) || inputVal <= 0) { alert("กรุณาใส่จำนวนดาวที่ต้องการ"); return; }
-    
+    if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
     const amount = inputVal * multiplier; 
     const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
-    if (!confirm(`ยืนยันการ${actionText}คะแนนฝั่ง ABC จำนวน ${inputVal} ดาว?`)) return;
-    
-    abcScoreGlobal += amount; 
-    if(abcScoreGlobal < 0) abcScoreGlobal = 0; 
-    
-    updateAbcUI(); 
-    updateGrandTotal();
+    if (!confirm(`ยืนยันการ${actionText}คะแนน ABC จำนวน ${inputVal} ดาว?`)) return;
+    abcScoreGlobal += amount; if(abcScoreGlobal < 0) abcScoreGlobal = 0; 
+    updateAbcUI(); updateGrandTotal();
     sendDataToSheets(amount, `[ผู้ปกครอง${actionText}คะแนน]`);
-    
-    // บันทึกประวัติ
     saveScoreHistory('🐰 เกม ABC', multiplier > 0 ? 'add' : 'deduct', inputVal);
-    
     document.getElementById("abcAdjInput").value = ""; 
-    alert(`บันทึกการ${actionText}คะแนน ABC เรียบร้อย (กำลังอัปเดตระบบ Cloud)`);
+    alert(`บันทึกการ${actionText}คะแนน ABC เรียบร้อย`);
 }
 
 function adjustMathScore(multiplier) {
     const inputVal = parseInt(document.getElementById("mathAdjInput").value);
-    if (isNaN(inputVal) || inputVal <= 0) { alert("กรุณาใส่จำนวนดาวที่ต้องการ"); return; }
-    
+    if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
     const amount = inputVal * multiplier; 
     const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
-    if (!confirm(`ยืนยันการ${actionText}คะแนนฝั่งคณิตศาสตร์ จำนวน ${inputVal} ดาว?`)) return;
-    
+    if (!confirm(`ยืนยันการ${actionText}คะแนนคณิตศาสตร์ จำนวน ${inputVal} ดาว?`)) return;
     db.ref('scores/'+mathPlayer+'/score').once('value', sn => {
         let curMath = sn.val() || 0;
         let newScore = curMath + amount;
         db.ref('scores/'+mathPlayer+'/score').set(newScore);
-        
-        // บันทึกประวัติ
         saveScoreHistory('🧮 เกมคิดเลข', multiplier > 0 ? 'add' : 'deduct', inputVal);
-
         document.getElementById("mathAdjInput").value = ""; 
         alert(`บันทึกการ${actionText}คะแนนคณิตศาสตร์เรียบร้อย`);
     });
 }
 
-
 /**********************************************
  * ABC FUN ENGLISH LOGIC (Google Sheets)
  **********************************************/
 const API_URL = "https://script.google.com/macros/s/AKfycbzfNeVpEL2R3sQsljaYsOjRqoFkjf2j6oM1KKXKvOi2Y0peu07j20A0ff4GZafUFg23/exec"; 
-const GAME_TIME = 240; // 4 นาที
-
-const backupWords = [
-  {Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},
-  {Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}
-];
+const GAME_TIME = 240; 
+const backupWords = [{Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},{Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}];
 
 let words = []; let gamePool = []; let currentRoundWords = [];
 let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
@@ -765,14 +686,7 @@ let sessionCorrect = 0; let sessionWrong = 0; let practiceIndex = 0; let session
 
 function fetchAbcData() {
     const nocache = "&t=" + new Date().getTime();
-    fetch(API_URL + "?action=getReport" + nocache).then(res => res.json()).then(data => {
-        if(data.summary) {
-            abcScoreGlobal = data.summary.stars;
-            globalRounds = data.summary.rounds;
-            updateAbcUI(); updateGrandTotal();
-        }
-    }).catch(console.error);
-
+    fetch(API_URL + "?action=getReport" + nocache).then(res => res.json()).then(data => { if(data.summary) { abcScoreGlobal = data.summary.stars; globalRounds = data.summary.rounds; updateAbcUI(); updateGrandTotal(); } }).catch(console.error);
     fetch(API_URL).then(res => res.json()).then(data => {
         if(data.words) words = data.words; else if(Array.isArray(data)) words = data;
         if(words.length > 0) {
@@ -785,7 +699,7 @@ function fetchAbcData() {
         }
     }).catch(e => {
         words = backupWords;
-        document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์ (ใช้ข้อมูลเดิม)";
+        document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์";
         document.getElementById("onlineIndicator").textContent = "🔴 Offline";
         document.getElementById("gameEndIdx").value = words.length;
     });
@@ -794,40 +708,30 @@ function fetchAbcData() {
 function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
 function toggleSoundUI() {
   const btn = document.getElementById("soundToggle");
-  if(isSoundEnabled) { btn.textContent = "เปิด (1.5 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } 
-  else { btn.textContent = "ปิด (2.5 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
+  if(isSoundEnabled) { btn.textContent = "เปิด (1.5 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } else { btn.textContent = "ปิด (2.5 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
 }
 
 function speak(text, lang = "en-US") {
   if(!isSoundEnabled) return; window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.8;
   const voices = window.speechSynthesis.getVoices();
-  if(lang === "en-US") { const f = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English")); if(f) u.voice = f; } 
-  else if (lang === "th-TH") { const t = voices.find(v => v.lang === "th-TH" || v.name.includes("Thai")); if(t) u.voice = t; }
+  if(lang === "en-US") { const f = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English")); if(f) u.voice = f; } else if (lang === "th-TH") { const t = voices.find(v => v.lang === "th-TH"); if(t) u.voice = t; }
   window.speechSynthesis.speak(u);
 }
 
-function updateAbcUI() {
-  document.getElementById("uiStars").textContent = abcScoreGlobal;
-  document.getElementById("uiRounds").textContent = globalRounds;
-}
+function updateAbcUI() { document.getElementById("uiStars").textContent = abcScoreGlobal; document.getElementById("uiRounds").textContent = globalRounds; }
 
 function startGame() {
-  if(words.length < 4) { alert("ข้อมูลกำลังโหลด รอสักครู่นะครับ"); return; }
+  if(words.length < 4) { alert("รอก่อนนะครับ"); return; }
   let start = parseInt(document.getElementById("gameStartIdx").value);
   let end = parseInt(document.getElementById("gameEndIdx").value);
   if(isNaN(start) || start < 1) start = 1; if(isNaN(end) || end > words.length) end = words.length;
-  if(start > end) { alert("ช่วงคำศัพท์ไม่ถูกต้อง"); return; }
   gamePool = words.slice(start - 1, end);
-  if(gamePool.length < 4) { alert("กรุณาเลือกช่วงที่มีคำศัพท์อย่างน้อย 4 คำครับ"); return; }
-  
-  // สุ่มคำศัพท์แบบไม่ซ้ำ
+  if(gamePool.length < 4) { alert("เลือกคำเพิ่มหน่อยครับ"); return; }
   currentRoundWords = [...gamePool];
   currentRoundWords.sort(() => Math.random() - 0.5);
-
   abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
   document.getElementById("liveScore").textContent = "0"; showPage('gamePage'); updateTimerDisplay();
-  
   clearInterval(abcTimerId);
   abcTimerId = setInterval(() => { abcTimeLeft--; updateTimerDisplay(); if(abcTimeLeft <= 0) finishGame(); }, 1000);
   nextQuestion();
@@ -840,24 +744,11 @@ function updateTimerDisplay() {
 
 function nextQuestion() {
   if(abcTimeLeft <= 0) return; 
-  
-  // ตัดจบเกมถ้าคำศัพท์หมดแล้ว
-  if(currentRoundWords.length === 0) {
-      finishGame();
-      return;
-  }
-  
-  // ดึงคำศัพท์ทีละคำ
+  if(currentRoundWords.length === 0) { finishGame(); return; }
   currentWord = currentRoundWords.pop();
-  
   document.getElementById("gameVocab").textContent = currentWord.Vocabulary; speak(currentWord.Vocabulary);
-  
   let choices = [currentWord];
-  while(choices.length < 4) { 
-      let w = gamePool[Math.floor(Math.random() * gamePool.length)]; 
-      if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); 
-  }
-  
+  while(choices.length < 4) { let w = gamePool[Math.floor(Math.random() * gamePool.length)]; if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); }
   const box = document.getElementById("choicesBox"); box.innerHTML = "";
   choices.sort(() => Math.random() - 0.5).forEach(w => {
     const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
@@ -868,17 +759,12 @@ function nextQuestion() {
 function checkAnswer(selected, btn) {
   const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
   if(!wordStats[currentWord.Vocabulary]) wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
-  
   if(selected.Vocabulary === currentWord.Vocabulary) {
-    // ให้แต้มตามระบบใหม่ (เปิดเสียงได้ 1.5, ปิดเสียงได้ 2.5)
-    abcCurrentScore += isSoundEnabled ? 1.5 : 2.5; 
-    sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
-    
+    abcCurrentScore += isSoundEnabled ? 1.5 : 2.5; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
     btn.classList.add("correct-anim");
     if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg").play().catch(e=>{});
     setTimeout(nextQuestion, 800);
   } else {
-    // ตอบผิดโดนหัก 1 แต้ม
     btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++; wordStats[currentWord.Vocabulary].wrong++;
     if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0; sessionWrongStats[currentWord.Vocabulary]++;
     allBtns.forEach(b => { if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim"); });
@@ -888,10 +774,7 @@ function checkAnswer(selected, btn) {
   document.getElementById("liveScore").textContent = abcCurrentScore; localStorage.setItem("wordStats", JSON.stringify(wordStats));
 }
 
-function sendDataToSheets(stars, wrongWords) {
-  fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save', totalStars: stars, wrongWords: wrongWords }) })
-  .then(res => { console.log("Saved."); setTimeout(fetchAbcData, 1000); }).catch(err => console.error(err));
-}
+function sendDataToSheets(stars, wrongWords) { fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save', totalStars: stars, wrongWords: wrongWords }) }).then(res => { setTimeout(fetchAbcData, 1000); }).catch(err => console.error(err)); }
 
 function finishGame() {
   clearInterval(abcTimerId); globalRounds++; abcScoreGlobal += Math.max(0, abcCurrentScore); updateAbcUI(); updateGrandTotal();
@@ -920,7 +803,7 @@ function renderVocabTable() {
         const realIndex = index + 1; const isMarked = markedWords[w.Vocabulary];
         if(currentFilters.start && realIndex < currentFilters.start) return; if(currentFilters.end && realIndex > currentFilters.end) return;
         if(currentFilters.markedOnly && !isMarked) return;
-        if(currentFilters.search) { const t = currentFilters.search.toLowerCase(); const match = w.Vocabulary.toLowerCase().includes(t) || w["คำแปล"].includes(t) || (w["คำอ่านไทย"] && w["คำอ่านไทย"].includes(t)); if(!match) return; }
+        if(currentFilters.search) { const t = currentFilters.search.toLowerCase(); const match = w.Vocabulary.toLowerCase().includes(t) || w["คำแปล"].includes(t); if(!match) return; }
         const tr = document.createElement("tr"); if(isMarked) tr.classList.add("marked-row"); tr.onclick = () => openWordModal(w, tr);
         const tdIdx = document.createElement("td"); tdIdx.textContent = realIndex; tdIdx.style.fontWeight = "bold"; tdIdx.style.color = "#888";
         const tdVocab = document.createElement("td"); tdVocab.innerHTML = `<b style="font-size:1.2rem; color:var(--primary)">${w.Vocabulary}</b>`;
@@ -947,51 +830,40 @@ function openWordModal(wordObj, trElement) {
     currentModalWord = wordObj; document.getElementById('modalVocab').textContent = wordObj.Vocabulary; document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"];
     const meanElem = document.getElementById('modalMean'); meanElem.textContent = wordObj["คำแปล"]; meanElem.onclick = function() { speak(wordObj["คำแปล"], 'th-TH'); };
     const statusText = document.getElementById('markStatusText');
-    if(markedWords[wordObj.Vocabulary]) { statusText.style.display = "block"; } else { markedWords[wordObj.Vocabulary] = true; localStorage.setItem("markedWords", JSON.stringify(markedWords)); if(trElement) trElement.classList.add("marked-row"); statusText.style.display = "block"; statusText.textContent = "🚩 บันทึกแล้ว: น้องกดดูเฉลย"; }
+    if(markedWords[wordObj.Vocabulary]) { statusText.style.display = "block"; } else { markedWords[wordObj.Vocabulary] = true; localStorage.setItem("markedWords", JSON.stringify(markedWords)); if(trElement) trElement.classList.add("marked-row"); statusText.style.display = "block"; }
     document.getElementById('wordModal').classList.add('active'); speak(wordObj.Vocabulary);
 }
 function closeModal(event) { if(event && event.target.id !== "wordModal" && !event.target.classList.contains('close-modal-btn')) return; document.getElementById('wordModal').classList.remove('active'); renderVocabTable(); }
 function speakFromModal() { if(currentModalWord) speak(currentModalWord.Vocabulary); }
 function resetWordStatus() {
-    if(!currentModalWord) return; const pin = prompt("กรุณาใส่รหัสผ่านผู้ปกครองเพื่อลบสถานะ:");
-    if(pin === PARENT_PIN) { delete markedWords[currentModalWord.Vocabulary]; localStorage.setItem("markedWords", JSON.stringify(markedWords)); alert("✅ ลบสถานะสีแดงเรียบร้อยแล้ว"); document.getElementById('markStatusText').style.display = "none"; closeModal(); } else if (pin !== null) { alert("❌ รหัสผ่านไม่ถูกต้อง"); }
+    if(!currentModalWord) return; const pin = prompt("รหัสผู้ปกครอง:");
+    if(pin === PARENT_PIN) { delete markedWords[currentModalWord.Vocabulary]; localStorage.setItem("markedWords", JSON.stringify(markedWords)); alert("ลบเรียบร้อย"); document.getElementById('markStatusText').style.display = "none"; closeModal(); } else if (pin !== null) { alert("ผิด!"); }
 }
 
 async function renderHistory() {
-  const list = document.getElementById("historyList"); list.innerHTML = "<li>⏳ กำลังโหลดข้อมูลจาก Cloud...</li>";
+  const list = document.getElementById("historyList"); list.innerHTML = "<li>⏳...</li>";
   try {
     const nocache = "&t=" + new Date().getTime(); const res = await fetch(API_URL + "?action=getReport" + nocache); const data = await res.json();
     if(data.summary) { abcScoreGlobal = data.summary.stars; globalRounds = data.summary.rounds; updateAbcUI(); updateGrandTotal(); }
-    list.innerHTML = ""; if (!data.history || data.history.length === 0) { list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีประวัติการเล่นบน Cloud</li>"; return; }
+    list.innerHTML = ""; if (!data.history || data.history.length === 0) { list.innerHTML = "<li>ยังไม่มีประวัติ</li>"; return; }
     data.history.forEach(item => {
       const dateObj = new Date(item.timestamp); const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
       const li = document.createElement("li");
       li.innerHTML = `<div class="history-header"><span class="date-label">${dateStr}</span><div class="badge-group"><span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span></div></div>${item.wrong ? `<div class="wrong-text">❌ ${item.wrong}</div>` : ''}`;
       list.appendChild(li);
     });
-  } catch (e) { console.error(e); list.innerHTML = "<li style='color:red;'>เชื่อมต่อ Server ไม่สำเร็จ</li>"; }
+  } catch (e) { list.innerHTML = "<li>Err</li>"; }
 }
 
 function renderMistakes() {
   const list = document.getElementById("mistakeList"); list.innerHTML = "";
   const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
-  if(sorted.length === 0) { list.innerHTML = "<li style='justify-content:center; color:#888;'>ยังไม่มีข้อมูลคำศัพท์</li>"; return; }
-  sorted.forEach(([vocab, s]) => { if(s.wrong > 0) { const li = document.createElement("li"); li.innerHTML = `<span><b>${vocab}</b> (${s.meaning})</span> <span style="color:red">ผิด ${s.wrong}</span>`; list.appendChild(li); }});
+  sorted.forEach(([vocab, s]) => { if(s.wrong > 0) { const li = document.createElement("li"); li.innerHTML = `<span><b>${vocab}</b></span> <span style="color:red">ผิด ${s.wrong}</span>`; list.appendChild(li); }});
 }
 
-function resetCloudData() {
-  if(!confirm("⚠️ คำเตือน: การกระทำนี้จะลบประวัติการเล่น ABC ทั้งหมดบน Google Sheets\n\nยืนยันหรือไม่?")) return;
-  fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "reset" }) }).then(res => {
-      alert("ล้างข้อมูลเรียบร้อยแล้ว"); localStorage.clear(); markedWords = {}; userSettings = { showRead: true, showMean: true }; currentFilters = { search: "", start: null, end: null, markedOnly: false }; abcScoreGlobal = 0; globalRounds = 0; location.reload();
-  }).catch(err => { alert("เกิดข้อผิดพลาดในการลบข้อมูลบน Cloud"); });
-}
+function resetCloudData() { if(confirm("ล้างข้อมูล ABC?")) { fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "reset" }) }).then(res => { location.reload(); }); } }
 
-window.onload = function() {
-    toggleSoundUI();
-    fetchAbcData(); 
-    window.speechSynthesis.getVoices();
-};
-
+window.onload = function() { toggleSoundUI(); fetchAbcData(); window.speechSynthesis.getVoices(); };
 </script>
 </body>
 </html>
