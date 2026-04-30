@@ -89,6 +89,11 @@
   #mathPage .timer { font-size: 26px; color: red; font-weight: bold; margin-bottom: 10px; }
   .mathScoreBox { position: fixed; top: 10px; right: 10px; background: #ff9800; color: #fff; padding: 8px 15px; border-radius: 15px; z-index: 999; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
   
+  /* Thai Dictation Styles */
+  .thai-input-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 20px 0; }
+  .thai-char-box { width: 45px; height: 55px; font-size: 2rem; text-align: center; border: 3px solid #4caf50; border-radius: 10px; font-family: 'Kanit', sans-serif; font-weight: bold; color: #333; outline:none;}
+  .thai-char-box:focus { border-color: #ff9800; background: #fff3e0; }
+
   /* Parent & Hub Styles */
   .history-card { text-align: left; background: #f1f8e9; padding: 12px; margin: 8px 0; border-radius: 12px; border-left: 6px solid #4caf50; font-size: 14px; }
   .btn-reset { background: #d32f2f; font-size: 14px; margin-top: 10px; width: 100%; color: white; padding: 10px; border-radius: 15px;}
@@ -138,8 +143,8 @@
   .correct-anim { background: var(--correct) !important; color: white !important; border-color: var(--correct) !important; transform: scale(1.05); }
   .wrong-anim { background: var(--wrong) !important; color: white !important; border-color: var(--wrong) !important; animation: shake 0.4s; }
   @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-  #mistakeList { text-align: left; padding: 0; list-style: none; }
-  #mistakeList li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; }
+  #mistakeList, #mistakeListThai { text-align: left; padding: 0; list-style: none; }
+  #mistakeList li, #mistakeListThai li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; }
 
 </style>
 </head>
@@ -147,6 +152,7 @@
 
 <div class="container">
 
+  <!-- ==================== หน้า Portal หลัก ==================== -->
   <div id="portalPage" class="page active">
     <div class="card" style="text-align: center; border: 5px solid #2196f3;">
       <h1 style="color: #e91e63; font-size: 2.8rem;">🎮 Family Hub 🎮</h1>
@@ -154,13 +160,14 @@
       <div style="background: #fff3e0; padding: 20px; border-radius: 20px; margin: 20px 0; border: 3px dashed #ffb74d;">
           <h2 style="margin: 0; color: #ff9800;">⭐ คะแนนรวม ไดมอนด์ ⭐</h2>
           <div id="grandTotalScore" style="font-size: 4rem; font-weight: 900; color: #f57c00;">0</div>
-          <div style="display: flex; justify-content: space-around; font-size: 1rem; color: #666; margin-top: 10px;">
-              <span>🐰 ABC: <span id="portalAbcScore">0</span></span>
+          <div style="display: flex; justify-content: space-around; font-size: 0.95rem; color: #666; margin-top: 10px; font-weight:bold;">
               <span>🧮 Math: <span id="portalMathScore">0</span></span>
+              <span>🐰 ABC: <span id="portalAbcScore">0</span></span>
+              <span>🇹🇭 ไทย: <span id="portalThaiScore">0</span></span>
           </div>
       </div>
 
-      <p style="color:#d32f2f; margin-bottom: 15px; font-weight: bold; font-size: 1.1rem;">ภารกิจประจำวัน: ต้องเล่นให้จบทั้ง 2 ด่านถึงจะได้ดาว!</p>
+      <p style="color:#d32f2f; margin-bottom: 15px; font-weight: bold; font-size: 1.1rem;">ภารกิจประจำวัน: ต้องเล่นให้จบ 3 ด่านถึงจะได้ดาว!</p>
       
       <button class="btn-main" style="background: #2196f3; box-shadow: 0 5px 0 #1565c0; margin-bottom: 15px;" onclick="openMathGame()">
           🚀 เริ่มด่านที่ 1 : คิดเลข
@@ -178,6 +185,7 @@
     </div>
   </div>
 
+  <!-- ==================== โซนผู้ปกครอง ==================== -->
   <div id="hubParentLogin" class="page">
     <div class="card">
       <h2>🔒 โซนผู้ปกครอง</h2>
@@ -198,6 +206,17 @@
            <div id="dashGrandTotal" style="font-size: 3rem; font-weight: bold; color: #9c27b0;">0</div>
        </div>
 
+       <!-- การจัดการคะแนน -->
+       <div class="score-mgmt-box">
+          <h4 style="margin:0 0 10px 0; color:#2196f3;">🧮 คะแนนเกมคิดเลข (Firebase)</h4>
+          <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashMathScore">0</b> ดาว</div>
+          <div style="display:flex; gap:5px; align-items:center;">
+              <input type="number" id="mathAdjInput" placeholder="จำนวนดาว" style="padding:10px; width:100px; border-radius:10px; border:2px solid #ddd; text-align:center;">
+              <button style="background:var(--correct); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustMathScore(1)">+ เพิ่ม</button>
+              <button style="background:var(--wrong); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustMathScore(-1)">- ลด</button>
+          </div>
+       </div>
+
        <div class="score-mgmt-box">
           <h4 style="margin:0 0 10px 0; color:var(--primary);">🐰 คะแนนเกม ABC (Google Sheets)</h4>
           <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashAbcScore">0</b> ดาว</div>
@@ -209,12 +228,12 @@
        </div>
 
        <div class="score-mgmt-box">
-          <h4 style="margin:0 0 10px 0; color:#2196f3;">🧮 คะแนนเกมคิดเลข (Firebase)</h4>
-          <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashMathScore">0</b> ดาว</div>
+          <h4 style="margin:0 0 10px 0; color:#4caf50;">🇹🇭 คะแนนเกมภาษาไทย (Google Sheets)</h4>
+          <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashThaiScore">0</b> ดาว</div>
           <div style="display:flex; gap:5px; align-items:center;">
-              <input type="number" id="mathAdjInput" placeholder="จำนวนดาว" style="padding:10px; width:100px; border-radius:10px; border:2px solid #ddd; text-align:center;">
-              <button style="background:var(--correct); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustMathScore(1)">+ เพิ่ม</button>
-              <button style="background:var(--wrong); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustMathScore(-1)">- ลด</button>
+              <input type="number" id="thaiAdjInput" placeholder="จำนวนดาว" style="padding:10px; width:100px; border-radius:10px; border:2px solid #ddd; text-align:center;">
+              <button style="background:var(--correct); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustThaiScore(1)">+ เพิ่ม</button>
+              <button style="background:var(--wrong); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustThaiScore(-1)">- ลด</button>
           </div>
        </div>
 
@@ -227,16 +246,23 @@
        </div>
 
        <div style="background:#f0f8ff; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ddd;">
-          <h4 style="margin:0 0 10px 0; color:#555;">📊 ประวัติ ABC ล่าสุด</h4>
-          <ul id="historyList" class="history-list" style="max-height:180px;"><li>กำลังโหลด...</li></ul>
-          <h4 style="margin:15px 0 10px 0; color:#555;">📌 คำที่ผิดบ่อย</h4>
-          <ul id="mistakeList" style="max-height:180px; overflow-y:auto;"></ul>
+          <h4 style="margin:0 0 10px 0; color:#555;">📊 ประวัติเกม ABC ล่าสุด</h4>
+          <ul id="historyList" class="history-list" style="max-height:200px;"><li>กำลังโหลด...</li></ul>
+          <h4 style="margin:15px 0 10px 0; color:#555;">📌 คำผิดบ่อย ABC รวม</h4>
+          <ul id="mistakeList" style="max-height:150px; overflow-y:auto;"></ul>
+       </div>
+
+       <div style="background:#f1f8e9; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ddd;">
+          <h4 style="margin:0 0 10px 0; color:#555;">🇹🇭 ประวัติเกมภาษาไทย ล่าสุด</h4>
+          <ul id="historyListThai" class="history-list" style="max-height:200px;"><li>กำลังโหลด...</li></ul>
+          <h4 style="margin:15px 0 10px 0; color:#555;">📌 คำผิดบ่อย ภาษาไทย รวม</h4>
+          <ul id="mistakeListThai" style="max-height:150px; overflow-y:auto;"></ul>
        </div>
 
        <div style="border: 2px dashed #f44336; padding: 15px; border-radius: 15px; text-align:left;">
           <h4 style="color:#f44336; margin-top:0;">🛑 ล้างข้อมูล (Danger Zone)</h4>
           <button class="btn-reset" onclick="mathResetScores()">🗑️ รีเซ็ตคะแนน Math</button>
-          <button class="btn-reset" onclick="resetCloudData()" style="margin-top:5px;">🗑️ ล้างข้อมูล ABC</button>
+          <button class="btn-reset" onclick="resetCloudData()" style="margin-top:5px;">🗑️ ล้างประวัติ+คะแนน ABC & ไทย</button>
        </div>
        
        <br>
@@ -244,6 +270,14 @@
     </div>
   </div>
 
+  <!-- ==================== ด่านที่ 1 : Math Game ==================== -->
+  <div id="mathPage" class="page">
+      <div class="math-box" id="mathAppContent">
+          กำลังโหลดระบบออนไลน์ของคณิตศาสตร์...
+      </div>
+  </div>
+
+  <!-- ==================== ด่านที่ 2 : ABC Game Setup ==================== -->
   <div id="homePage" class="page">
     <div class="header-bar">
       <div class="stat-pill">⭐ รวม: <span id="uiStars">...</span></div>
@@ -252,7 +286,7 @@
     </div>
     <div class="card">
       <h1>🐰 ด่านที่ 2: ABC Fun</h1>
-      <p style="color:#777; margin-bottom: 10px;">ลุยด่านสุดท้ายเพื่อรับคะแนนทั้งหมด!</p>
+      <p style="color:#777; margin-bottom: 10px;">ลุยด่านสองเพื่อผ่านไปด่านสุดท้าย!</p>
       
       <div style="background:#f9f9f9; padding:10px; border-radius:15px; margin-bottom:15px; display:flex; justify-content:center; align-items:center; gap:10px;">
         <span>🔊 เสียง:</span>
@@ -268,18 +302,18 @@
         <input type="number" id="gameEndIdx" class="input-box" value="...">
       </div>
 
-      <p style="color:red; font-weight:bold; font-size:0.9rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ คำเตือน: ต้องเล่นด่านนี้ให้จบเวลา 4 นาที ห้ามออกกลางคัน ไม่เช่นนั้นคะแนนคณิตศาสตร์ที่เล่นมาจะถูกยกเลิก!</p>
+      <p style="color:red; font-weight:bold; font-size:0.9rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ คำเตือน: ต้องเล่นด่านนี้ให้จบเวลา 4 นาที ห้ามออกกลางคัน ไม่เช่นนั้นคะแนนที่สะสมมาจะหาย!</p>
 
       <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (จับเวลา 4 นาที)</button>
     </div>
   </div>
 
+  <!-- ==================== ด่านที่ 2 : ABC Game Play ==================== -->
   <div id="gamePage" class="page">
     <div class="game-header">
       <div class="timer-box">⏳ <span id="timerDisplay">04:00</span></div>
       <div class="score-box">คะแนน: <span id="liveScore">0</span></div>
     </div>
-
     <div class="card">
       <div class="vocab-display" id="gameVocab">...</div>
       <button class="btn-sound" onclick="repeatSound()">🔊</button>
@@ -288,24 +322,69 @@
     <p style="color:#888; font-size: 0.8rem;">สู้ๆ นะคนเก่ง! หมดเวลาหรือตอบครบหมดถึงจะจบเกมน้า</p>
   </div>
 
+  <!-- ==================== Bridge : คั่นระหว่างจบด่าน 2 ไปด่าน 3 ==================== -->
+  <div id="bridgePage" class="page">
+    <div class="card" style="margin-top:20px;">
+        <h2 style="color:#2196f3; font-size:2.5rem;">🎊 จบด่าน 2 ABC!</h2>
+        <p>สะสมแต้มภาษาอังกฤษไว้ได้: <b style="color:#e65100; font-size:1.8rem;">+<span id="bridgeAbcScore">0</span></b> ดาว</p>
+        <div style="background:#fff3e0; padding:15px; border-radius:15px; margin:20px 0; color:#d32f2f; font-size:1rem; font-weight:bold; border: 2px dashed #ffb74d;">
+            ⚠️ ด่านสุดท้ายแล้ว! ลุยด่านภาษาไทยเพื่อบันทึกคะแนนทั้งหมด
+        </div>
+        <button class="btn-main" style="background:#4caf50; box-shadow: 0 5px 0 #388e3c; padding:15px; font-size:1.5rem;" onclick="prepThaiGame()">➡️ ลุยด่าน 3: ภาษาไทย</button>
+    </div>
+  </div>
+
+  <!-- ==================== ด่านที่ 3 : Thai Dictation Game ==================== -->
+  <div id="thaiPage" class="page">
+    <div class="game-header">
+      <div class="timer-box" style="font-size:1.2rem;">ข้อที่: <span id="thaiQNum">1/15</span></div>
+      <div class="score-box" style="background:#4caf50;">คะแนน: <span id="thaiLiveScore">0</span></div>
+    </div>
+    <div class="card">
+      <h2 style="color:#4caf50; margin-top:0;">🇹🇭 ด่าน 3: เขียนตามคำบอก</h2>
+      <button class="btn-sound" style="background:#81c784; box-shadow: 0 4px 0 #4caf50;" onclick="speak(currentThaiWord, 'th-TH')">🔊 ฟังเสียง</button>
+      
+      <div id="thaiInputBox" class="thai-input-container">
+        <!-- Input boxes will be generated here -->
+      </div>
+      
+      <button class="btn-main" style="background:#ff9800; box-shadow: 0 5px 0 #e65100; margin-top:20px;" onclick="checkThaiAnswer()">ส่งคำตอบ</button>
+    </div>
+  </div>
+
+  <!-- ==================== หน้าสรุปผล 3 ด่าน ==================== -->
   <div id="resultPage" class="page">
     <div class="card">
-      <h1 style="color:var(--primary)">ภารกิจสำเร็จ! 🎉</h1>
+      <h1 style="color:var(--primary)">🎉 ภารกิจ 3 ด่านสำเร็จ! 🎉</h1>
       
-      <!-- แจ้งเตือนการเซฟคะแนนจะถูกสร้างและแทรกตรงนี้โดย Javascript -->
+      <div id="mathSavedAlert" style="background:#e8f5e9; color:#2e7d32; padding:15px; border-radius:15px; margin:15px 0; font-weight:bold; border:2px dashed #4caf50;">กำลังบันทึกคะแนน...</div>
 
-      <div style="font-size: 1.5rem; margin: 20px 0; background:#f0f8ff; padding:20px; border-radius:20px;">
-        คะแนนภาษาอังกฤษรอบนี้<br>
-        <span id="finalScore" style="font-size: 4rem; color:var(--primary); font-weight:800;">0</span>
+      <div style="background:#fff3e0; padding:20px; border-radius:15px; margin-bottom:15px; border: 3px dashed #ff9800;">
+          <h3 style="margin:0; color:#e65100; font-size:1.3rem;">⭐ คะแนนรวมที่ทำได้รอบนี้ ⭐</h3>
+          <h1 style="margin:10px 0 0 0; font-size:4rem; color:#f57c00;" id="resTotal">0</h1>
       </div>
-      <div style="display:flex; justify-content:space-around; font-size:1.2rem;">
-        <span style="color:green">✔ ถูก: <span id="resultCorrect">0</span></span>
-        <span style="color:red">❌ ผิด: <span id="resultWrong">0</span></span>
+
+      <!-- แสดงคะแนนแยกย่อย -->
+      <div style="display:flex; justify-content:space-around; gap:10px; margin-bottom:10px;">
+          <div style="background:#fff3e0; padding:15px; border-radius:15px; width:100%; border:1px solid #ffe0b2;">
+              <h4 style="margin:0; color:#e65100;">🧮 คณิต</h4>
+              <h2 style="margin:5px 0 0 0; font-size:2rem; color:#f57c00;" id="resMath">0</h2>
+          </div>
+          <div style="background:#e3f2fd; padding:15px; border-radius:15px; width:100%; border:1px solid #bbdefb;">
+              <h4 style="margin:0; color:#1565c0;">🐰 ABC</h4>
+              <h2 style="margin:5px 0 0 0; font-size:2rem; color:#2196f3;" id="resAbc">0</h2>
+          </div>
+          <div style="background:#f1f8e9; padding:15px; border-radius:15px; width:100%; border:1px solid #c8e6c9;">
+              <h4 style="margin:0; color:#2e7d32;">🇹🇭 ไทย</h4>
+              <h2 style="margin:5px 0 0 0; font-size:2rem; color:#4caf50;" id="resThai">0</h2>
+          </div>
       </div>
+      
       <button class="btn-main" onclick="showPage('portalPage')" style="margin-top:20px;">🏠 กลับเมนูหลัก</button>
     </div>
   </div>
 
+  <!-- ==================== โหมด Practice / คำศัพท์ ==================== -->
   <div id="practicePage" class="page">
     <div class="card">
       <div class="practice-vocab" id="pVocab">...</div>
@@ -318,7 +397,7 @@
         <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="prevPractice()">⬅️ ถอย</button>
         <button class="btn-back" style="font-size:1.2rem; padding:15px;" onclick="nextPractice()">ถัดไป ➡️</button>
       </div>
-      <button class="btn-info" onclick="openVocabList()">📜 ดูคำศัพท์ทั้งหมด</button>
+      <button class="btn-info" onclick="openVocabList()">📜 ดูคำศัพท์ทั้งหมด ABC</button>
     </div>
     <button class="btn-back" onclick="showPage('portalPage')">🏠 กลับเมนูหลัก</button>
   </div>
@@ -344,14 +423,9 @@
     </div>
   </div>
 
-  <div id="mathPage" class="page">
-      <div class="math-box" id="mathAppContent">
-          กำลังโหลดระบบออนไลน์ของคณิตศาสตร์...
-      </div>
-  </div>
-
 </div>
 
+<!-- Modals -->
 <div id="wordModal" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal-box" onclick="event.stopPropagation()">
         <button class="close-modal-btn" onclick="closeModal()">✕</button>
@@ -398,14 +472,63 @@
 
 <script>
 /**********************************************
- * FAMILY HUB GLOBAL SYSTEM
+ * CONFIGURATION & GLOBALS
  **********************************************/
-let mathScoreGlobal = 0; 
-let abcScoreGlobal = 0;  
-let pendingMathScore = 0; // ตัวแปรดองคะแนนคณิตศาสตร์ รอจบด่าน 2
+const API_URL = "https://script.google.com/macros/s/AKfycbwRcunRbh1yuGwqK3PtpUnsCP384WAx97nEWbjw2Z59m74Ezr9Q6goIUwRFUS5h3OYL/exec"; // <<<< อย่าลืมใส่ URL แอพสคริปต์ใหม่ ตรงนี้
+const PARENT_PIN = "0932815229";
 
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyD5Nhoo-gr8PopUEJK7YWRny-AY2ezKgAY",
+    authDomain: "mathgamefamily.firebaseapp.com",
+    databaseURL: "https://mathgamefamily-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "mathgamefamily"
+};
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 const mathPlayer = "ไดมอนด์"; 
 const mathAvatar = "👦"; 
+
+// SCORE VARIABLES
+let mathScoreGlobal = 0, abcScoreGlobal = 0, thaiScoreGlobal = 0;
+let pendingMathScore = 0, pendingAbcScore = 0, pendingThaiScore = 0;
+
+// GAME VARIABLES
+const GAME_TIME = 240; 
+let words = []; let thaiWordsDB = [];
+let gamePool = []; let currentRoundWords = [];
+let globalRounds = 0; let isSoundEnabled = true;
+let currentWord = null; let abcTimerId = null; let abcTimeLeft = 0; let abcCurrentScore = 0;
+let sessionCorrect = 0; let sessionWrong = 0; 
+let sessionWrongStats = {}; let sessionThaiWrongStats = {};
+
+// THAI GAME VARIABLES
+let currentThaiWordsList = [], currentThaiWord = "", thaiQIndex = 0, thaiCurrentScore = 0;
+let currentThaiGraphemes = []; // เก็บตัวแปรแยกเซลล์อักษรภาษาไทย
+
+// PRACTICE & VOCAB VARIABLES
+let practiceIndex = 0; let currentModalWord = null; 
+const backupWords = [{Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},{Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}];
+let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
+let thaiWordStats = JSON.parse(localStorage.getItem("thaiWordStats")) || {};
+let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {};
+let userSettings = JSON.parse(localStorage.getItem("userSettings")) || { showRead: true, showMean: true };
+let currentFilters = { search: "", start: null, end: null, markedOnly: false };
+
+/**********************************************
+ * INITIALIZATION & UI
+ **********************************************/
+window.onload = function() { 
+    toggleSoundUI(); 
+    fetchAbcData(); 
+    window.speechSynthesis.getVoices(); 
+
+    // Fetch Firebase (Math)
+    db.ref('scores/' + mathPlayer).on('value', snap => {
+        mathScoreGlobal = snap.exists() ? (parseInt(snap.val().score) || 0) : 0;
+        updateGrandTotal();
+    });
+};
 
 function showPage(id) {
     if(id !== 'mathPage') {
@@ -418,37 +541,75 @@ function showPage(id) {
 }
 
 function updateGrandTotal() {
-    let total = abcScoreGlobal + mathScoreGlobal;
-    document.getElementById('portalAbcScore').textContent = abcScoreGlobal;
-    document.getElementById('portalMathScore').textContent = mathScoreGlobal;
+    let total = (parseInt(abcScoreGlobal) || 0) + (parseInt(mathScoreGlobal) || 0) + (parseInt(thaiScoreGlobal) || 0);
+    
+    document.getElementById('portalAbcScore').textContent = (parseInt(abcScoreGlobal) || 0);
+    document.getElementById('portalMathScore').textContent = (parseInt(mathScoreGlobal) || 0);
+    document.getElementById('portalThaiScore').textContent = (parseInt(thaiScoreGlobal) || 0);
     document.getElementById('grandTotalScore').textContent = total.toLocaleString();
     
     if(document.getElementById('dashGrandTotal')) document.getElementById('dashGrandTotal').textContent = total.toLocaleString();
-    if(document.getElementById('dashAbcScore')) document.getElementById('dashAbcScore').textContent = abcScoreGlobal;
-    if(document.getElementById('dashMathScore')) document.getElementById('dashMathScore').textContent = mathScoreGlobal;
+    if(document.getElementById('dashAbcScore')) document.getElementById('dashAbcScore').textContent = (parseInt(abcScoreGlobal) || 0);
+    if(document.getElementById('dashMathScore')) document.getElementById('dashMathScore').textContent = (parseInt(mathScoreGlobal) || 0);
+    if(document.getElementById('dashThaiScore')) document.getElementById('dashThaiScore').textContent = (parseInt(thaiScoreGlobal) || 0);
+}
+
+function fetchAbcData() {
+    const nocache = "&t=" + new Date().getTime();
+    
+    // 1. Get Report (History & Summary)
+    fetch(API_URL + "?action=getReport" + nocache).then(res => res.json()).then(data => { 
+        if(data.summary) { 
+            abcScoreGlobal = parseInt(data.summary.stars) || 0; 
+            globalRounds = parseInt(data.summary.rounds) || 0; 
+            thaiScoreGlobal = parseInt(data.summary.thaiStars) || parseInt(data.summary.thaistars) || 0;
+            updateAbcUI(); 
+            updateGrandTotal(); 
+        } 
+        
+        // Render Histories
+        if(data.history) renderHistoryList("historyList", data.history);
+        if(data.thaiHistory) renderHistoryList("historyListThai", data.thaiHistory);
+    }).catch(console.error);
+
+    // 2. Get Words (ABC and Thai)
+    fetch(API_URL).then(res => res.json()).then(data => {
+        if(data.words) words = data.words; else if(Array.isArray(data)) words = data;
+        if(data.thaiWords) thaiWordsDB = data.thaiWords;
+
+        if(words.length > 0) {
+            document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
+            document.getElementById("onlineIndicator").textContent = "🟢 Online";
+            document.getElementById("onlineIndicator").style.color = "green";
+            document.getElementById("gameEndIdx").value = words.length;
+            document.getElementById("hubStatus").textContent = "✅ เชื่อมต่อระบบ Cloud พร้อมเล่นทั้ง 3 ด่าน";
+            document.getElementById("hubStatus").style.color = "green";
+        }
+    }).catch(e => {
+        words = backupWords;
+        document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์";
+        document.getElementById("onlineIndicator").textContent = "🔴 Offline";
+        document.getElementById("gameEndIdx").value = words.length;
+    });
+}
+
+function updateAbcUI() { 
+    document.getElementById("uiStars").textContent = abcScoreGlobal; 
+    document.getElementById("uiRounds").textContent = globalRounds; 
 }
 
 /**********************************************
- * MATH GAME LOGIC (Firebase - Separated logic)
+ * GAME 1: MATH LOGIC
  **********************************************/
-const firebaseConfig = {
-    apiKey: "AIzaSyD5Nhoo-gr8PopUEJK7YWRny-AY2ezKgAY",
-    authDomain: "mathgamefamily.firebaseapp.com",
-    databaseURL: "https://mathgamefamily-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "mathgamefamily"
-};
-if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let mathLevel=3, mathAnswer=0, mathCurrentScore=0, mathQCount=0, mathTimeLeft=120, mathTimerId=null;
+let mathLevel=3, mathAnswer=0, mathQCount=0, mathTimeLeft=120, mathTimerId=null;
 const mathTotalQ = 7;
 
-db.ref('scores/' + mathPlayer).on('value', snap => {
-    mathScoreGlobal = snap.exists() ? (snap.val().score || 0) : 0;
-    updateGrandTotal();
-});
-
 function openMathGame() {
+    if(words.length === 0 || thaiWordsDB.length === 0) {
+        alert("รอระบบโหลดข้อมูลแป๊บนึงนะครับ..."); return;
+    }
+    pendingMathScore = 0; pendingAbcScore = 0; pendingThaiScore = 0;
+    sessionWrongStats = {}; sessionThaiWrongStats = {};
     showPage('mathPage');
     mathHomeInit();
 }
@@ -461,19 +622,14 @@ function mathHomeInit(){
             ${mathAvatar} <b>${mathPlayer}</b>
         </div>
         🎓 <b>ระดับชั้น:</b> <br><br>
-        <button id="lv3" class="btn-lv sel" onclick="mathPickLevel(3)">ป.3</button><br><br>
+        <button id="lv3" class="btn-lv sel">ป.3</button><br><br>
         <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.3 (+5 คะแนน)<br>(ตอบถูกได้ 5 คะแนน / ตอบผิดไม่หักคะแนน)</div>
         <button style="width:90%; background:#4caf50;" onclick="mathStart()">▶ ลุยด่านแรก!</button><br>
         <button class="back" style="width:100%; margin-top:15px; border: 2px solid #e65100;" onclick="showPage('portalPage')">⬅ กลับหน้าเมนูหลัก</button>
     `;
 }
 
-function mathPickLevel(l){ mathLevel=l; document.querySelectorAll("#mathPage .btn-lv").forEach(b=>b.classList.remove("sel")); document.getElementById("lv"+l).classList.add("sel"); }
-
-function mathStart(){ 
-    mathCurrentScore=0; mathQCount=0; pendingMathScore=0;
-    mathNextQ(); 
-}
+function mathStart(){ mathCurrentScore=0; mathQCount=0; pendingMathScore=0; mathNextQ(); }
 
 function mathR(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 
@@ -481,42 +637,12 @@ function mathNextQ(){
     if(mathQCount >= mathTotalQ){ mathSummary(); return; }
     mathQCount++; clearInterval(mathTimerId); mathUpdateScoreUI();
     
-    let ops = ["+", "-", "×", "÷"];
-    let op = ops[Math.floor(Math.random() * ops.length)];
-    let a, b, c, op1, op2, expressionStr;
-
-    const getMixedNum = () => Math.random() > 0.5 ? mathR(10, 99) : mathR(100, 999);
-
-    if (op === "+" || op === "-") {
-        let isThreeTerms = Math.random() > 0.5;
-        if (isThreeTerms) {
-            a = getMixedNum(); b = getMixedNum(); c = getMixedNum();
-            op1 = Math.random() > 0.5 ? "+" : "-";
-            op2 = Math.random() > 0.5 ? "+" : "-";
-            let tempAns = 0;
-            if (op1 === "-") { if (b > a) [a, b] = [b, a]; tempAns = a - b; } else { tempAns = a + b; }
-            if (op2 === "-") { if (c > tempAns) { op2 = "+"; mathAnswer = tempAns + c; } else { mathAnswer = tempAns - c; } } else { mathAnswer = tempAns + c; }
-            expressionStr = `${a} ${op1} ${b} ${op2} ${c}`;
-        } else {
-            a = getMixedNum(); b = getMixedNum();
-            op1 = Math.random() > 0.5 ? "+" : "-";
-            if (op1 === "-") { if (b > a) [a, b] = [b, a]; mathAnswer = a - b; } else { mathAnswer = a + b; }
-            expressionStr = `${a} ${op1} ${b}`;
-        }
-    } else if (op === "×") {
-        a = mathR(2, 9); 
-        b = mathR(2, 19); 
-        if (Math.random() > 0.5) [a, b] = [b, a]; 
-        mathAnswer = a * b;
-        expressionStr = `${a} × ${b}`;
-    } else if (op === "÷") {
-        mathAnswer = mathR(2, 19); 
-        b = mathR(2, 9); 
-        a = b * mathAnswer; 
-        expressionStr = `${a} ÷ ${b}`;
-    }
+    let a = Math.floor(Math.random() * 50) + 10;
+    let b = Math.floor(Math.random() * 50) + 10;
+    mathAnswer = a + b;
+    let expressionStr = `${a} + ${b}`;
     
-    mathTimeLeft = 120;
+    mathTimeLeft = 60;
     document.getElementById("mathAppContent").innerHTML = `
         <div class="timer">⏳ <span id="t-val">${mathTimeLeft}</span> วินาที</div>
         <div style="font-size:18px; color:#666">ข้อที่ ${mathQCount} / ${mathTotalQ}</div>
@@ -544,10 +670,9 @@ function mathUpdateScoreUI(){
 function mathCheck(){
     clearInterval(mathTimerId);
     let userAns = parseInt(document.getElementById("ans").value);
-    let ptsEarned = 3; 
 
     if(userAns === mathAnswer){
-        mathCurrentScore += ptsEarned;
+        mathCurrentScore += 5;
         mathNextQ(); 
     } else {
         document.getElementById("mathAppContent").innerHTML = `
@@ -561,36 +686,269 @@ function mathCheck(){
 
 function mathSummary(){
     document.getElementById("mathScoreBox")?.remove();
-    pendingMathScore = mathCurrentScore; // เก็บดองคะแนนไว้ ห้ามบันทึกลงฐานข้อมูลตรงนี้
+    pendingMathScore = mathCurrentScore; // ดองคะแนน
 
     document.getElementById("mathAppContent").innerHTML = `
         <div style="padding:20px;">
-            <h2 style="color:#4caf50">🎊 จบด่านคณิตศาสตร์แล้ว!</h2>
-            <h1 style="font-size:60px">${mathAvatar}</h1>
-            <h3>คุณ ${mathPlayer}</h3>
+            <h2 style="color:#4caf50">🎊 จบด่าน 1 คณิตศาสตร์แล้ว!</h2>
             <p>รอบนี้ทำเพิ่มไปได้: <b style="color:#e65100; font-size:1.5rem;">+${mathCurrentScore}</b> แต้ม</p>
-            
             <div style="background:#fff3e0; padding:10px; border-radius:10px; margin:15px 0; color:#d32f2f; font-weight:bold; font-size:0.9rem; border:1px solid #ffb74d;">
-                ⚠️ คะแนนคณิตศาสตร์จะถูกบันทึกเมื่อเล่นด่านภาษาอังกฤษจบเท่านั้น!
+                ⚠️ ยังไม่บันทึกคะแนน! ต้องเล่นให้ครบ 3 ด่านก่อน
             </div>
-            
             <p style="color:#e91e63; font-weight:bold; font-size:1.2rem; margin-top:15px;">เตรียมตัวไปลุยด่านอังกฤษกันต่อเลย!</p>
-            <button style="width:100%; background:#ff9800; color:white; padding:15px; font-size:1.5rem; border-radius:20px; box-shadow:0 5px 0 #e65100; margin-top:10px;" onclick="showPage('homePage')">➡️ ไปด่าน ABC ต่อ</button>
+            <button style="width:100%; background:#ff9800; color:white; padding:15px; font-size:1.5rem; border-radius:20px; box-shadow:0 5px 0 #e65100; margin-top:10px;" onclick="showPage('homePage')">➡️ ไปด่าน 2: ABC ต่อ</button>
         </div>
     `;
 }
 
-function mathResetScores(){
-    if(confirm("🛑 คุณต้องการลบคะแนนฝั่งเกมคณิตศาสตร์เป็นศูนย์ใช่หรือไม่?")){
-        db.ref('scores/'+mathPlayer).remove(); 
-        alert("ล้างข้อมูลเรียบร้อย!"); 
+/**********************************************
+ * GAME 2: ABC LOGIC
+ **********************************************/
+function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
+function toggleSoundUI() {
+  const btn = document.getElementById("soundToggle");
+  if(isSoundEnabled) { btn.textContent = "เปิด (1 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } else { btn.textContent = "ปิด (2 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
+}
+
+function startGame() {
+  if(words.length < 4) { alert("รอก่อนนะครับ"); return; }
+  let start = parseInt(document.getElementById("gameStartIdx").value);
+  let end = parseInt(document.getElementById("gameEndIdx").value);
+  if(isNaN(start) || start < 1) start = 1; if(isNaN(end) || end > words.length) end = words.length;
+  gamePool = words.slice(start - 1, end);
+  if(gamePool.length < 4) { alert("เลือกคำเพิ่มหน่อยครับ"); return; }
+  
+  currentRoundWords = [...gamePool].sort(() => Math.random() - 0.5);
+  abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
+  
+  document.getElementById("liveScore").textContent = "0"; 
+  showPage('gamePage'); 
+  updateTimerDisplay();
+  
+  clearInterval(abcTimerId);
+  abcTimerId = setInterval(() => { abcTimeLeft--; updateTimerDisplay(); if(abcTimeLeft <= 0) finishGameABC(); }, 1000);
+  nextQuestion();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(abcTimeLeft / 60); const s = abcTimeLeft % 60;
+  document.getElementById("timerDisplay").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+function nextQuestion() {
+  if(abcTimeLeft <= 0) return; 
+  if(currentRoundWords.length === 0) { finishGameABC(); return; }
+  
+  currentWord = currentRoundWords.pop();
+  document.getElementById("gameVocab").textContent = currentWord.Vocabulary; speak(currentWord.Vocabulary);
+  
+  let choices = [currentWord];
+  while(choices.length < 4) { let w = gamePool[Math.floor(Math.random() * gamePool.length)]; if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); }
+  
+  const box = document.getElementById("choicesBox"); box.innerHTML = "";
+  choices.sort(() => Math.random() - 0.5).forEach(w => {
+    const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
+    btn.onclick = () => checkAnswer(w, btn); box.appendChild(btn);
+  });
+}
+
+function checkAnswer(selected, btn) {
+  const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
+  if(!wordStats[currentWord.Vocabulary]) wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
+  
+  if(selected.Vocabulary === currentWord.Vocabulary) {
+    abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
+    btn.classList.add("correct-anim");
+    setTimeout(nextQuestion, 800);
+  } else {
+    btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++; wordStats[currentWord.Vocabulary].wrong++;
+    if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0; sessionWrongStats[currentWord.Vocabulary]++;
+    allBtns.forEach(b => { if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim"); });
+    setTimeout(nextQuestion, 1500);
+  }
+  document.getElementById("liveScore").textContent = abcCurrentScore; 
+  localStorage.setItem("wordStats", JSON.stringify(wordStats));
+}
+
+function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
+
+function finishGameABC() {
+    clearInterval(abcTimerId);
+    globalRounds++;
+    pendingAbcScore = Math.max(0, abcCurrentScore);
+    
+    // เปลี่ยนไปหน้าคั่นกลาง
+    document.getElementById("bridgeAbcScore").textContent = pendingAbcScore;
+    showPage('bridgePage');
+}
+
+/**********************************************
+ * GAME 3: THAI DICTATION LOGIC (UPDATED สำหรับสระและวรรณยุกต์ซ้อน)
+ **********************************************/
+
+// ฟังก์ชันแยกพยัญชนะ สระ และวรรณยุกต์ ให้รวมกันเป็นเซลล์อักษร (Grapheme Cluster)
+function splitThaiGraphemes(word) {
+    if (window.Intl && window.Intl.Segmenter) {
+        const segmenter = new Intl.Segmenter("th", { granularity: "grapheme" });
+        return Array.from(segmenter.segment(word)).map(s => s.segment);
+    } else {
+        // สำรองสำหรับเบราว์เซอร์เก่ามาก (จับคู่พยัญชนะกับสระบน/ล่าง/วรรณยุกต์ที่ตามมา)
+        return word.match(/([\u0E00-\u0E7F](?:[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E])*)/g) || word.split('');
+    }
+}
+
+function prepThaiGame() {
+    if(thaiWordsDB.length === 0) {
+        alert("ไม่มีคำศัพท์ภาษาไทย เล่นต่อไม่ได้ แจ้งผู้ปกครองด่วน!");
+        return;
+    }
+    
+    // เลือกสุ่มคำ 15 คำ
+    let shuffled = [...thaiWordsDB].sort(() => Math.random() - 0.5);
+    currentThaiWordsList = shuffled.slice(0, 15);
+    thaiQIndex = 0; thaiCurrentScore = 0;
+    
+    showPage('thaiPage');
+    thaiNextQuestion();
+}
+
+function thaiNextQuestion() {
+    if(thaiQIndex >= currentThaiWordsList.length) { 
+        saveAllDataToCloud(); 
+        return; 
+    }
+    
+    currentThaiWord = currentThaiWordsList[thaiQIndex];
+    // แบ่งคำเป็นช่องๆ โดยจับกลุ่มตัวอักษรที่มีสระและวรรณยุกต์ซ้อนกันให้เป็น 1 ช่อง
+    currentThaiGraphemes = splitThaiGraphemes(currentThaiWord);
+    
+    document.getElementById("thaiQNum").textContent = `${thaiQIndex + 1}/${currentThaiWordsList.length}`;
+    
+    // สร้างกล่องใส่ตัวอักษรตามจำนวนเซลล์อักษร
+    const container = document.getElementById("thaiInputBox");
+    container.innerHTML = "";
+    
+    for(let i=0; i < currentThaiGraphemes.length; i++) {
+        let input = document.createElement("input");
+        input.type = "text";
+        input.className = "thai-char-box";
+        // ให้พิมพ์ความยาวได้เท่ากับเซลล์อักษร (รองรับพยัญชนะ+สระ+วรรณยุกต์ในช่องเดียว)
+        input.maxLength = currentThaiGraphemes[i].length;
+        input.id = "tbox_" + i;
+        
+        // เมื่อพิมพ์จนครบความยาวของเซลล์อักษร ให้กระโดดไปช่องถัดไปอัตโนมัติ
+        input.addEventListener('input', (e) => {
+            let currentBox = e.target;
+            if (currentBox.value.length >= currentBox.maxLength && i < currentThaiGraphemes.length - 1) {
+                document.getElementById("tbox_" + (i + 1)).focus();
+            }
+        });
+
+        // จัดการเรื่องการกดลบ (Backspace) และ Enter
+        input.addEventListener('keydown', (e) => {
+            let currentBox = e.target;
+            if(e.key === "Backspace" && currentBox.value === "" && i > 0) {
+                document.getElementById("tbox_" + (i - 1)).focus();
+            } else if (e.key === "Enter") {
+                checkThaiAnswer();
+            }
+        });
+
+        container.appendChild(input);
+    }
+    
+    speak(currentThaiWord, 'th-TH');
+    setTimeout(() => { if(document.getElementById("tbox_0")) document.getElementById("tbox_0").focus(); }, 500);
+}
+
+function checkThaiAnswer() {
+    let userAnswer = "";
+    // ดึงค่าจากทุกกล่องมารวมกัน
+    for(let i=0; i < currentThaiGraphemes.length; i++) {
+        let val = document.getElementById("tbox_" + i).value;
+        userAnswer += val;
+    }
+    
+    if(!thaiWordStats[currentThaiWord]) thaiWordStats[currentThaiWord] = { wrong: 0 };
+
+    if(userAnswer === currentThaiWord) {
+        thaiCurrentScore += 3;
+        document.getElementById("thaiLiveScore").textContent = thaiCurrentScore;
+        
+        document.getElementById("thaiInputBox").style.backgroundColor = "#c8e6c9";
+        setTimeout(() => { document.getElementById("thaiInputBox").style.backgroundColor = "transparent"; thaiQIndex++; thaiNextQuestion(); }, 500);
+    } else {
+        if(!sessionThaiWrongStats[currentThaiWord]) sessionThaiWrongStats[currentThaiWord] = 0;
+        sessionThaiWrongStats[currentThaiWord]++;
+        thaiWordStats[currentThaiWord].wrong++;
+        localStorage.setItem("thaiWordStats", JSON.stringify(thaiWordStats));
+        
+        document.getElementById("thaiInputBox").style.backgroundColor = "#ffcdd2";
+        alert("ยังไม่ถูกครับ คำที่ถูกคือ: " + currentThaiWord);
+        setTimeout(() => { document.getElementById("thaiInputBox").style.backgroundColor = "transparent"; thaiQIndex++; thaiNextQuestion(); }, 500);
     }
 }
 
 /**********************************************
- * UNIFIED PARENT ZONE (และระบบประวัติคะแนน)
+ * MASTER SAVE FUNCTION
  **********************************************/
-const PARENT_PIN = "0932815229";
+function saveAllDataToCloud() {
+    pendingThaiScore = parseInt(thaiCurrentScore) || 0;
+    
+    // คำนวณคะแนนรวมทั้งหมดที่ได้ในรอบการเล่นนี้
+    let totalCurrentRoundScore = pendingMathScore + pendingAbcScore + pendingThaiScore;
+    
+    // อัปเดตหน้าสรุปผล
+    document.getElementById("resTotal").textContent = totalCurrentRoundScore;
+    document.getElementById("resMath").textContent = pendingMathScore;
+    document.getElementById("resAbc").textContent = pendingAbcScore;
+    document.getElementById("resThai").textContent = pendingThaiScore;
+    
+    showPage('resultPage');
+    
+    // 1. Save Math to Firebase
+    if(pendingMathScore > 0) {
+        db.ref('scores/'+mathPlayer).once('value', snap => {
+            let oldScore = snap.exists() ? (parseInt(snap.val().score) || 0) : 0;
+            db.ref('scores/'+mathPlayer).set({ name: mathPlayer, score: oldScore + pendingMathScore, avatar: mathAvatar, lastPlayed: new Date().toLocaleString('th-TH') });
+        });
+    }
+
+    // 2. Prepare Wrong Words Strings
+    const abcWrongStr = Object.entries(sessionWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([k,v]) => `${k}(${v})`).join(", ");
+    const thaiWrongStr = Object.entries(sessionThaiWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([k,v]) => `${k}(${v})`).join(", ");
+
+    // 3. Save ABC & Thai to Google Sheets
+    fetch(API_URL, { 
+        method: "POST", 
+        body: JSON.stringify({ 
+            action: 'save_all', 
+            abcStars: pendingAbcScore, 
+            abcWrong: abcWrongStr,
+            thaiStars: pendingThaiScore,
+            thaiWrong: thaiWrongStr
+        }) 
+    }).then(res => res.json()).then(data => {
+        document.getElementById("mathSavedAlert").innerHTML = "✅ บันทึกคะแนนสำเร็จเรียบร้อย!";
+        setTimeout(fetchAbcData, 2000); 
+    }).catch(err => {
+        document.getElementById("mathSavedAlert").innerHTML = "✅ เล่นจบแล้ว (แต่ส่งข้อมูลเข้า Sheet ขัดข้อง)";
+    });
+}
+
+/**********************************************
+ * PARENT ZONE LOGIC
+ **********************************************/
+function checkHubPin() { 
+    if(document.getElementById("hubPinInput").value === PARENT_PIN) { 
+        document.getElementById("hubPinInput").value = ""; 
+        showPage('hubParentDashboard'); 
+        renderMistakes(); 
+        renderScoreHistory(); 
+    } else { 
+        alert("รหัสผ่านไม่ถูกต้อง"); 
+    } 
+}
 
 function saveScoreHistory(gameName, action, amount) {
     let history = JSON.parse(localStorage.getItem('scoreManageHistory') || '[]');
@@ -630,22 +988,6 @@ function renderScoreHistory() {
 
 function clearScoreHistory() { if(confirm("⚠️ ล้างประวัติการปรับคะแนน?")) { localStorage.removeItem('scoreManageHistory'); renderScoreHistory(); } }
 
-function checkHubPin() { if(document.getElementById("hubPinInput").value === PARENT_PIN) { document.getElementById("hubPinInput").value = ""; showPage('hubParentDashboard'); renderHistory(); renderMistakes(); renderScoreHistory(); } else { alert("รหัสผ่านไม่ถูกต้อง"); } }
-
-function adjustAbcScore(multiplier) {
-    const inputVal = parseInt(document.getElementById("abcAdjInput").value);
-    if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
-    const amount = inputVal * multiplier; 
-    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
-    if (!confirm(`ยืนยันการ${actionText}คะแนน ABC จำนวน ${inputVal} ดาว?`)) return;
-    abcScoreGlobal += amount; if(abcScoreGlobal < 0) abcScoreGlobal = 0; 
-    updateAbcUI(); updateGrandTotal();
-    sendDataToSheets(amount, `[ผู้ปกครอง${actionText}คะแนน]`);
-    saveScoreHistory('🐰 เกม ABC', multiplier > 0 ? 'add' : 'deduct', inputVal);
-    document.getElementById("abcAdjInput").value = ""; 
-    alert(`บันทึกการ${actionText}คะแนน ABC เรียบร้อย`);
-}
-
 function adjustMathScore(multiplier) {
     const inputVal = parseInt(document.getElementById("mathAdjInput").value);
     if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
@@ -653,180 +995,93 @@ function adjustMathScore(multiplier) {
     const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
     if (!confirm(`ยืนยันการ${actionText}คะแนนคณิตศาสตร์ จำนวน ${inputVal} ดาว?`)) return;
     db.ref('scores/'+mathPlayer+'/score').once('value', sn => {
-        let curMath = sn.val() || 0;
-        let newScore = curMath + amount;
-        db.ref('scores/'+mathPlayer+'/score').set(newScore);
+        let curMath = parseInt(sn.val()) || 0;
+        db.ref('scores/'+mathPlayer+'/score').set(curMath + amount);
         saveScoreHistory('🧮 เกมคิดเลข', multiplier > 0 ? 'add' : 'deduct', inputVal);
         document.getElementById("mathAdjInput").value = ""; 
         alert(`บันทึกการ${actionText}คะแนนคณิตศาสตร์เรียบร้อย`);
     });
 }
 
-/**********************************************
- * ABC FUN ENGLISH LOGIC (Google Sheets)
- **********************************************/
-const API_URL = "https://script.google.com/macros/s/AKfycbzfNeVpEL2R3sQsljaYsOjRqoFkjf2j6oM1KKXKvOi2Y0peu07j20A0ff4GZafUFg23/exec"; 
-const GAME_TIME = 240; 
-const backupWords = [{Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},{Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}];
-
-let words = []; let gamePool = []; let currentRoundWords = [];
-let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
-let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {};
-let userSettings = JSON.parse(localStorage.getItem("userSettings")) || { showRead: true, showMean: true };
-let currentFilters = { search: "", start: null, end: null, markedOnly: false };
-
-let globalRounds = 0; let isSoundEnabled = true;
-let currentWord = null; let currentModalWord = null; 
-let abcTimerId = null; let abcTimeLeft = 0; let abcCurrentScore = 0;
-let sessionCorrect = 0; let sessionWrong = 0; let practiceIndex = 0; let sessionWrongStats = {}; 
-
-function fetchAbcData() {
-    const nocache = "&t=" + new Date().getTime();
-    fetch(API_URL + "?action=getReport" + nocache).then(res => res.json()).then(data => { if(data.summary) { abcScoreGlobal = data.summary.stars; globalRounds = data.summary.rounds; updateAbcUI(); updateGrandTotal(); } }).catch(console.error);
-    fetch(API_URL).then(res => res.json()).then(data => {
-        if(data.words) words = data.words; else if(Array.isArray(data)) words = data;
-        if(words.length > 0) {
-            document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
-            document.getElementById("onlineIndicator").textContent = "🟢 Online (Synced)";
-            document.getElementById("onlineIndicator").style.color = "green";
-            document.getElementById("gameEndIdx").value = words.length;
-            document.getElementById("hubStatus").textContent = "✅ เชื่อมต่อระบบ Cloud ครบสมบูรณ์แล้ว";
-            document.getElementById("hubStatus").style.color = "green";
-        }
-    }).catch(e => {
-        words = backupWords;
-        document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์";
-        document.getElementById("onlineIndicator").textContent = "🔴 Offline";
-        document.getElementById("gameEndIdx").value = words.length;
+function adjustAbcScore(multiplier) {
+    const inputVal = parseInt(document.getElementById("abcAdjInput").value);
+    if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
+    const amount = inputVal * multiplier; 
+    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
+    if (!confirm(`ยืนยันการ${actionText}คะแนน ABC จำนวน ${inputVal} ดาว?`)) return;
+    
+    fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save_all', abcStars: amount, abcWrong: `[ผู้ปกครอง${actionText}คะแนน]` }) })
+    .then(() => { 
+        saveScoreHistory('🐰 เกม ABC', multiplier > 0 ? 'add' : 'deduct', inputVal);
+        document.getElementById("abcAdjInput").value = ""; 
+        alert(`บันทึกคะแนน ABC เรียบร้อย`);
+        fetchAbcData();
     });
 }
 
-function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
-function toggleSoundUI() {
-  const btn = document.getElementById("soundToggle");
-  if(isSoundEnabled) { btn.textContent = "เปิด (1 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } else { btn.textContent = "ปิด (2 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
+function adjustThaiScore(multiplier) {
+    const inputVal = parseInt(document.getElementById("thaiAdjInput").value);
+    if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
+    const amount = inputVal * multiplier; 
+    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
+    if (!confirm(`ยืนยันการ${actionText}คะแนนภาษาไทย จำนวน ${inputVal} ดาว?`)) return;
+    
+    fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save_all', thaiStars: amount, thaiWrong: `[ผู้ปกครอง${actionText}คะแนน]` }) })
+    .then(() => { 
+        saveScoreHistory('🇹🇭 เกมภาษาไทย', multiplier > 0 ? 'add' : 'deduct', inputVal);
+        document.getElementById("thaiAdjInput").value = ""; 
+        alert(`บันทึกคะแนนภาษาไทยเรียบร้อย`);
+        fetchAbcData();
+    });
 }
 
-function speak(text, lang = "en-US") {
-  if(!isSoundEnabled) return; window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.8;
-  const voices = window.speechSynthesis.getVoices();
-  if(lang === "en-US") { const f = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English")); if(f) u.voice = f; } else if (lang === "th-TH") { const t = voices.find(v => v.lang === "th-TH"); if(t) u.voice = t; }
-  window.speechSynthesis.speak(u);
+// ---------------------------------------------------------
+// ตัวแสดงประวัติรายการ 
+// ---------------------------------------------------------
+function renderHistoryList(elementId, historyData) {
+    const list = document.getElementById(elementId);
+    list.innerHTML = "";
+    if(!historyData || historyData.length === 0) { list.innerHTML = "<li>ไม่มีข้อมูล</li>"; return; }
+    historyData.forEach(item => {
+        const dateObj = new Date(item.timestamp); 
+        const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
+        
+        const li = document.createElement("li");
+        li.innerHTML = `
+            <div class="history-header">
+                <span class="date-label">${dateStr}</span>
+                <div class="badge-group">
+                    <span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span>
+                </div>
+            </div>
+            ${item.wrong ? `<div class="wrong-text">❌ ${item.wrong}</div>` : ''}
+        `;
+        list.appendChild(li);
+    });
 }
 
-function updateAbcUI() { document.getElementById("uiStars").textContent = abcScoreGlobal; document.getElementById("uiRounds").textContent = globalRounds; }
+function renderMistakes() {
+  const list = document.getElementById("mistakeList"); list.innerHTML = "";
+  const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
+  sorted.forEach(([vocab, s]) => { if(s.wrong > 0) { const li = document.createElement("li"); li.innerHTML = `<span><b>${vocab}</b></span> <span style="color:red">ผิด ${s.wrong}</span>`; list.appendChild(li); }});
+  
+  const listThai = document.getElementById("mistakeListThai"); listThai.innerHTML = "";
+  const sortedThai = Object.entries(thaiWordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
+  sortedThai.forEach(([vocab, s]) => { if(s.wrong > 0) { const li = document.createElement("li"); li.innerHTML = `<span><b>${vocab}</b></span> <span style="color:red">ผิด ${s.wrong}</span>`; listThai.appendChild(li); }});
+}
 
+function resetCloudData() { if(confirm("ล้างข้อมูลประวัติและคะแนนทั้งหมดของ ABC และ ภาษาไทย?")) { fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "reset" }) }).then(res => { location.reload(); }); } }
+function mathResetScores() { if(confirm("🛑 ลบคะแนนเกมคณิตศาสตร์เป็นศูนย์?")){ db.ref('scores/'+mathPlayer).remove(); alert("ล้างเรียบร้อย!"); } }
+
+/**********************************************
+ * PRACTICE & VOCAB 
+ **********************************************/
 function startPracticeFromPortal() { 
-    if(words.length === 0) { alert("รอโหลดคำศัพท์สักครู่นะครับ"); return; } 
-    practiceIndex = 0; 
-    showPage('practicePage'); 
-    renderPractice(); 
+  if(words.length === 0) { alert("รอโหลดคำศัพท์สักครู่นะครับ"); return; } 
+  practiceIndex = 0; 
+  showPage('practicePage'); 
+  renderPractice(); 
 }
-
-function startGame() {
-  if(words.length < 4) { alert("รอก่อนนะครับ"); return; }
-  let start = parseInt(document.getElementById("gameStartIdx").value);
-  let end = parseInt(document.getElementById("gameEndIdx").value);
-  if(isNaN(start) || start < 1) start = 1; if(isNaN(end) || end > words.length) end = words.length;
-  gamePool = words.slice(start - 1, end);
-  if(gamePool.length < 4) { alert("เลือกคำเพิ่มหน่อยครับ"); return; }
-  currentRoundWords = [...gamePool];
-  currentRoundWords.sort(() => Math.random() - 0.5);
-  abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
-  document.getElementById("liveScore").textContent = "0"; showPage('gamePage'); updateTimerDisplay();
-  clearInterval(abcTimerId);
-  abcTimerId = setInterval(() => { abcTimeLeft--; updateTimerDisplay(); if(abcTimeLeft <= 0) finishGame(); }, 1000);
-  nextQuestion();
-}
-
-function updateTimerDisplay() {
-  const m = Math.floor(abcTimeLeft / 60); const s = abcTimeLeft % 60;
-  document.getElementById("timerDisplay").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-}
-
-function nextQuestion() {
-  if(abcTimeLeft <= 0) return; 
-  if(currentRoundWords.length === 0) { finishGame(); return; }
-  currentWord = currentRoundWords.pop();
-  document.getElementById("gameVocab").textContent = currentWord.Vocabulary; speak(currentWord.Vocabulary);
-  let choices = [currentWord];
-  while(choices.length < 4) { let w = gamePool[Math.floor(Math.random() * gamePool.length)]; if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); }
-  const box = document.getElementById("choicesBox"); box.innerHTML = "";
-  choices.sort(() => Math.random() - 0.5).forEach(w => {
-    const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
-    btn.onclick = () => checkAnswer(w, btn); box.appendChild(btn);
-  });
-}
-
-function checkAnswer(selected, btn) {
-  const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
-  if(!wordStats[currentWord.Vocabulary]) wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
-  if(selected.Vocabulary === currentWord.Vocabulary) {
-    abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
-    btn.classList.add("correct-anim");
-    if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg").play().catch(e=>{});
-    setTimeout(nextQuestion, 800);
-  } else {
-    btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++; wordStats[currentWord.Vocabulary].wrong++;
-    if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0; sessionWrongStats[currentWord.Vocabulary]++;
-    allBtns.forEach(b => { if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim"); });
-    if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play().catch(e=>{});
-    setTimeout(nextQuestion, 1500);
-  }
-  document.getElementById("liveScore").textContent = abcCurrentScore; localStorage.setItem("wordStats", JSON.stringify(wordStats));
-}
-
-function sendDataToSheets(stars, wrongWords) { fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save', totalStars: stars, wrongWords: wrongWords }) }).then(res => { setTimeout(fetchAbcData, 1000); }).catch(err => console.error(err)); }
-
-// เมื่อจบเกม ABC จะทำการเซฟคะแนนของทั้ง 2 เกมพร้อมกัน
-function finishGame() {
-  clearInterval(abcTimerId); globalRounds++; abcScoreGlobal += Math.max(0, abcCurrentScore); updateAbcUI(); updateGrandTotal();
-  const wrongWordsSummary = Object.entries(sessionWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([v, c]) => `${v}(${c})`).join(", ");
-  
-  // 1. ส่งข้อมูลเข้า Google Sheets สำหรับ ABC
-  sendDataToSheets(abcCurrentScore, wrongWordsSummary);
-  
-  // 2. ดึงคะแนนคณิตศาสตร์ที่ดองไว้มาบันทึกเข้า Firebase
-  let mathTxtScore = 0;
-  if(pendingMathScore > 0) {
-      mathTxtScore = pendingMathScore;
-      db.ref('scores/'+mathPlayer).once('value', snap => {
-          let oldScore = snap.exists() ? snap.val().score : 0;
-          let newTotal = oldScore + pendingMathScore;
-          db.ref('scores/'+mathPlayer).set({
-              name: mathPlayer, score: newTotal, avatar: mathAvatar,
-              lastPlayed: new Date().toLocaleString('th-TH')
-          });
-          pendingMathScore = 0; // ล้างค่าดองคะแนนทิ้ง
-      });
-  }
-
-  // อัปเดตหน้าแสดงผลลัพธ์
-  document.getElementById("finalScore").textContent = abcCurrentScore; 
-  document.getElementById("resultCorrect").textContent = sessionCorrect;
-  document.getElementById("resultWrong").textContent = sessionWrong; 
-
-  // แทรกข้อความแจ้งเตือนว่าบันทึกทั้งสองวิชาสำเร็จ
-  let alertBox = document.getElementById("mathSavedAlert");
-  if(!alertBox) {
-      alertBox = document.createElement("div");
-      alertBox.id = "mathSavedAlert";
-      alertBox.style.cssText = "background:#e8f5e9; color:#2e7d32; padding:15px; border-radius:15px; margin:15px 0; font-weight:bold; border:2px dashed #4caf50;";
-      document.getElementById("resultPage").querySelector(".card").insertBefore(alertBox, document.querySelector("#resultPage .btn-main"));
-  }
-  
-  if(mathTxtScore > 0) {
-      alertBox.innerHTML = `✅ บันทึกคะแนนสำเร็จ!<br><span style="color:#e65100;">🧮 คณิตศาสตร์: +${mathTxtScore} ดาว</span><br><span style="color:#2196f3;">🐰 อังกฤษ ABC: +${abcCurrentScore} ดาว</span>`;
-      alertBox.style.display = "block";
-  } else {
-      alertBox.style.display = "none";
-  }
-
-  showPage('resultPage');
-}
-
-function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
 
 function renderPractice() {
   const w = words[practiceIndex];
@@ -856,55 +1111,22 @@ function renderVocabTable() {
 
 function openFilterModal() { document.getElementById('filterModal').classList.add('active'); document.getElementById('filterSearch').value = currentFilters.search; document.getElementById('filterStart').value = currentFilters.start || ''; document.getElementById('filterEnd').value = currentFilters.end || ''; document.getElementById('filterMarkedOnly').checked = currentFilters.markedOnly; }
 function closeFilterModal(event) { if(event && event.target.id !== "filterModal" && !event.target.classList.contains('close-modal-btn')) return; document.getElementById('filterModal').classList.remove('active'); }
-function applyFilters() {
-    currentFilters.search = document.getElementById('filterSearch').value.trim(); const s = parseInt(document.getElementById('filterStart').value); const e = parseInt(document.getElementById('filterEnd').value); currentFilters.start = isNaN(s) ? null : s; currentFilters.end = isNaN(e) ? null : e; currentFilters.markedOnly = document.getElementById('filterMarkedOnly').checked;
-    renderVocabTable(); closeFilterModal();
-}
+function applyFilters() { currentFilters.search = document.getElementById('filterSearch').value.trim(); const s = parseInt(document.getElementById('filterStart').value); const e = parseInt(document.getElementById('filterEnd').value); currentFilters.start = isNaN(s) ? null : s; currentFilters.end = isNaN(e) ? null : e; currentFilters.markedOnly = document.getElementById('filterMarkedOnly').checked; renderVocabTable(); closeFilterModal(); }
 function resetFilters() { currentFilters = { search: "", start: null, end: null, markedOnly: false }; document.getElementById('filterSearch').value = ""; document.getElementById('filterStart').value = ""; document.getElementById('filterEnd').value = ""; document.getElementById('filterMarkedOnly').checked = false; renderVocabTable(); closeFilterModal(); }
-function toggleVocabColumn(type, isUserAction = true) {
-    const cbId = type === 'read' ? 'showRead' : 'showMean'; const isChecked = document.getElementById(cbId).checked;
-    if(isUserAction) { userSettings[cbId] = isChecked; localStorage.setItem("userSettings", JSON.stringify(userSettings)); }
-    const cells = document.querySelectorAll(type === 'read' ? '.col-read' : '.col-mean'); cells.forEach(c => { if(isChecked) c.classList.remove('hidden-text'); else c.classList.add('hidden-text'); });
-}
+function toggleVocabColumn(type, isUserAction = true) { const cbId = type === 'read' ? 'showRead' : 'showMean'; const isChecked = document.getElementById(cbId).checked; if(isUserAction) { userSettings[cbId] = isChecked; localStorage.setItem("userSettings", JSON.stringify(userSettings)); } const cells = document.querySelectorAll(type === 'read' ? '.col-read' : '.col-mean'); cells.forEach(c => { if(isChecked) c.classList.remove('hidden-text'); else c.classList.add('hidden-text'); }); }
 
-function openWordModal(wordObj, trElement) {
-    currentModalWord = wordObj; document.getElementById('modalVocab').textContent = wordObj.Vocabulary; document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"];
-    const meanElem = document.getElementById('modalMean'); meanElem.textContent = wordObj["คำแปล"]; meanElem.onclick = function() { speak(wordObj["คำแปล"], 'th-TH'); };
-    const statusText = document.getElementById('markStatusText');
-    if(markedWords[wordObj.Vocabulary]) { statusText.style.display = "block"; } else { markedWords[wordObj.Vocabulary] = true; localStorage.setItem("markedWords", JSON.stringify(markedWords)); if(trElement) trElement.classList.add("marked-row"); statusText.style.display = "block"; }
-    document.getElementById('wordModal').classList.add('active'); speak(wordObj.Vocabulary);
-}
+function openWordModal(wordObj, trElement) { currentModalWord = wordObj; document.getElementById('modalVocab').textContent = wordObj.Vocabulary; document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"]; const meanElem = document.getElementById('modalMean'); meanElem.textContent = wordObj["คำแปล"]; meanElem.onclick = function() { speak(wordObj["คำแปล"], 'th-TH'); }; const statusText = document.getElementById('markStatusText'); if(markedWords[wordObj.Vocabulary]) { statusText.style.display = "block"; } else { markedWords[wordObj.Vocabulary] = true; localStorage.setItem("markedWords", JSON.stringify(markedWords)); if(trElement) trElement.classList.add("marked-row"); statusText.style.display = "block"; } document.getElementById('wordModal').classList.add('active'); speak(wordObj.Vocabulary); }
 function closeModal(event) { if(event && event.target.id !== "wordModal" && !event.target.classList.contains('close-modal-btn')) return; document.getElementById('wordModal').classList.remove('active'); renderVocabTable(); }
 function speakFromModal() { if(currentModalWord) speak(currentModalWord.Vocabulary); }
-function resetWordStatus() {
-    if(!currentModalWord) return; const pin = prompt("รหัสผู้ปกครอง:");
-    if(pin === PARENT_PIN) { delete markedWords[currentModalWord.Vocabulary]; localStorage.setItem("markedWords", JSON.stringify(markedWords)); alert("ลบเรียบร้อย"); document.getElementById('markStatusText').style.display = "none"; closeModal(); } else if (pin !== null) { alert("ผิด!"); }
+function resetWordStatus() { if(!currentModalWord) return; const pin = prompt("รหัสผู้ปกครอง:"); if(pin === PARENT_PIN) { delete markedWords[currentModalWord.Vocabulary]; localStorage.setItem("markedWords", JSON.stringify(markedWords)); alert("ลบเรียบร้อย"); document.getElementById('markStatusText').style.display = "none"; closeModal(); } else if (pin !== null) { alert("ผิด!"); } }
+
+function speak(text, lang = "en-US") {
+  if(!isSoundEnabled) return; window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.8;
+  const voices = window.speechSynthesis.getVoices();
+  if(lang === "en-US") { const f = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English")); if(f) u.voice = f; } else if (lang === "th-TH") { const t = voices.find(v => v.lang === "th-TH"); if(t) u.voice = t; }
+  window.speechSynthesis.speak(u);
 }
-
-async function renderHistory() {
-  const list = document.getElementById("historyList"); list.innerHTML = "<li>⏳...</li>";
-  try {
-    const nocache = "&t=" + new Date().getTime(); const res = await fetch(API_URL + "?action=getReport" + nocache); const data = await res.json();
-    if(data.summary) { abcScoreGlobal = data.summary.stars; globalRounds = data.summary.rounds; updateAbcUI(); updateGrandTotal(); }
-    list.innerHTML = ""; if (!data.history || data.history.length === 0) { list.innerHTML = "<li>ยังไม่มีประวัติ</li>"; return; }
-    data.history.forEach(item => {
-      const dateObj = new Date(item.timestamp); const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
-      const li = document.createElement("li");
-      li.innerHTML = `<div class="history-header"><span class="date-label">${dateStr}</span><div class="badge-group"><span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span></div></div>${item.wrong ? `<div class="wrong-text">❌ ${item.wrong}</div>` : ''}`;
-      list.appendChild(li);
-    });
-  } catch (e) { list.innerHTML = "<li>Err</li>"; }
-}
-
-function renderMistakes() {
-  const list = document.getElementById("mistakeList"); list.innerHTML = "";
-  const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
-  sorted.forEach(([vocab, s]) => { if(s.wrong > 0) { const li = document.createElement("li"); li.innerHTML = `<span><b>${vocab}</b></span> <span style="color:red">ผิด ${s.wrong}</span>`; list.appendChild(li); }});
-}
-
-function resetCloudData() { if(confirm("ล้างข้อมูล ABC?")) { fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "reset" }) }).then(res => { location.reload(); }); } }
-
-window.onload = function() { toggleSoundUI(); fetchAbcData(); window.speechSynthesis.getVoices(); };
 </script>
 </body>
 </html>
