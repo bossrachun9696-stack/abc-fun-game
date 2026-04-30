@@ -487,6 +487,19 @@
     </div>
 </div>
 
+<!-- Thai Correction Modal (ป๊อปอัปเฉลยภาษาไทย) -->
+<div id="thaiCorrectionModal" class="modal-overlay">
+    <div class="modal-box" style="border-color: #f44336; border-width: 5px;">
+        <h2 style="color:#f44336; margin-top:0; font-size: 2.2rem;">❌ ยังไม่ถูกน้า</h2>
+        <p style="font-size:1.2rem; color:#666; margin-bottom: 5px;">คำที่ถูกต้องคือ:</p>
+        <div id="thaiCorrectAnswerDisplay" style="font-size: 3.5rem; font-weight: 800; color: #4caf50; background: #e8f5e9; padding: 15px; border-radius: 20px; margin: 15px 0; border: 3px dashed #4caf50;">
+            <!-- Correct word will appear here -->
+        </div>
+        <button class="btn-sound" onclick="speak(currentThaiWord, 'th-TH')" style="margin: 15px auto; width: 60px; height: 60px; font-size: 1.8rem; background: #81c784; box-shadow: 0 4px 0 #4caf50;">🔊</button>
+        <button class="btn-main" style="background:#2196f3; box-shadow: 0 5px 0 #1565c0; margin-top: 15px;" onclick="closeThaiCorrection()">ข้อต่อไป ➡️</button>
+    </div>
+</div>
+
 <script>
 /**********************************************
  * CONFIGURATION & GLOBALS
@@ -944,6 +957,14 @@ function deleteThaiKey() {
     }
 }
 
+// ฟังก์ชันสำหรับปิดหน้าต่างเฉลย แล้วไปข้อต่อไป
+function closeThaiCorrection() {
+    document.getElementById("thaiCorrectionModal").classList.remove("active");
+    document.getElementById("thaiInputBox").style.backgroundColor = "transparent";
+    thaiQIndex++;
+    thaiNextQuestion();
+}
+
 function checkThaiAnswer() {
     let userAnswer = "";
     for(let i=0; i < currentThaiGraphemes.length; i++) {
@@ -966,8 +987,11 @@ function checkThaiAnswer() {
         localStorage.setItem("thaiWordStats", JSON.stringify(thaiWordStats));
         
         document.getElementById("thaiInputBox").style.backgroundColor = "#ffcdd2";
-        alert("ยังไม่ถูกครับ คำที่ถูกคือ: " + currentThaiWord);
-        setTimeout(() => { document.getElementById("thaiInputBox").style.backgroundColor = "transparent"; thaiQIndex++; thaiNextQuestion(); }, 500);
+        
+        // แสดงป๊อปอัปเฉลยแทน Alert เดิม
+        document.getElementById("thaiCorrectAnswerDisplay").textContent = currentThaiWord;
+        document.getElementById("thaiCorrectionModal").classList.add("active");
+        speak(currentThaiWord, 'th-TH'); // พูดคำที่ถูกซ้ำให้ฟัง
     }
 }
 
