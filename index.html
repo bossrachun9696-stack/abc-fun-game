@@ -91,8 +91,14 @@
   
   /* Thai Dictation Styles */
   .thai-input-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 20px 0; }
-  .thai-char-box { width: 45px; height: 55px; font-size: 2rem; text-align: center; border: 3px solid #4caf50; border-radius: 10px; font-family: 'Kanit', sans-serif; font-weight: bold; color: #333; outline:none;}
+  .thai-char-box { width: 45px; height: 55px; font-size: 2rem; text-align: center; border: 3px solid #4caf50; border-radius: 10px; font-family: 'Kanit', sans-serif; font-weight: bold; color: #333; outline:none; background-color: #fff;}
   .thai-char-box:focus { border-color: #ff9800; background: #fff3e0; }
+
+  /* Thai Custom Keyboard Styles */
+  .thai-keyboard-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 15px; border: 1px dashed #a5d6a7;}
+  .thai-key { background: #fff; border: 2px solid #4caf50; color: #2e7d32; font-size: 1.5rem; font-weight: bold; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 0 #81c784; padding: 0; }
+  .thai-key:active { transform: translateY(4px); box-shadow: none; }
+  .thai-key.delete { width: auto; padding: 0 15px; background: #FF5A5F; color: white; border-color: #d32f2f; box-shadow: 0 4px 0 #b71c1c; }
 
   /* Parent & Hub Styles */
   .history-card { text-align: left; background: #f1f8e9; padding: 12px; margin: 8px 0; border-radius: 12px; border-left: 6px solid #4caf50; font-size: 14px; }
@@ -342,10 +348,21 @@
     </div>
     <div class="card">
       <h2 style="color:#4caf50; margin-top:0;">🇹🇭 ด่าน 3: เขียนตามคำบอก</h2>
+      
+      <!-- คำใบ้ตัวอักษรสลับตำแหน่ง -->
+      <div id="thaiScrambledHint" style="font-size: 1.8rem; color: #e65100; font-weight: bold; margin-bottom: 15px; background: #fff3e0; padding: 10px; border-radius: 15px; border: 2px dashed #ffb74d;">
+          <!-- JS จะสร้างคำใบ้ตรงนี้ -->
+      </div>
+
       <button class="btn-sound" style="background:#81c784; box-shadow: 0 4px 0 #4caf50;" onclick="speak(currentThaiWord, 'th-TH')">🔊 ฟังเสียง</button>
       
       <div id="thaiInputBox" class="thai-input-container">
         <!-- Input boxes will be generated here -->
+      </div>
+
+      <!-- แป้นพิมพ์จำลอง (Custom Keyboard) -->
+      <div id="thaiKeyboard" class="thai-keyboard-container">
+        <!-- แป้นจะถูกสร้างที่นี่ -->
       </div>
       
       <button class="btn-main" style="background:#ff9800; box-shadow: 0 5px 0 #e65100; margin-top:20px;" onclick="checkThaiAnswer()">ส่งคำตอบ</button>
@@ -474,7 +491,7 @@
 /**********************************************
  * CONFIGURATION & GLOBALS
  **********************************************/
-const API_URL = "https://script.google.com/macros/s/AKfycbwRcunRbh1yuGwqK3PtpUnsCP384WAx97nEWbjw2Z59m74Ezr9Q6goIUwRFUS5h3OYL/exec"; // <<<< อย่าลืมใส่ URL แอพสคริปต์ใหม่ ตรงนี้
+const API_URL = "https://script.google.com/macros/s/AKfycbwRcunRbh1yuGwqK3PtpUnsCP384WAx97nEWbjw2Z59m74Ezr9Q6goIUwRFUS5h3OYL/exec"; 
 const PARENT_PIN = "0932815229";
 
 // Firebase Config
@@ -501,6 +518,10 @@ let globalRounds = 0; let isSoundEnabled = true;
 let currentWord = null; let abcTimerId = null; let abcTimeLeft = 0; let abcCurrentScore = 0;
 let sessionCorrect = 0; let sessionWrong = 0; 
 let sessionWrongStats = {}; let sessionThaiWrongStats = {};
+
+// ABC MISSING LETTER VARS
+let abcCurrentMode = 'translation'; // 'translation' or 'missing_letter'
+let abcMissingLetter = '';
 
 // THAI GAME VARIABLES
 let currentThaiWordsList = [], currentThaiWord = "", thaiQIndex = 0, thaiCurrentScore = 0;
@@ -557,7 +578,6 @@ function updateGrandTotal() {
 function fetchAbcData() {
     const nocache = "&t=" + new Date().getTime();
     
-    // 1. Get Report (History & Summary)
     fetch(API_URL + "?action=getReport" + nocache).then(res => res.json()).then(data => { 
         if(data.summary) { 
             abcScoreGlobal = parseInt(data.summary.stars) || 0; 
@@ -567,12 +587,10 @@ function fetchAbcData() {
             updateGrandTotal(); 
         } 
         
-        // Render Histories
         if(data.history) renderHistoryList("historyList", data.history);
         if(data.thaiHistory) renderHistoryList("historyListThai", data.thaiHistory);
     }).catch(console.error);
 
-    // 2. Get Words (ABC and Thai)
     fetch(API_URL).then(res => res.json()).then(data => {
         if(data.words) words = data.words; else if(Array.isArray(data)) words = data;
         if(data.thaiWords) thaiWordsDB = data.thaiWords;
@@ -631,8 +649,6 @@ function mathHomeInit(){
 
 function mathStart(){ mathCurrentScore=0; mathQCount=0; pendingMathScore=0; mathNextQ(); }
 
-function mathR(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
-
 function mathNextQ(){
     if(mathQCount >= mathTotalQ){ mathSummary(); return; }
     mathQCount++; clearInterval(mathTimerId); mathUpdateScoreUI();
@@ -686,7 +702,7 @@ function mathCheck(){
 
 function mathSummary(){
     document.getElementById("mathScoreBox")?.remove();
-    pendingMathScore = mathCurrentScore; // ดองคะแนน
+    pendingMathScore = mathCurrentScore; 
 
     document.getElementById("mathAppContent").innerHTML = `
         <div style="padding:20px;">
@@ -702,7 +718,7 @@ function mathSummary(){
 }
 
 /**********************************************
- * GAME 2: ABC LOGIC
+ * GAME 2: ABC LOGIC (UPDATED WITH MISSING LETTER MODE)
  **********************************************/
 function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
 function toggleSoundUI() {
@@ -740,30 +756,71 @@ function nextQuestion() {
   if(currentRoundWords.length === 0) { finishGameABC(); return; }
   
   currentWord = currentRoundWords.pop();
-  document.getElementById("gameVocab").textContent = currentWord.Vocabulary; speak(currentWord.Vocabulary);
   
-  let choices = [currentWord];
-  while(choices.length < 4) { let w = gamePool[Math.floor(Math.random() * gamePool.length)]; if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); }
-  
+  // สุ่มโหมดระหว่าง "แปลความหมาย" และ "หาตัวอักษรที่หายไป" (โอกาส 50/50)
+  abcCurrentMode = Math.random() > 0.5 ? 'translation' : 'missing_letter';
   const box = document.getElementById("choicesBox"); box.innerHTML = "";
-  choices.sort(() => Math.random() - 0.5).forEach(w => {
-    const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
-    btn.onclick = () => checkAnswer(w, btn); box.appendChild(btn);
-  });
+
+  if (abcCurrentMode === 'translation') {
+      document.getElementById("gameVocab").textContent = currentWord.Vocabulary; 
+      speak(currentWord.Vocabulary);
+      
+      let choices = [currentWord];
+      while(choices.length < 4) { 
+          let w = gamePool[Math.floor(Math.random() * gamePool.length)]; 
+          if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); 
+      }
+      
+      choices.sort(() => Math.random() - 0.5).forEach(w => {
+          const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
+          btn.onclick = () => checkAnswer(w.Vocabulary === currentWord.Vocabulary, btn, currentWord["คำแปล"]); 
+          box.appendChild(btn);
+      });
+  } else {
+      // โหมดตัวอักษรหายไป
+      let wordStr = currentWord.Vocabulary;
+      let hiddenIdx = Math.floor(Math.random() * wordStr.length);
+      abcMissingLetter = wordStr[hiddenIdx];
+      
+      // เอาขีดเส้นใต้มาแทนที่
+      let displayWord = wordStr.substring(0, hiddenIdx) + "_" + wordStr.substring(hiddenIdx + 1);
+      document.getElementById("gameVocab").textContent = displayWord; 
+      speak(currentWord.Vocabulary); // ฟังเสียงคำเต็มปกติ
+      
+      let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+      let choices = [abcMissingLetter];
+      while(choices.length < 4) {
+          let rChar = alphabet[Math.floor(Math.random() * alphabet.length)];
+          // จัดเคส (ตัวพิมพ์เล็ก/ใหญ่) ให้ตรงกับตัวที่หายไป
+          if(abcMissingLetter === abcMissingLetter.toLowerCase()) rChar = rChar.toLowerCase();
+          else rChar = rChar.toUpperCase();
+
+          if(!choices.includes(rChar)) choices.push(rChar);
+      }
+      
+      choices.sort(() => Math.random() - 0.5).forEach(char => {
+          const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = char;
+          btn.onclick = () => checkAnswer(char === abcMissingLetter, btn, abcMissingLetter); 
+          box.appendChild(btn);
+      });
+  }
 }
 
-function checkAnswer(selected, btn) {
+// อัปเดตการตรวจคำตอบให้ครอบคลุมทั้ง 2 โหมด
+function checkAnswer(isCorrect, btn, correctDisplay) {
   const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
   if(!wordStats[currentWord.Vocabulary]) wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
   
-  if(selected.Vocabulary === currentWord.Vocabulary) {
+  if(isCorrect) {
     abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
     btn.classList.add("correct-anim");
     setTimeout(nextQuestion, 800);
   } else {
     btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++; wordStats[currentWord.Vocabulary].wrong++;
     if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0; sessionWrongStats[currentWord.Vocabulary]++;
-    allBtns.forEach(b => { if(b.textContent === currentWord["คำแปล"]) b.classList.add("correct-anim"); });
+    
+    // ไฮไลต์คำตอบที่ถูกให้ดู
+    allBtns.forEach(b => { if(b.textContent === correctDisplay) b.classList.add("correct-anim"); });
     setTimeout(nextQuestion, 1500);
   }
   document.getElementById("liveScore").textContent = abcCurrentScore; 
@@ -777,22 +834,19 @@ function finishGameABC() {
     globalRounds++;
     pendingAbcScore = Math.max(0, abcCurrentScore);
     
-    // เปลี่ยนไปหน้าคั่นกลาง
     document.getElementById("bridgeAbcScore").textContent = pendingAbcScore;
     showPage('bridgePage');
 }
 
 /**********************************************
- * GAME 3: THAI DICTATION LOGIC (UPDATED สำหรับสระและวรรณยุกต์ซ้อน)
+ * GAME 3: THAI DICTATION LOGIC (UPDATED WITH KEYBOARD & HINT)
  **********************************************/
 
-// ฟังก์ชันแยกพยัญชนะ สระ และวรรณยุกต์ ให้รวมกันเป็นเซลล์อักษร (Grapheme Cluster)
 function splitThaiGraphemes(word) {
     if (window.Intl && window.Intl.Segmenter) {
         const segmenter = new Intl.Segmenter("th", { granularity: "grapheme" });
         return Array.from(segmenter.segment(word)).map(s => s.segment);
     } else {
-        // สำรองสำหรับเบราว์เซอร์เก่ามาก (จับคู่พยัญชนะกับสระบน/ล่าง/วรรณยุกต์ที่ตามมา)
         return word.match(/([\u0E00-\u0E7F](?:[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E])*)/g) || word.split('');
     }
 }
@@ -803,7 +857,6 @@ function prepThaiGame() {
         return;
     }
     
-    // เลือกสุ่มคำ 15 คำ
     let shuffled = [...thaiWordsDB].sort(() => Math.random() - 0.5);
     currentThaiWordsList = shuffled.slice(0, 15);
     thaiQIndex = 0; thaiCurrentScore = 0;
@@ -819,12 +872,18 @@ function thaiNextQuestion() {
     }
     
     currentThaiWord = currentThaiWordsList[thaiQIndex];
-    // แบ่งคำเป็นช่องๆ โดยจับกลุ่มตัวอักษรที่มีสระและวรรณยุกต์ซ้อนกันให้เป็น 1 ช่อง
     currentThaiGraphemes = splitThaiGraphemes(currentThaiWord);
     
     document.getElementById("thaiQNum").textContent = `${thaiQIndex + 1}/${currentThaiWordsList.length}`;
     
-    // สร้างกล่องใส่ตัวอักษรตามจำนวนเซลล์อักษร
+    // สร้างคำใบ้สลับตำแหน่งตัวอักษร
+    let scrambled = [...currentThaiGraphemes].sort(() => Math.random() - 0.5);
+    if(scrambled.length > 1 && scrambled.join('') === currentThaiGraphemes.join('')) {
+        let temp = scrambled[0]; scrambled[0] = scrambled[1]; scrambled[1] = temp;
+    }
+    document.getElementById("thaiScrambledHint").textContent = scrambled.join('  -  ');
+
+    // ล้างกล่องข้อความและสร้างใหม่
     const container = document.getElementById("thaiInputBox");
     container.innerHTML = "";
     
@@ -832,38 +891,61 @@ function thaiNextQuestion() {
         let input = document.createElement("input");
         input.type = "text";
         input.className = "thai-char-box";
-        // ให้พิมพ์ความยาวได้เท่ากับเซลล์อักษร (รองรับพยัญชนะ+สระ+วรรณยุกต์ในช่องเดียว)
         input.maxLength = currentThaiGraphemes[i].length;
         input.id = "tbox_" + i;
-        
-        // เมื่อพิมพ์จนครบความยาวของเซลล์อักษร ให้กระโดดไปช่องถัดไปอัตโนมัติ
-        input.addEventListener('input', (e) => {
-            let currentBox = e.target;
-            if (currentBox.value.length >= currentBox.maxLength && i < currentThaiGraphemes.length - 1) {
-                document.getElementById("tbox_" + (i + 1)).focus();
-            }
-        });
-
-        // จัดการเรื่องการกดลบ (Backspace) และ Enter
-        input.addEventListener('keydown', (e) => {
-            let currentBox = e.target;
-            if(e.key === "Backspace" && currentBox.value === "" && i > 0) {
-                document.getElementById("tbox_" + (i - 1)).focus();
-            } else if (e.key === "Enter") {
-                checkThaiAnswer();
-            }
-        });
-
+        input.readOnly = true; // ป้องกันคีย์บอร์ดมือถือเด้งขึ้นมา
         container.appendChild(input);
     }
     
+    // สร้างแป้นพิมพ์จำลอง
+    generateThaiKeyboard(currentThaiGraphemes);
+
     speak(currentThaiWord, 'th-TH');
-    setTimeout(() => { if(document.getElementById("tbox_0")) document.getElementById("tbox_0").focus(); }, 500);
+}
+
+function generateThaiKeyboard(graphemes) {
+    let keys = [...graphemes];
+    // เพิ่มตัวอักษรหลอก 2-3 ตัว เพื่อความท้าทาย
+    const decoys = ["ก", "จ", "ด", "ต", "บ", "ป", "อ", "ม", "น", "ร", "ล", "ว", "ย", "ง", "า", "ิ", "ี", "ุ", "ู", "เ", "โ"];
+    let numDecoys = Math.floor(Math.random() * 2) + 2;
+    for(let i=0; i<numDecoys; i++) {
+        keys.push(decoys[Math.floor(Math.random() * decoys.length)]);
+    }
+    // สลับตำแหน่งแป้นบนคีย์บอร์ด
+    keys.sort(() => Math.random() - 0.5);
+
+    let kbHtml = keys.map(k => `<button class="thai-key" onclick="pressThaiKey('${k}')">${k}</button>`).join('');
+    kbHtml += `<button class="thai-key delete" onclick="deleteThaiKey()">⌫ ลบ</button>`;
+    
+    document.getElementById('thaiKeyboard').innerHTML = kbHtml;
+}
+
+// ฟังก์ชันเมื่อกดปุ่มบนแป้นพิมพ์จำลอง
+function pressThaiKey(char) {
+    // หาช่องที่ว่างช่องแรกแล้วเติม
+    for(let i=0; i<currentThaiGraphemes.length; i++) {
+        let box = document.getElementById("tbox_" + i);
+        if(box.value === "") {
+            box.value = char;
+            break;
+        }
+    }
+}
+
+// ฟังก์ชันลบตัวอักษรล่าสุด
+function deleteThaiKey() {
+    // หาช่องที่ถูกเติมช่องสุดท้ายแล้วลบ
+    for(let i=currentThaiGraphemes.length-1; i>=0; i--) {
+        let box = document.getElementById("tbox_" + i);
+        if(box.value !== "") {
+            box.value = "";
+            break; 
+        }
+    }
 }
 
 function checkThaiAnswer() {
     let userAnswer = "";
-    // ดึงค่าจากทุกกล่องมารวมกัน
     for(let i=0; i < currentThaiGraphemes.length; i++) {
         let val = document.getElementById("tbox_" + i).value;
         userAnswer += val;
@@ -895,10 +977,8 @@ function checkThaiAnswer() {
 function saveAllDataToCloud() {
     pendingThaiScore = parseInt(thaiCurrentScore) || 0;
     
-    // คำนวณคะแนนรวมทั้งหมดที่ได้ในรอบการเล่นนี้
     let totalCurrentRoundScore = pendingMathScore + pendingAbcScore + pendingThaiScore;
     
-    // อัปเดตหน้าสรุปผล
     document.getElementById("resTotal").textContent = totalCurrentRoundScore;
     document.getElementById("resMath").textContent = pendingMathScore;
     document.getElementById("resAbc").textContent = pendingAbcScore;
@@ -906,7 +986,6 @@ function saveAllDataToCloud() {
     
     showPage('resultPage');
     
-    // 1. Save Math to Firebase
     if(pendingMathScore > 0) {
         db.ref('scores/'+mathPlayer).once('value', snap => {
             let oldScore = snap.exists() ? (parseInt(snap.val().score) || 0) : 0;
@@ -914,11 +993,9 @@ function saveAllDataToCloud() {
         });
     }
 
-    // 2. Prepare Wrong Words Strings
     const abcWrongStr = Object.entries(sessionWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([k,v]) => `${k}(${v})`).join(", ");
     const thaiWrongStr = Object.entries(sessionThaiWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([k,v]) => `${k}(${v})`).join(", ");
 
-    // 3. Save ABC & Thai to Google Sheets
     fetch(API_URL, { 
         method: "POST", 
         body: JSON.stringify({ 
@@ -1035,9 +1112,6 @@ function adjustThaiScore(multiplier) {
     });
 }
 
-// ---------------------------------------------------------
-// ตัวแสดงประวัติรายการ 
-// ---------------------------------------------------------
 function renderHistoryList(elementId, historyData) {
     const list = document.getElementById(elementId);
     list.innerHTML = "";
