@@ -160,14 +160,14 @@
           </div>
       </div>
 
-      <p style="color:#777; margin-bottom: 10px;">เลือกเกมที่ต้องการเล่น</p>
+      <p style="color:#d32f2f; margin-bottom: 15px; font-weight: bold; font-size: 1.1rem;">ภารกิจประจำวัน: ต้องเล่นให้จบทั้ง 2 ด่านถึงจะได้ดาว!</p>
       
-      <button class="btn-main" style="background: var(--primary); margin-bottom: 10px;" onclick="showPage('homePage')">
-          🐰 ABC Fun English
+      <button class="btn-main" style="background: #2196f3; box-shadow: 0 5px 0 #1565c0; margin-bottom: 15px;" onclick="openMathGame()">
+          🚀 เริ่มด่านที่ 1 : คิดเลข
       </button>
-      
-      <button class="btn-main" style="background: #2196f3; box-shadow: 0 5px 0 #1565c0; margin-bottom: 20px;" onclick="openMathGame()">
-          🧮 เกมคิดเลขครอบครัว
+
+      <button class="btn-practice" style="background: var(--secondary); box-shadow: 0 5px 0 #259f93; margin-bottom: 20px;" onclick="startPracticeFromPortal()">
+          📖 โหมดฝึกซ้อมศัพท์ ABC
       </button>
 
       <button class="btn-parent" style="width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 10px;" onclick="showPage('hubParentLogin')">
@@ -251,8 +251,8 @@
       <div id="onlineIndicator" style="font-size:0.7rem; color:#ccc;">⚪ Check...</div>
     </div>
     <div class="card">
-      <h1>🐰 ABC Fun</h1>
-      <p style="color:#777; margin-bottom: 10px;">เก่งศัพท์อังกฤษฉบับหนูน้อย</p>
+      <h1>🐰 ด่านที่ 2: ABC Fun</h1>
+      <p style="color:#777; margin-bottom: 10px;">ลุยด่านสุดท้ายเพื่อรับคะแนนทั้งหมด!</p>
       
       <div style="background:#f9f9f9; padding:10px; border-radius:15px; margin-bottom:15px; display:flex; justify-content:center; align-items:center; gap:10px;">
         <span>🔊 เสียง:</span>
@@ -268,10 +268,9 @@
         <input type="number" id="gameEndIdx" class="input-box" value="...">
       </div>
 
+      <p style="color:red; font-weight:bold; font-size:0.9rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ คำเตือน: ต้องเล่นด่านนี้ให้จบเวลา 4 นาที ห้ามออกกลางคัน ไม่เช่นนั้นคะแนนคณิตศาสตร์ที่เล่นมาจะถูกยกเลิก!</p>
+
       <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (จับเวลา 4 นาที)</button>
-      <button class="btn-practice" onclick="startPractice()">📖 ฝึกท่องศัพท์</button>
-      <br><br>
-      <button class="btn-back" style="width:100%; border: 2px solid #ddd;" onclick="showPage('portalPage')">⬅️ กลับหน้าเมนูหลัก</button>
     </div>
   </div>
 
@@ -291,17 +290,19 @@
 
   <div id="resultPage" class="page">
     <div class="card">
-      <h1 style="color:var(--primary)">สรุปผลการเล่น! ⏰</h1>
+      <h1 style="color:var(--primary)">ภารกิจสำเร็จ! 🎉</h1>
+      
+      <!-- แจ้งเตือนการเซฟคะแนนจะถูกสร้างและแทรกตรงนี้โดย Javascript -->
+
       <div style="font-size: 1.5rem; margin: 20px 0; background:#f0f8ff; padding:20px; border-radius:20px;">
-        คะแนนรวมรอบนี้<br>
+        คะแนนภาษาอังกฤษรอบนี้<br>
         <span id="finalScore" style="font-size: 4rem; color:var(--primary); font-weight:800;">0</span>
       </div>
       <div style="display:flex; justify-content:space-around; font-size:1.2rem;">
         <span style="color:green">✔ ถูก: <span id="resultCorrect">0</span></span>
         <span style="color:red">❌ ผิด: <span id="resultWrong">0</span></span>
       </div>
-      <button class="btn-main" onclick="showPage('homePage')" style="margin-top:20px;">กลับเมนู ABC</button>
-      <button class="btn-back" onclick="showPage('portalPage')" style="width:100%; border: 2px solid #ddd;">⬅️ กลับหน้าเมนูหลัก</button>
+      <button class="btn-main" onclick="showPage('portalPage')" style="margin-top:20px;">🏠 กลับเมนูหลัก</button>
     </div>
   </div>
 
@@ -319,7 +320,7 @@
       </div>
       <button class="btn-info" onclick="openVocabList()">📜 ดูคำศัพท์ทั้งหมด</button>
     </div>
-    <button class="btn-back" onclick="showPage('homePage')">🏠 กลับเมนู ABC</button>
+    <button class="btn-back" onclick="showPage('portalPage')">🏠 กลับเมนูหลัก</button>
   </div>
 
   <div id="vocabListPage" class="page">
@@ -401,6 +402,7 @@
  **********************************************/
 let mathScoreGlobal = 0; 
 let abcScoreGlobal = 0;  
+let pendingMathScore = 0; // ตัวแปรดองคะแนนคณิตศาสตร์ รอจบด่าน 2
 
 const mathPlayer = "ไดมอนด์"; 
 const mathAvatar = "👦"; 
@@ -454,14 +456,14 @@ function openMathGame() {
 function mathHomeInit(){
     document.getElementById("mathScoreBox")?.remove();
     document.getElementById("mathAppContent").innerHTML = `
-        <h2 style="color:#1565c0">🧮 คิดเลขออนไลน์</h2>
+        <h2 style="color:#1565c0">ด่านที่ 1: 🧮 คิดเลขออนไลน์</h2>
         <div style="font-size:30px; margin-bottom:15px; background:#e3f2fd; padding:10px; border-radius:15px; border:2px solid #2196f3;">
             ${mathAvatar} <b>${mathPlayer}</b>
         </div>
         🎓 <b>ระดับชั้น:</b> <br><br>
         <button id="lv3" class="btn-lv sel" onclick="mathPickLevel(3)">ป.3</button><br><br>
-        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.3 (+3 คะแนน)<br>(ตอบถูกได้ 3 คะแนน / ตอบผิดไม่หักคะแนน)</div>
-        <button style="width:90%; background:#4caf50;" onclick="mathStart()">▶ เริ่มเล่น</button><br>
+        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.3 (+5 คะแนน)<br>(ตอบถูกได้ 5 คะแนน / ตอบผิดไม่หักคะแนน)</div>
+        <button style="width:90%; background:#4caf50;" onclick="mathStart()">▶ ลุยด่านแรก!</button><br>
         <button class="back" style="width:100%; margin-top:15px; border: 2px solid #e65100;" onclick="showPage('portalPage')">⬅ กลับหน้าเมนูหลัก</button>
     `;
 }
@@ -469,7 +471,7 @@ function mathHomeInit(){
 function mathPickLevel(l){ mathLevel=l; document.querySelectorAll("#mathPage .btn-lv").forEach(b=>b.classList.remove("sel")); document.getElementById("lv"+l).classList.add("sel"); }
 
 function mathStart(){ 
-    mathCurrentScore=0; mathQCount=0; 
+    mathCurrentScore=0; mathQCount=0; pendingMathScore=0;
     mathNextQ(); 
 }
 
@@ -548,7 +550,6 @@ function mathCheck(){
         mathCurrentScore += ptsEarned;
         mathNextQ(); 
     } else {
-        // เอาการหักคะแนนออก (mathCurrentScore -= ptsPenalty;)
         document.getElementById("mathAppContent").innerHTML = `
             <h2 style="color:red">❌ ยังไม่ถูกจ้า</h2>
             <h1 style="font-size:30px">คำตอบที่ถูกคือ <span style="color:green; font-size:50px">${mathAnswer}</span></h1>
@@ -560,24 +561,23 @@ function mathCheck(){
 
 function mathSummary(){
     document.getElementById("mathScoreBox")?.remove();
-    db.ref('scores/'+mathPlayer).once('value', snap => {
-        let oldScore = snap.exists() ? snap.val().score : 0;
-        let newTotal = oldScore + mathCurrentScore;
-        db.ref('scores/'+mathPlayer).set({
-            name: mathPlayer, score: newTotal, avatar: mathAvatar,
-            lastPlayed: new Date().toLocaleString('th-TH')
-        });
-        document.getElementById("mathAppContent").innerHTML = `
-            <div style="padding:20px;">
-                <h2 style="color:#4caf50">🎊 จบเกมแล้ว!</h2>
-                <h1 style="font-size:60px">${mathAvatar}</h1>
-                <h3>คุณ ${mathPlayer}</h3>
-                <p>รอบนี้ทำเพิ่มไปได้: <b>+${mathCurrentScore}</b> แต้ม</p>
-                <h2 style="color:#0d47a1">แต้ม Math: ${newTotal.toLocaleString()} ⭐</h2>
-                <button style="width:90%; background:#607d8b;" onclick="mathHomeInit()">กลับเมนู Math</button>
+    pendingMathScore = mathCurrentScore; // เก็บดองคะแนนไว้ ห้ามบันทึกลงฐานข้อมูลตรงนี้
+
+    document.getElementById("mathAppContent").innerHTML = `
+        <div style="padding:20px;">
+            <h2 style="color:#4caf50">🎊 จบด่านคณิตศาสตร์แล้ว!</h2>
+            <h1 style="font-size:60px">${mathAvatar}</h1>
+            <h3>คุณ ${mathPlayer}</h3>
+            <p>รอบนี้ทำเพิ่มไปได้: <b style="color:#e65100; font-size:1.5rem;">+${mathCurrentScore}</b> แต้ม</p>
+            
+            <div style="background:#fff3e0; padding:10px; border-radius:10px; margin:15px 0; color:#d32f2f; font-weight:bold; font-size:0.9rem; border:1px solid #ffb74d;">
+                ⚠️ คะแนนคณิตศาสตร์จะถูกบันทึกเมื่อเล่นด่านภาษาอังกฤษจบเท่านั้น!
             </div>
-        `;
-    });
+            
+            <p style="color:#e91e63; font-weight:bold; font-size:1.2rem; margin-top:15px;">เตรียมตัวไปลุยด่านอังกฤษกันต่อเลย!</p>
+            <button style="width:100%; background:#ff9800; color:white; padding:15px; font-size:1.5rem; border-radius:20px; box-shadow:0 5px 0 #e65100; margin-top:10px;" onclick="showPage('homePage')">➡️ ไปด่าน ABC ต่อ</button>
+        </div>
+    `;
 }
 
 function mathResetScores(){
@@ -704,7 +704,7 @@ function fetchAbcData() {
 function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
 function toggleSoundUI() {
   const btn = document.getElementById("soundToggle");
-  if(isSoundEnabled) { btn.textContent = "เปิด (1.5 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } else { btn.textContent = "ปิด (2.5 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
+  if(isSoundEnabled) { btn.textContent = "เปิด (1 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } else { btn.textContent = "ปิด (2 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
 }
 
 function speak(text, lang = "en-US") {
@@ -716,6 +716,13 @@ function speak(text, lang = "en-US") {
 }
 
 function updateAbcUI() { document.getElementById("uiStars").textContent = abcScoreGlobal; document.getElementById("uiRounds").textContent = globalRounds; }
+
+function startPracticeFromPortal() { 
+    if(words.length === 0) { alert("รอโหลดคำศัพท์สักครู่นะครับ"); return; } 
+    practiceIndex = 0; 
+    showPage('practicePage'); 
+    renderPractice(); 
+}
 
 function startGame() {
   if(words.length < 4) { alert("รอก่อนนะครับ"); return; }
@@ -756,7 +763,7 @@ function checkAnswer(selected, btn) {
   const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
   if(!wordStats[currentWord.Vocabulary]) wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
   if(selected.Vocabulary === currentWord.Vocabulary) {
-    abcCurrentScore += isSoundEnabled ? 1.5 : 2.5; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
+    abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
     btn.classList.add("correct-anim");
     if(isSoundEnabled) new Audio("https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg").play().catch(e=>{});
     setTimeout(nextQuestion, 800);
@@ -772,17 +779,55 @@ function checkAnswer(selected, btn) {
 
 function sendDataToSheets(stars, wrongWords) { fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save', totalStars: stars, wrongWords: wrongWords }) }).then(res => { setTimeout(fetchAbcData, 1000); }).catch(err => console.error(err)); }
 
+// เมื่อจบเกม ABC จะทำการเซฟคะแนนของทั้ง 2 เกมพร้อมกัน
 function finishGame() {
   clearInterval(abcTimerId); globalRounds++; abcScoreGlobal += Math.max(0, abcCurrentScore); updateAbcUI(); updateGrandTotal();
   const wrongWordsSummary = Object.entries(sessionWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([v, c]) => `${v}(${c})`).join(", ");
+  
+  // 1. ส่งข้อมูลเข้า Google Sheets สำหรับ ABC
   sendDataToSheets(abcCurrentScore, wrongWordsSummary);
-  document.getElementById("finalScore").textContent = abcCurrentScore; document.getElementById("resultCorrect").textContent = sessionCorrect;
-  document.getElementById("resultWrong").textContent = sessionWrong; showPage('resultPage');
+  
+  // 2. ดึงคะแนนคณิตศาสตร์ที่ดองไว้มาบันทึกเข้า Firebase
+  let mathTxtScore = 0;
+  if(pendingMathScore > 0) {
+      mathTxtScore = pendingMathScore;
+      db.ref('scores/'+mathPlayer).once('value', snap => {
+          let oldScore = snap.exists() ? snap.val().score : 0;
+          let newTotal = oldScore + pendingMathScore;
+          db.ref('scores/'+mathPlayer).set({
+              name: mathPlayer, score: newTotal, avatar: mathAvatar,
+              lastPlayed: new Date().toLocaleString('th-TH')
+          });
+          pendingMathScore = 0; // ล้างค่าดองคะแนนทิ้ง
+      });
+  }
+
+  // อัปเดตหน้าแสดงผลลัพธ์
+  document.getElementById("finalScore").textContent = abcCurrentScore; 
+  document.getElementById("resultCorrect").textContent = sessionCorrect;
+  document.getElementById("resultWrong").textContent = sessionWrong; 
+
+  // แทรกข้อความแจ้งเตือนว่าบันทึกทั้งสองวิชาสำเร็จ
+  let alertBox = document.getElementById("mathSavedAlert");
+  if(!alertBox) {
+      alertBox = document.createElement("div");
+      alertBox.id = "mathSavedAlert";
+      alertBox.style.cssText = "background:#e8f5e9; color:#2e7d32; padding:15px; border-radius:15px; margin:15px 0; font-weight:bold; border:2px dashed #4caf50;";
+      document.getElementById("resultPage").querySelector(".card").insertBefore(alertBox, document.querySelector("#resultPage .btn-main"));
+  }
+  
+  if(mathTxtScore > 0) {
+      alertBox.innerHTML = `✅ บันทึกคะแนนสำเร็จ!<br><span style="color:#e65100;">🧮 คณิตศาสตร์: +${mathTxtScore} ดาว</span><br><span style="color:#2196f3;">🐰 อังกฤษ ABC: +${abcCurrentScore} ดาว</span>`;
+      alertBox.style.display = "block";
+  } else {
+      alertBox.style.display = "none";
+  }
+
+  showPage('resultPage');
 }
 
 function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
 
-function startPractice() { if(words.length === 0) return; practiceIndex = 0; showPage('practicePage'); renderPractice(); }
 function renderPractice() {
   const w = words[practiceIndex];
   document.getElementById("pVocab").textContent = w.Vocabulary || ""; document.getElementById("pReading").textContent = w["คำอ่านไทย"] ? "คำอ่าน: " + w["คำอ่านไทย"] : "";
