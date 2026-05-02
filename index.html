@@ -158,7 +158,6 @@
 
 <div class="container">
 
-  <!-- ==================== หน้า Portal หลัก ==================== -->
   <div id="portalPage" class="page active">
     <div class="card" style="text-align: center; border: 5px solid #2196f3;">
       <h1 style="color: #e91e63; font-size: 2.8rem;">🎮 Family Hub 🎮</h1>
@@ -191,7 +190,6 @@
     </div>
   </div>
 
-  <!-- ==================== โซนผู้ปกครอง ==================== -->
   <div id="hubParentLogin" class="page">
     <div class="card">
       <h2>🔒 โซนผู้ปกครอง</h2>
@@ -212,7 +210,6 @@
            <div id="dashGrandTotal" style="font-size: 3rem; font-weight: bold; color: #9c27b0;">0</div>
        </div>
 
-       <!-- การจัดการคะแนน -->
        <div class="score-mgmt-box">
           <h4 style="margin:0 0 10px 0; color:#2196f3;">🧮 คะแนนเกมคิดเลข (Firebase)</h4>
           <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashMathScore">0</b> ดาว</div>
@@ -276,14 +273,12 @@
     </div>
   </div>
 
-  <!-- ==================== ด่านที่ 1 : Math Game ==================== -->
   <div id="mathPage" class="page">
       <div class="math-box" id="mathAppContent">
           กำลังโหลดระบบออนไลน์ของคณิตศาสตร์...
       </div>
   </div>
 
-  <!-- ==================== ด่านที่ 2 : ABC Game Setup ==================== -->
   <div id="homePage" class="page">
     <div class="header-bar">
       <div class="stat-pill">⭐ รวม: <span id="uiStars">...</span></div>
@@ -314,7 +309,6 @@
     </div>
   </div>
 
-  <!-- ==================== ด่านที่ 2 : ABC Game Play ==================== -->
   <div id="gamePage" class="page">
     <div class="game-header">
       <div class="timer-box">⏳ <span id="timerDisplay">04:00</span></div>
@@ -328,7 +322,6 @@
     <p style="color:#888; font-size: 0.8rem;">สู้ๆ นะคนเก่ง! หมดเวลาหรือตอบครบหมดถึงจะจบเกมน้า</p>
   </div>
 
-  <!-- ==================== Bridge : คั่นระหว่างจบด่าน 2 ไปด่าน 3 ==================== -->
   <div id="bridgePage" class="page">
     <div class="card" style="margin-top:20px;">
         <h2 style="color:#2196f3; font-size:2.5rem;">🎊 จบด่าน 2 ABC!</h2>
@@ -340,7 +333,6 @@
     </div>
   </div>
 
-  <!-- ==================== ด่านที่ 3 : Thai Dictation Game ==================== -->
   <div id="thaiPage" class="page">
     <div class="game-header">
       <div class="timer-box" style="font-size:1.2rem;">ข้อที่: <span id="thaiQNum">1/15</span></div>
@@ -349,27 +341,21 @@
     <div class="card">
       <h2 style="color:#4caf50; margin-top:0;">🇹🇭 ด่าน 3: เขียนตามคำบอก</h2>
       
-      <!-- คำใบ้ตัวอักษรสลับตำแหน่ง -->
       <div id="thaiScrambledHint" style="font-size: 1.8rem; color: #e65100; font-weight: bold; margin-bottom: 15px; background: #fff3e0; padding: 10px; border-radius: 15px; border: 2px dashed #ffb74d;">
-          <!-- JS จะสร้างคำใบ้ตรงนี้ -->
-      </div>
+          </div>
 
       <button class="btn-sound" style="background:#81c784; box-shadow: 0 4px 0 #4caf50;" onclick="speak(currentThaiWord, 'th-TH')">🔊 ฟังเสียง</button>
       
       <div id="thaiInputBox" class="thai-input-container">
-        <!-- Input boxes will be generated here -->
-      </div>
+        </div>
 
-      <!-- แป้นพิมพ์จำลอง (Custom Keyboard) -->
       <div id="thaiKeyboard" class="thai-keyboard-container">
-        <!-- แป้นจะถูกสร้างที่นี่ -->
-      </div>
+        </div>
       
       <button class="btn-main" style="background:#ff9800; box-shadow: 0 5px 0 #e65100; margin-top:20px;" onclick="checkThaiAnswer()">ส่งคำตอบ</button>
     </div>
   </div>
 
-  <!-- ==================== หน้าสรุปผล 3 ด่าน ==================== -->
   <div id="resultPage" class="page">
     <div class="card">
       <h1 style="color:var(--primary)">🎉 ภารกิจ 3 ด่านสำเร็จ! 🎉</h1>
@@ -381,7 +367,6 @@
           <h1 style="margin:10px 0 0 0; font-size:4rem; color:#f57c00;" id="resTotal">0</h1>
       </div>
 
-      <!-- แสดงคะแนนแยกย่อย -->
       <div style="display:flex; justify-content:space-around; gap:10px; margin-bottom:10px;">
           <div style="background:#fff3e0; padding:15px; border-radius:15px; width:100%; border:1px solid #ffe0b2;">
               <h4 style="margin:0; color:#e65100;">🧮 คณิต</h4>
@@ -401,7 +386,6 @@
     </div>
   </div>
 
-  <!-- ==================== โหมด Practice / คำศัพท์ ==================== -->
   <div id="practicePage" class="page">
     <div class="card">
       <div class="practice-vocab" id="pVocab">...</div>
@@ -442,7 +426,6 @@
 
 </div>
 
-<!-- Modals -->
 <div id="wordModal" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal-box" onclick="event.stopPropagation()">
         <button class="close-modal-btn" onclick="closeModal()">✕</button>
@@ -487,14 +470,24 @@
     </div>
 </div>
 
-<!-- Thai Correction Modal (ป๊อปอัปเฉลยภาษาไทย) -->
+<div id="abcCorrectionModal" class="modal-overlay">
+    <div class="modal-box" style="border-color: #f44336; border-width: 5px;">
+        <h2 style="color:#f44336; margin-top:0; font-size: 2.2rem;">❌ ยังไม่ถูกน้า</h2>
+        <p style="font-size:1.2rem; color:#666; margin-bottom: 5px;">คำที่ถูกต้องคือ:</p>
+        <div id="abcCorrectAnswerDisplay" style="font-size: 2.5rem; font-weight: 800; color: var(--primary); background: #e8f5e9; padding: 15px; border-radius: 20px; margin: 15px 0; border: 3px dashed #4caf50;">
+            </div>
+        <div id="abcCorrectMeaningDisplay" style="font-size: 1.5rem; color: #555; margin-bottom: 15px; font-weight:bold;"></div>
+        <button class="btn-sound" id="abcModalSoundBtn" style="margin: 15px auto; width: 60px; height: 60px; font-size: 1.8rem; background: #81c784; box-shadow: 0 4px 0 #4caf50;">🔊</button>
+        <button class="btn-main" style="background:#2196f3; box-shadow: 0 5px 0 #1565c0; margin-top: 15px;" onclick="closeAbcCorrection()">ข้อต่อไป ➡️</button>
+    </div>
+</div>
+
 <div id="thaiCorrectionModal" class="modal-overlay">
     <div class="modal-box" style="border-color: #f44336; border-width: 5px;">
         <h2 style="color:#f44336; margin-top:0; font-size: 2.2rem;">❌ ยังไม่ถูกน้า</h2>
         <p style="font-size:1.2rem; color:#666; margin-bottom: 5px;">คำที่ถูกต้องคือ:</p>
         <div id="thaiCorrectAnswerDisplay" style="font-size: 3.5rem; font-weight: 800; color: #4caf50; background: #e8f5e9; padding: 15px; border-radius: 20px; margin: 15px 0; border: 3px dashed #4caf50;">
-            <!-- Correct word will appear here -->
-        </div>
+            </div>
         <button class="btn-sound" onclick="speak(currentThaiWord, 'th-TH')" style="margin: 15px auto; width: 60px; height: 60px; font-size: 1.8rem; background: #81c784; box-shadow: 0 4px 0 #4caf50;">🔊</button>
         <button class="btn-main" style="background:#2196f3; box-shadow: 0 5px 0 #1565c0; margin-top: 15px;" onclick="closeThaiCorrection()">ข้อต่อไป ➡️</button>
     </div>
@@ -731,7 +724,7 @@ function mathSummary(){
 }
 
 /**********************************************
- * GAME 2: ABC LOGIC (UPDATED WITH MISSING LETTER MODE)
+ * GAME 2: ABC LOGIC
  **********************************************/
 function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
 function toggleSoundUI() {
@@ -770,7 +763,6 @@ function nextQuestion() {
   
   currentWord = currentRoundWords.pop();
   
-  // สุ่มโหมดระหว่าง "แปลความหมาย" และ "หาตัวอักษรที่หายไป" (โอกาส 50/50)
   abcCurrentMode = Math.random() > 0.5 ? 'translation' : 'missing_letter';
   const box = document.getElementById("choicesBox"); box.innerHTML = "";
 
@@ -790,21 +782,20 @@ function nextQuestion() {
           box.appendChild(btn);
       });
   } else {
-      // โหมดตัวอักษรหายไป
       let wordStr = currentWord.Vocabulary;
       let hiddenIdx = Math.floor(Math.random() * wordStr.length);
       abcMissingLetter = wordStr[hiddenIdx];
       
-      // เอาขีดเส้นใต้มาแทนที่
       let displayWord = wordStr.substring(0, hiddenIdx) + "_" + wordStr.substring(hiddenIdx + 1);
-      document.getElementById("gameVocab").textContent = displayWord; 
-      speak(currentWord.Vocabulary); // ฟังเสียงคำเต็มปกติ
+      
+      document.getElementById("gameVocab").innerHTML = `${displayWord} <div style="font-size: 1.8rem; color: var(--secondary); margin-top: 15px; font-weight: 600; text-shadow: none;">แปลว่า: ${currentWord["คำแปล"]}</div>`;
+      
+      speak(currentWord.Vocabulary); 
       
       let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
       let choices = [abcMissingLetter];
       while(choices.length < 4) {
           let rChar = alphabet[Math.floor(Math.random() * alphabet.length)];
-          // จัดเคส (ตัวพิมพ์เล็ก/ใหญ่) ให้ตรงกับตัวที่หายไป
           if(abcMissingLetter === abcMissingLetter.toLowerCase()) rChar = rChar.toLowerCase();
           else rChar = rChar.toUpperCase();
 
@@ -819,7 +810,6 @@ function nextQuestion() {
   }
 }
 
-// อัปเดตการตรวจคำตอบให้ครอบคลุมทั้ง 2 โหมด
 function checkAnswer(isCorrect, btn, correctDisplay) {
   const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
   if(!wordStats[currentWord.Vocabulary]) wordStats[currentWord.Vocabulary] = { correct:0, wrong:0, meaning: currentWord["คำแปล"] };
@@ -832,12 +822,26 @@ function checkAnswer(isCorrect, btn, correctDisplay) {
     btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++; wordStats[currentWord.Vocabulary].wrong++;
     if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0; sessionWrongStats[currentWord.Vocabulary]++;
     
-    // ไฮไลต์คำตอบที่ถูกให้ดู
     allBtns.forEach(b => { if(b.textContent === correctDisplay) b.classList.add("correct-anim"); });
-    setTimeout(nextQuestion, 1500);
+    
+    clearInterval(abcTimerId);
+
+    setTimeout(() => {
+        document.getElementById("abcCorrectAnswerDisplay").innerHTML = `${currentWord.Vocabulary} <br><span style="font-size: 1.5rem; color: #e65100;">(คำตอบคือ: ${correctDisplay})</span>`;
+        document.getElementById("abcCorrectMeaningDisplay").textContent = `แปลว่า: ${currentWord["คำแปล"]}`;
+        document.getElementById("abcModalSoundBtn").onclick = () => speak(currentWord.Vocabulary);
+        document.getElementById("abcCorrectionModal").classList.add("active");
+        speak(currentWord.Vocabulary);
+    }, 800);
   }
   document.getElementById("liveScore").textContent = abcCurrentScore; 
   localStorage.setItem("wordStats", JSON.stringify(wordStats));
+}
+
+function closeAbcCorrection() {
+    document.getElementById("abcCorrectionModal").classList.remove("active");
+    abcTimerId = setInterval(() => { abcTimeLeft--; updateTimerDisplay(); if(abcTimeLeft <= 0) finishGameABC(); }, 1000);
+    nextQuestion();
 }
 
 function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
@@ -852,7 +856,7 @@ function finishGameABC() {
 }
 
 /**********************************************
- * GAME 3: THAI DICTATION LOGIC (UPDATED WITH KEYBOARD & HINT)
+ * GAME 3: THAI DICTATION LOGIC
  **********************************************/
 
 function splitThaiGraphemes(word) {
@@ -889,14 +893,12 @@ function thaiNextQuestion() {
     
     document.getElementById("thaiQNum").textContent = `${thaiQIndex + 1}/${currentThaiWordsList.length}`;
     
-    // สร้างคำใบ้สลับตำแหน่งตัวอักษร
     let scrambled = [...currentThaiGraphemes].sort(() => Math.random() - 0.5);
     if(scrambled.length > 1 && scrambled.join('') === currentThaiGraphemes.join('')) {
         let temp = scrambled[0]; scrambled[0] = scrambled[1]; scrambled[1] = temp;
     }
     document.getElementById("thaiScrambledHint").textContent = scrambled.join('  -  ');
 
-    // ล้างกล่องข้อความและสร้างใหม่
     const container = document.getElementById("thaiInputBox");
     container.innerHTML = "";
     
@@ -906,11 +908,10 @@ function thaiNextQuestion() {
         input.className = "thai-char-box";
         input.maxLength = currentThaiGraphemes[i].length;
         input.id = "tbox_" + i;
-        input.readOnly = true; // ป้องกันคีย์บอร์ดมือถือเด้งขึ้นมา
+        input.readOnly = true; 
         container.appendChild(input);
     }
     
-    // สร้างแป้นพิมพ์จำลอง
     generateThaiKeyboard(currentThaiGraphemes);
 
     speak(currentThaiWord, 'th-TH');
@@ -918,13 +919,11 @@ function thaiNextQuestion() {
 
 function generateThaiKeyboard(graphemes) {
     let keys = [...graphemes];
-    // เพิ่มตัวอักษรหลอก 2-3 ตัว เพื่อความท้าทาย
     const decoys = ["ก", "จ", "ด", "ต", "บ", "ป", "อ", "ม", "น", "ร", "ล", "ว", "ย", "ง", "า", "ิ", "ี", "ุ", "ู", "เ", "โ"];
     let numDecoys = Math.floor(Math.random() * 2) + 2;
     for(let i=0; i<numDecoys; i++) {
         keys.push(decoys[Math.floor(Math.random() * decoys.length)]);
     }
-    // สลับตำแหน่งแป้นบนคีย์บอร์ด
     keys.sort(() => Math.random() - 0.5);
 
     let kbHtml = keys.map(k => `<button class="thai-key" onclick="pressThaiKey('${k}')">${k}</button>`).join('');
@@ -933,9 +932,7 @@ function generateThaiKeyboard(graphemes) {
     document.getElementById('thaiKeyboard').innerHTML = kbHtml;
 }
 
-// ฟังก์ชันเมื่อกดปุ่มบนแป้นพิมพ์จำลอง
 function pressThaiKey(char) {
-    // หาช่องที่ว่างช่องแรกแล้วเติม
     for(let i=0; i<currentThaiGraphemes.length; i++) {
         let box = document.getElementById("tbox_" + i);
         if(box.value === "") {
@@ -945,9 +942,7 @@ function pressThaiKey(char) {
     }
 }
 
-// ฟังก์ชันลบตัวอักษรล่าสุด
 function deleteThaiKey() {
-    // หาช่องที่ถูกเติมช่องสุดท้ายแล้วลบ
     for(let i=currentThaiGraphemes.length-1; i>=0; i--) {
         let box = document.getElementById("tbox_" + i);
         if(box.value !== "") {
@@ -957,7 +952,6 @@ function deleteThaiKey() {
     }
 }
 
-// ฟังก์ชันสำหรับปิดหน้าต่างเฉลย แล้วไปข้อต่อไป
 function closeThaiCorrection() {
     document.getElementById("thaiCorrectionModal").classList.remove("active");
     document.getElementById("thaiInputBox").style.backgroundColor = "transparent";
@@ -988,21 +982,26 @@ function checkThaiAnswer() {
         
         document.getElementById("thaiInputBox").style.backgroundColor = "#ffcdd2";
         
-        // แสดงป๊อปอัปเฉลยแทน Alert เดิม
         document.getElementById("thaiCorrectAnswerDisplay").textContent = currentThaiWord;
         document.getElementById("thaiCorrectionModal").classList.add("active");
-        speak(currentThaiWord, 'th-TH'); // พูดคำที่ถูกซ้ำให้ฟัง
+        speak(currentThaiWord, 'th-TH');
     }
 }
 
 /**********************************************
- * MASTER SAVE FUNCTION
+ * MASTER SAVE FUNCTION (อัปเดตแบบ Optimistic)
  **********************************************/
 function saveAllDataToCloud() {
     pendingThaiScore = parseInt(thaiCurrentScore) || 0;
     
     let totalCurrentRoundScore = pendingMathScore + pendingAbcScore + pendingThaiScore;
     
+    // --- 🌟 ระบบบวกคะแนนเข้าแอปทันที (ไม่ต้องรอชีต) 🌟 ---
+    abcScoreGlobal += pendingAbcScore;
+    thaiScoreGlobal += pendingThaiScore;
+    updateGrandTotal();
+    // ---------------------------------------------
+
     document.getElementById("resTotal").textContent = totalCurrentRoundScore;
     document.getElementById("resMath").textContent = pendingMathScore;
     document.getElementById("resAbc").textContent = pendingAbcScore;
@@ -1031,7 +1030,7 @@ function saveAllDataToCloud() {
         }) 
     }).then(res => res.json()).then(data => {
         document.getElementById("mathSavedAlert").innerHTML = "✅ บันทึกคะแนนสำเร็จเรียบร้อย!";
-        setTimeout(fetchAbcData, 2000); 
+        setTimeout(fetchAbcData, 4000); 
     }).catch(err => {
         document.getElementById("mathSavedAlert").innerHTML = "✅ เล่นจบแล้ว (แต่ส่งข้อมูลเข้า Sheet ขัดข้อง)";
     });
