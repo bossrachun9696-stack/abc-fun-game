@@ -543,6 +543,18 @@ let userSettings = JSON.parse(localStorage.getItem("userSettings")) || { showRea
 let currentFilters = { search: "", start: null, end: null, markedOnly: false };
 
 /**********************************************
+ * ฟังก์ชันสับเปลี่ยนอาร์เรย์ที่แท้จริง (Fisher-Yates Shuffle)
+ * ทำให้คำศัพท์สลับกันแบบสุ่ม 100% ไม่เรียงกันเหมือนเดิม
+ **********************************************/
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+/**********************************************
  * INITIALIZATION & UI
  **********************************************/
 window.onload = function() { 
@@ -679,7 +691,7 @@ function mathNextQ(){
         if (Math.random() > 0.5) { let temp = a; a = b; b = temp; } // สลับตำแหน่งตัวเลขให้หลากหลาย
         mathAnswer = a * b; // คำตอบสูงสุด 25 * 12 = 300
         expressionStr = `${a} × ${b}`;
-    } else if (op === 3) { // Division (÷) ปรับให้ตัวตั้งไม่เกิน 300 (เพื่อไม่ให้ยากเกินสำหรับเด็ก 8 ขวบ)
+    } else if (op === 3) { // Division (÷) ปรับให้ตัวตั้งไม่เกิน 300
         let answer = Math.floor(Math.random() * 24) + 2; // คำตอบ 2 ถึง 25
         b = Math.floor(Math.random() * 11) + 2; // ตัวหาร 2 ถึง 12
         a = b * answer; // ตัวตั้งสูงสุด 300 (25 * 12)
@@ -763,7 +775,9 @@ function startGame() {
   gamePool = words.slice(start - 1, end);
   if(gamePool.length < 4) { alert("เลือกคำเพิ่มหน่อยครับ"); return; }
   
-  currentRoundWords = [...gamePool].sort(() => Math.random() - 0.5);
+  // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates แทนของเดิม
+  currentRoundWords = shuffleArray([...gamePool]);
+  
   abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
   
   document.getElementById("liveScore").textContent = "0"; 
@@ -799,7 +813,8 @@ function nextQuestion() {
           if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); 
       }
       
-      choices.sort(() => Math.random() - 0.5).forEach(w => {
+      // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates สลับตัวเลือกคำตอบ
+      shuffleArray(choices).forEach(w => {
           const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
           btn.onclick = () => checkAnswer(w.Vocabulary === currentWord.Vocabulary, btn, currentWord["คำแปล"]); 
           box.appendChild(btn);
@@ -825,7 +840,8 @@ function nextQuestion() {
           if(!choices.includes(rChar)) choices.push(rChar);
       }
       
-      choices.sort(() => Math.random() - 0.5).forEach(char => {
+      // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates สลับตัวเลือกคำตอบ
+      shuffleArray(choices).forEach(char => {
           const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = char;
           btn.onclick = () => checkAnswer(char === abcMissingLetter, btn, abcMissingLetter); 
           box.appendChild(btn);
@@ -897,7 +913,8 @@ function prepThaiGame() {
         return;
     }
     
-    let shuffled = [...thaiWordsDB].sort(() => Math.random() - 0.5);
+    // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates
+    let shuffled = shuffleArray([...thaiWordsDB]);
     currentThaiWordsList = shuffled.slice(0, 15);
     thaiQIndex = 0; thaiCurrentScore = 0;
     
@@ -916,7 +933,8 @@ function thaiNextQuestion() {
     
     document.getElementById("thaiQNum").textContent = `${thaiQIndex + 1}/${currentThaiWordsList.length}`;
     
-    let scrambled = [...currentThaiGraphemes].sort(() => Math.random() - 0.5);
+    // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates
+    let scrambled = shuffleArray([...currentThaiGraphemes]);
     if(scrambled.length > 1 && scrambled.join('') === currentThaiGraphemes.join('')) {
         let temp = scrambled[0]; scrambled[0] = scrambled[1]; scrambled[1] = temp;
     }
@@ -947,7 +965,9 @@ function generateThaiKeyboard(graphemes) {
     for(let i=0; i<numDecoys; i++) {
         keys.push(decoys[Math.floor(Math.random() * decoys.length)]);
     }
-    keys.sort(() => Math.random() - 0.5);
+    
+    // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates กับคีย์บอร์ด
+    shuffleArray(keys);
 
     let kbHtml = keys.map(k => `<button class="thai-key" onclick="pressThaiKey('${k}')">${k}</button>`).join('');
     kbHtml += `<button class="thai-key delete" onclick="deleteThaiKey()">⌫ ลบ</button>`;
