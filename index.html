@@ -84,7 +84,7 @@
   #mathPage button.back { background: #ff9800; width: 90%; color: white; }
   #mathPage .btn-lv { background: #d1d9e6; color: #444; border: 2px solid #b0b8c4; width: 80px; font-weight: bold; }
   #mathPage .btn-lv.sel { background: #0d47a1 !important; color: #fff !important; border: 3px solid #002171 !important; transform: scale(1.1); }
-  #mathPage button.num { font-size: 30px; width: 70px; height: 70px; border-radius: 50%; background: #f0f0f0; color: #333; }
+  #mathPage button.num { font-size: 30px; width: 70px; height: 70px; border-radius: 50%; background: #f0f0f0; color: #333; margin: 3px; }
   #mathPage input#ans { font-size: 35px; width: 80%; padding: 10px; border-radius: 15px; border: 3px solid #2196f3; text-align: center; margin-bottom: 10px; background: #fff; }
   #mathPage .timer { font-size: 26px; color: red; font-weight: bold; margin-bottom: 10px; }
   .mathScoreBox { position: fixed; top: 10px; right: 10px; background: #ff9800; color: #fff; padding: 8px 15px; border-radius: 15px; z-index: 999; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
@@ -659,10 +659,33 @@ function mathNextQ(){
     if(mathQCount >= mathTotalQ){ mathSummary(); return; }
     mathQCount++; clearInterval(mathTimerId); mathUpdateScoreUI();
     
-    let a = Math.floor(Math.random() * 50) + 10;
-    let b = Math.floor(Math.random() * 50) + 10;
-    mathAnswer = a + b;
-    let expressionStr = `${a} + ${b}`;
+    // สุ่มประเภทโจทย์ (0 = บวก, 1 = ลบ, 2 = คูณ, 3 = หาร)
+    let op = Math.floor(Math.random() * 4);
+    let a, b, expressionStr;
+
+    if (op === 0) { // Addition (+) Up to 4 digits
+        a = Math.floor(Math.random() * 9900) + 100; // 100 ถึง 9999
+        b = Math.floor(Math.random() * 9900) + 100; // 100 ถึง 9999
+        mathAnswer = a + b;
+        expressionStr = `${a} + ${b}`;
+    } else if (op === 1) { // Subtraction (-) Up to 4 digits
+        a = Math.floor(Math.random() * 9900) + 100; // 100 ถึง 9999
+        b = Math.floor(Math.random() * (a - 10)) + 10; // b จะต้องน้อยกว่า a เสมอ
+        mathAnswer = a - b;
+        expressionStr = `${a} - ${b}`;
+    } else if (op === 2) { // Multiplication (×) ปรับให้คำตอบไม่เกิน 300
+        a = Math.floor(Math.random() * 24) + 2; // 2 ถึง 25
+        b = Math.floor(Math.random() * 11) + 2; // 2 ถึง 12
+        if (Math.random() > 0.5) { let temp = a; a = b; b = temp; } // สลับตำแหน่งตัวเลขให้หลากหลาย
+        mathAnswer = a * b; // คำตอบสูงสุด 25 * 12 = 300
+        expressionStr = `${a} × ${b}`;
+    } else if (op === 3) { // Division (÷) ปรับให้ตัวตั้งไม่เกิน 300 (เพื่อไม่ให้ยากเกินสำหรับเด็ก 8 ขวบ)
+        let answer = Math.floor(Math.random() * 24) + 2; // คำตอบ 2 ถึง 25
+        b = Math.floor(Math.random() * 11) + 2; // ตัวหาร 2 ถึง 12
+        a = b * answer; // ตัวตั้งสูงสุด 300 (25 * 12)
+        mathAnswer = answer;
+        expressionStr = `${a} ÷ ${b}`;
+    }
     
     mathTimeLeft = 60;
     document.getElementById("mathAppContent").innerHTML = `
@@ -670,7 +693,7 @@ function mathNextQ(){
         <div style="font-size:18px; color:#666">ข้อที่ ${mathQCount} / ${mathTotalQ}</div>
         <h1 style="font-size:45px; margin:10px 0;">${expressionStr}</h1>
         <input id="ans" type="number" readonly placeholder="?"><br><br>
-        <div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 300px; margin: auto;">
             ${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button class="num" onclick="mathPress(${n})">${n}</button>`).join("")}
             <button class="num" style="background:#f44336; color:#fff" onclick="document.getElementById('ans').value=''">C</button>
         </div><br>
