@@ -745,17 +745,32 @@ function mathSummary(){
     document.getElementById("mathScoreBox")?.remove();
     pendingMathScore = mathCurrentScore; 
 
-    document.getElementById("mathAppContent").innerHTML = `
-        <div style="padding:20px;">
-            <h2 style="color:#4caf50">🎊 จบด่าน 1 คณิตศาสตร์แล้ว!</h2>
-            <p>รอบนี้ทำเพิ่มไปได้: <b style="color:#e65100; font-size:1.5rem;">+${mathCurrentScore}</b> แต้ม</p>
-            <div style="background:#fff3e0; padding:10px; border-radius:10px; margin:15px 0; color:#d32f2f; font-weight:bold; font-size:0.9rem; border:1px solid #ffb74d;">
-                ⚠️ ยังไม่บันทึกคะแนน! ต้องเล่นให้ครบ 3 ด่านก่อน
+    // เงื่อนไขใหม่: ต้องได้คะแนนอย่างน้อย 10 คะแนน (ตอบถูกอย่างน้อย 2 ข้อ) ถึงจะผ่านด่านไปได้
+    if (mathCurrentScore < 10) {
+        document.getElementById("mathAppContent").innerHTML = `
+            <div style="padding:20px;">
+                <h2 style="color:#f44336">⚠️ ยังไปต่อไม่ได้!</h2>
+                <p>คะแนนรอบนี้: <b style="color:#f44336; font-size:1.5rem;">${mathCurrentScore}</b> แต้ม</p>
+                <div style="background:#ffebee; padding:15px; border-radius:10px; margin:15px 0; color:#c62828; font-weight:bold; font-size:1.1rem; border:2px dashed #ef5350;">
+                    หนูต้องตั้งใจทำนะครับ!<br>ต้องตอบให้ถูกอย่างน้อย 2 ข้อ (10 คะแนน) ถึงจะผ่านด่านได้น้า
+                </div>
+                <button style="width:100%; background:#2196f3; color:white; padding:15px; font-size:1.5rem; border-radius:20px; box-shadow:0 5px 0 #1565c0; margin-top:10px;" onclick="mathHomeInit()">🔄 เริ่มเล่นคณิตศาสตร์ใหม่</button>
             </div>
-            <p style="color:#e91e63; font-weight:bold; font-size:1.2rem; margin-top:15px;">เตรียมตัวไปลุยด่านอังกฤษกันต่อเลย!</p>
-            <button style="width:100%; background:#ff9800; color:white; padding:15px; font-size:1.5rem; border-radius:20px; box-shadow:0 5px 0 #e65100; margin-top:10px;" onclick="showPage('homePage')">➡️ ไปด่าน 2: ABC ต่อ</button>
-        </div>
-    `;
+        `;
+    } else {
+        // ถ้ายอมตอบได้ถูก 2 ข้อขึ้นไป จะผ่านด่านได้ตามปกติ
+        document.getElementById("mathAppContent").innerHTML = `
+            <div style="padding:20px;">
+                <h2 style="color:#4caf50">🎊 จบด่าน 1 คณิตศาสตร์แล้ว!</h2>
+                <p>รอบนี้ทำเพิ่มไปได้: <b style="color:#e65100; font-size:1.5rem;">+${mathCurrentScore}</b> แต้ม</p>
+                <div style="background:#fff3e0; padding:10px; border-radius:10px; margin:15px 0; color:#d32f2f; font-weight:bold; font-size:0.9rem; border:1px solid #ffb74d;">
+                    ⚠️ ยังไม่บันทึกคะแนน! ต้องเล่นให้ครบ 3 ด่านก่อน
+                </div>
+                <p style="color:#e91e63; font-weight:bold; font-size:1.2rem; margin-top:15px;">เตรียมตัวไปลุยด่านอังกฤษกันต่อเลย!</p>
+                <button style="width:100%; background:#ff9800; color:white; padding:15px; font-size:1.5rem; border-radius:20px; box-shadow:0 5px 0 #e65100; margin-top:10px;" onclick="showPage('homePage')">➡️ ไปด่าน 2: ABC ต่อ</button>
+            </div>
+        `;
+    }
 }
 
 /**********************************************
