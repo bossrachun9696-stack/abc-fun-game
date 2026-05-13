@@ -295,13 +295,6 @@
       </div>
 
       <div id="loadingStatus" style="color: orange; font-style: italic; margin-bottom: 5px; font-size: 0.9rem;">กำลังโหลดข้อมูล...</div>
-      
-      <div class="input-range-group">
-        <span>เล่นคำที่:</span>
-        <input type="number" id="gameStartIdx" class="input-box" value="1">
-        <span>ถึง</span>
-        <input type="number" id="gameEndIdx" class="input-box" value="...">
-      </div>
 
       <p style="color:red; font-weight:bold; font-size:0.9rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ คำเตือน: ต้องเล่นด่านนี้ให้จบเวลา 4 นาที ห้ามออกกลางคัน ไม่เช่นนั้นคะแนนที่สะสมมาจะหาย!</p>
 
@@ -617,7 +610,6 @@ function fetchAbcData() {
             document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
             document.getElementById("onlineIndicator").textContent = "🟢 Online";
             document.getElementById("onlineIndicator").style.color = "green";
-            document.getElementById("gameEndIdx").value = words.length;
             document.getElementById("hubStatus").textContent = "✅ เชื่อมต่อระบบ Cloud พร้อมเล่นทั้ง 3 ด่าน";
             document.getElementById("hubStatus").style.color = "green";
         }
@@ -625,7 +617,6 @@ function fetchAbcData() {
         words = backupWords;
         document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์";
         document.getElementById("onlineIndicator").textContent = "🔴 Offline";
-        document.getElementById("gameEndIdx").value = words.length;
     });
 }
 
@@ -783,14 +774,12 @@ function toggleSoundUI() {
 }
 
 function startGame() {
-  if(words.length < 4) { alert("รอก่อนนะครับ"); return; }
-  let start = parseInt(document.getElementById("gameStartIdx").value);
-  let end = parseInt(document.getElementById("gameEndIdx").value);
-  if(isNaN(start) || start < 1) start = 1; if(isNaN(end) || end > words.length) end = words.length;
-  gamePool = words.slice(start - 1, end);
-  if(gamePool.length < 4) { alert("เลือกคำเพิ่มหน่อยครับ"); return; }
+  if(words.length < 4) { alert("รอก่อนนะครับ (ต้องการอย่างน้อย 4 คำ)"); return; }
   
-  // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates แทนของเดิม
+  // บังคับใช้คำศัพท์ทั้งหมดที่มีในระบบ ไม่ให้เลือกช่วงแล้ว
+  gamePool = [...words];
+  
+  // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates
   currentRoundWords = shuffleArray([...gamePool]);
   
   abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
