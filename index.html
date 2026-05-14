@@ -337,7 +337,7 @@
       <div id="thaiScrambledHint" style="font-size: 1.8rem; color: #e65100; font-weight: bold; margin-bottom: 15px; background: #fff3e0; padding: 10px; border-radius: 15px; border: 2px dashed #ffb74d;">
           </div>
 
-      <button class="btn-sound" style="background:#81c784; box-shadow: 0 4px 0 #4caf50;" onclick="speak(currentThaiWord, 'th-TH')">🔊 ฟังเสียง</button>
+      <button class="btn-sound" style="background:#81c784; box-shadow: 0 4px 0 #4caf50;" onclick="speak(currentThaiWord, 'th-TH')">🔊 ฟัง</button>
       
       <div id="thaiInputBox" class="thai-input-container">
         </div>
@@ -512,19 +512,20 @@ let pendingMathScore = 0, pendingAbcScore = 0, pendingThaiScore = 0;
 // GAME VARIABLES
 const GAME_TIME = 240; 
 let words = []; let thaiWordsDB = [];
-let gamePool = []; let currentRoundWords = [];
+let sessionEngPool = []; let sessionThaiPool = []; // Pool เก็บคำศัพท์เพื่อไม่ให้ซ้ำแม้เล่นหลายรอบ
+let currentRoundWords = []; let currentThaiWordsList = [];
 let globalRounds = 0; let isSoundEnabled = true;
 let currentWord = null; let abcTimerId = null; let abcTimeLeft = 0; let abcCurrentScore = 0;
 let sessionCorrect = 0; let sessionWrong = 0; 
 let sessionWrongStats = {}; let sessionThaiWrongStats = {};
 
 // ABC MISSING LETTER VARS
-let abcCurrentMode = 'translation'; // 'translation' or 'missing_letter'
+let abcCurrentMode = 'translation';
 let abcMissingLetter = '';
 
 // THAI GAME VARIABLES
-let currentThaiWordsList = [], currentThaiWord = "", thaiQIndex = 0, thaiCurrentScore = 0;
-let currentThaiGraphemes = []; // เก็บตัวแปรแยกเซลล์อักษรภาษาไทย
+let currentThaiWord = "", thaiQIndex = 0, thaiCurrentScore = 0;
+let currentThaiGraphemes = []; 
 
 // PRACTICE & VOCAB VARIABLES
 let practiceIndex = 0; let currentModalWord = null; 
@@ -537,7 +538,7 @@ let currentFilters = { search: "", start: null, end: null, markedOnly: false };
 
 /**********************************************
  * ฟังก์ชันสับเปลี่ยนอาร์เรย์ที่แท้จริง (Fisher-Yates Shuffle)
- * ทำให้คำศัพท์สลับกันแบบสุ่ม 100% ไม่เรียงกันเหมือนเดิม
+ * ทำให้คำศัพท์สลับกันแบบสุ่ม 100%
  **********************************************/
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -603,8 +604,36 @@ function fetchAbcData() {
     }).catch(console.error);
 
     fetch(API_URL).then(res => res.json()).then(data => {
-        if(data.words) words = data.words; else if(Array.isArray(data)) words = data;
-        if(data.thaiWords) thaiWordsDB = data.thaiWords;
+        let rawWords = data.words ? data.words : (Array.isArray(data) ? data : backupWords);
+        
+        // 🔒 ป้องกันคำซ้ำในภาษาอังกฤษตั้งแต่โหลด (ใช้ Set กรองคำและคำแปลที่ซ้ำ)
+        let seenEng = new Set();
+        words = [];
+        rawWords.forEach(w => {
+            let voc = w.Vocabulary ? w.Vocabulary.trim().toLowerCase() : "";
+            if(voc && !seenEng.has(voc)) {
+                seenEng.add(voc);
+                w.Vocabulary = w.Vocabulary.trim();
+                words.push(w);
+            }
+        });
+
+        // 🔒 ป้องกันคำซ้ำในภาษาไทยตั้งแต่โหลด
+        if(data.thaiWords) {
+            let seenThai = new Set();
+            thaiWordsDB = [];
+            data.thaiWords.forEach(w => {
+                let t = w ? w.trim() : "";
+                if(t && !seenThai.has(t)) {
+                    seenThai.add(t);
+                    thaiWordsDB.push(t);
+                }
+            });
+        }
+
+        // 🎲 สร้าง Pool ไว้ใช้ทั้ง Session เพื่อรับประกันว่าเล่นหลายรอบคำก็จะไม่ซ้ำ (จนกว่าคำจะหมด)
+        sessionEngPool = shuffleArray([...words]);
+        sessionThaiPool = shuffleArray([...thaiWordsDB]);
 
         if(words.length > 0) {
             document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
@@ -615,6 +644,7 @@ function fetchAbcData() {
         }
     }).catch(e => {
         words = backupWords;
+        sessionEngPool = shuffleArray([...words]);
         document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์";
         document.getElementById("onlineIndicator").textContent = "🔴 Offline";
     });
@@ -662,30 +692,29 @@ function mathNextQ(){
     if(mathQCount >= mathTotalQ){ mathSummary(); return; }
     mathQCount++; clearInterval(mathTimerId); mathUpdateScoreUI();
     
-    // สุ่มประเภทโจทย์ (0 = บวก, 1 = ลบ, 2 = คูณ, 3 = หาร)
     let op = Math.floor(Math.random() * 4);
     let a, b, expressionStr;
 
-    if (op === 0) { // Addition (+) Up to 4 digits
-        a = Math.floor(Math.random() * 9900) + 100; // 100 ถึง 9999
-        b = Math.floor(Math.random() * 9900) + 100; // 100 ถึง 9999
+    if (op === 0) { 
+        a = Math.floor(Math.random() * 9900) + 100;
+        b = Math.floor(Math.random() * 9900) + 100;
         mathAnswer = a + b;
         expressionStr = `${a} + ${b}`;
-    } else if (op === 1) { // Subtraction (-) Up to 4 digits
-        a = Math.floor(Math.random() * 9900) + 100; // 100 ถึง 9999
-        b = Math.floor(Math.random() * (a - 10)) + 10; // b จะต้องน้อยกว่า a เสมอ
+    } else if (op === 1) { 
+        a = Math.floor(Math.random() * 9900) + 100;
+        b = Math.floor(Math.random() * (a - 10)) + 10;
         mathAnswer = a - b;
         expressionStr = `${a} - ${b}`;
-    } else if (op === 2) { // Multiplication (×) ปรับให้คำตอบไม่เกิน 300
-        a = Math.floor(Math.random() * 24) + 2; // 2 ถึง 25
-        b = Math.floor(Math.random() * 11) + 2; // 2 ถึง 12
-        if (Math.random() > 0.5) { let temp = a; a = b; b = temp; } // สลับตำแหน่งตัวเลขให้หลากหลาย
-        mathAnswer = a * b; // คำตอบสูงสุด 25 * 12 = 300
+    } else if (op === 2) { 
+        a = Math.floor(Math.random() * 24) + 2;
+        b = Math.floor(Math.random() * 11) + 2;
+        if (Math.random() > 0.5) { let temp = a; a = b; b = temp; }
+        mathAnswer = a * b;
         expressionStr = `${a} × ${b}`;
-    } else if (op === 3) { // Division (÷) ปรับให้ตัวตั้งไม่เกิน 300
-        let answer = Math.floor(Math.random() * 24) + 2; // คำตอบ 2 ถึง 25
-        b = Math.floor(Math.random() * 11) + 2; // ตัวหาร 2 ถึง 12
-        a = b * answer; // ตัวตั้งสูงสุด 300 (25 * 12)
+    } else if (op === 3) { 
+        let answer = Math.floor(Math.random() * 24) + 2;
+        b = Math.floor(Math.random() * 11) + 2;
+        a = b * answer;
         mathAnswer = answer;
         expressionStr = `${a} ÷ ${b}`;
     }
@@ -736,7 +765,6 @@ function mathSummary(){
     document.getElementById("mathScoreBox")?.remove();
     pendingMathScore = mathCurrentScore; 
 
-    // เงื่อนไขใหม่: ต้องได้คะแนนอย่างน้อย 10 คะแนน (ตอบถูกอย่างน้อย 2 ข้อ) ถึงจะผ่านด่านไปได้
     if (mathCurrentScore < 10) {
         document.getElementById("mathAppContent").innerHTML = `
             <div style="padding:20px;">
@@ -749,7 +777,6 @@ function mathSummary(){
             </div>
         `;
     } else {
-        // ถ้ายอมตอบได้ถูก 2 ข้อขึ้นไป จะผ่านด่านได้ตามปกติ
         document.getElementById("mathAppContent").innerHTML = `
             <div style="padding:20px;">
                 <h2 style="color:#4caf50">🎊 จบด่าน 1 คณิตศาสตร์แล้ว!</h2>
@@ -776,11 +803,13 @@ function toggleSoundUI() {
 function startGame() {
   if(words.length < 4) { alert("รอก่อนนะครับ (ต้องการอย่างน้อย 4 คำ)"); return; }
   
-  // บังคับใช้คำศัพท์ทั้งหมดที่มีในระบบ ไม่ให้เลือกช่วงแล้ว
-  gamePool = [...words];
+  // ♻️ ถ้ารอบนี้คำศัพท์ใน Pool เหลือน้อยกว่า 15 คำ ให้รีเซ็ตดึงมาใหม่ทั้งหมด (ป้องกันคำหมดกลางเกมแล้วพัง)
+  if(sessionEngPool.length < 15) {
+      sessionEngPool = shuffleArray([...words]);
+  }
   
-  // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates
-  currentRoundWords = shuffleArray([...gamePool]);
+  // ใช้ Pool โดยตรงในการเล่นรอบนี้ (คำจะถูก .pop() ออกไปเรื่อยๆ ทำให้เล่นกี่รอบก็ไม่ซ้ำจนกว่ากองจะหมด)
+  currentRoundWords = sessionEngPool;
   
   abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
   
@@ -800,7 +829,10 @@ function updateTimerDisplay() {
 
 function nextQuestion() {
   if(abcTimeLeft <= 0) return; 
-  if(currentRoundWords.length === 0) { finishGameABC(); return; }
+  if(currentRoundWords.length === 0) { 
+      // ถ้าระหว่าง 4 นาที ดันตอบจนคำศัพท์หมดระบบ ให้หยุดเกมทันที
+      finishGameABC(); return; 
+  }
   
   currentWord = currentRoundWords.pop();
   
@@ -812,12 +844,14 @@ function nextQuestion() {
       speak(currentWord.Vocabulary);
       
       let choices = [currentWord];
-      while(choices.length < 4) { 
-          let w = gamePool[Math.floor(Math.random() * gamePool.length)]; 
-          if(!choices.find(c => c.Vocabulary === w.Vocabulary)) choices.push(w); 
+      let loopLimit = 0;
+      // 🔒 ดึงตัวเลือกหลอกมาจากฐานข้อมูลทั้งหมด (หลีกเลี่ยงการสร้างช้อยที่คำแปลซ้ำกัน)
+      while(choices.length < 4 && loopLimit < 100) { 
+          let w = words[Math.floor(Math.random() * words.length)]; 
+          if(!choices.find(c => c.Vocabulary === w.Vocabulary || c["คำแปล"] === w["คำแปล"])) choices.push(w); 
+          loopLimit++;
       }
       
-      // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates สลับตัวเลือกคำตอบ
       shuffleArray(choices).forEach(w => {
           const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
           btn.onclick = () => checkAnswer(w.Vocabulary === currentWord.Vocabulary, btn, currentWord["คำแปล"]); 
@@ -831,20 +865,20 @@ function nextQuestion() {
       let displayWord = wordStr.substring(0, hiddenIdx) + "_" + wordStr.substring(hiddenIdx + 1);
       
       document.getElementById("gameVocab").innerHTML = `${displayWord} <div style="font-size: 1.8rem; color: var(--secondary); margin-top: 15px; font-weight: 600; text-shadow: none;">แปลว่า: ${currentWord["คำแปล"]}</div>`;
-      
       speak(currentWord.Vocabulary); 
       
       let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
       let choices = [abcMissingLetter];
-      while(choices.length < 4) {
+      let loopLimit = 0;
+      while(choices.length < 4 && loopLimit < 100) {
           let rChar = alphabet[Math.floor(Math.random() * alphabet.length)];
           if(abcMissingLetter === abcMissingLetter.toLowerCase()) rChar = rChar.toLowerCase();
           else rChar = rChar.toUpperCase();
 
           if(!choices.includes(rChar)) choices.push(rChar);
+          loopLimit++;
       }
       
-      // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates สลับตัวเลือกคำตอบ
       shuffleArray(choices).forEach(char => {
           const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = char;
           btn.onclick = () => checkAnswer(char === abcMissingLetter, btn, abcMissingLetter); 
@@ -917,9 +951,18 @@ function prepThaiGame() {
         return;
     }
     
-    // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates
-    let shuffled = shuffleArray([...thaiWordsDB]);
-    currentThaiWordsList = shuffled.slice(0, 15);
+    // ♻️ ถ้ากองคำศัพท์ภาษาไทยสำหรับรอบนี้เหลือน้อยกว่า 15 ให้ทำการสับไพ่(คำศัพท์)ใหม่ทั้งหมด (การันตีคำไม่ซ้ำรอบก่อนหน้า)
+    let requiredQ = Math.min(15, thaiWordsDB.length);
+    if(sessionThaiPool.length < requiredQ) {
+        sessionThaiPool = shuffleArray([...thaiWordsDB]);
+    }
+    
+    // ดึง 15 คำออกจากกอง
+    currentThaiWordsList = [];
+    for(let i=0; i < requiredQ; i++) {
+        currentThaiWordsList.push(sessionThaiPool.pop());
+    }
+
     thaiQIndex = 0; thaiCurrentScore = 0;
     
     showPage('thaiPage');
@@ -937,7 +980,6 @@ function thaiNextQuestion() {
     
     document.getElementById("thaiQNum").textContent = `${thaiQIndex + 1}/${currentThaiWordsList.length}`;
     
-    // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates
     let scrambled = shuffleArray([...currentThaiGraphemes]);
     if(scrambled.length > 1 && scrambled.join('') === currentThaiGraphemes.join('')) {
         let temp = scrambled[0]; scrambled[0] = scrambled[1]; scrambled[1] = temp;
@@ -970,7 +1012,6 @@ function generateThaiKeyboard(graphemes) {
         keys.push(decoys[Math.floor(Math.random() * decoys.length)]);
     }
     
-    // ใช้ฟังก์ชันการสุ่มแบบ Fisher-Yates กับคีย์บอร์ด
     shuffleArray(keys);
 
     let kbHtml = keys.map(k => `<button class="thai-key" onclick="pressThaiKey('${k}')">${k}</button>`).join('');
