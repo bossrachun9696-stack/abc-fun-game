@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#2196f3">
 
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&family=Sarabun:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght=300;400;600;800&family=Sarabun:wght=400;600;800&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -107,7 +107,7 @@
 
   /* Game Elements */
   .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-  .timer-box { font-size: 1.8rem; font-weight: 800; color: #555; background: #fff; padding: 5px 15px; border-radius: 15px; border: 3px solid #ddd; }
+  .timer-box { font-size: 1.5rem; font-weight: 800; color: #555; background: #fff; padding: 5px 12px; border-radius: 15px; border: 3px solid #ddd; }
   .score-box { font-size: 2rem; font-weight: 800; color: #fff; background: var(--primary); padding: 5px 20px; border-radius: 15px; box-shadow: 0 4px 0 #e08e19; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   .vocab-display { font-size: 3.5rem; font-weight: 800; color: var(--primary); margin: 10px 0; line-height: 1.1; text-shadow: 2px 2px 0 #f0f0f0;}
   .practice-vocab { font-size: 4rem; font-weight: 800; color: var(--secondary); margin: 15px 0; }
@@ -296,23 +296,23 @@
 
       <div id="loadingStatus" style="color: orange; font-style: italic; margin-bottom: 5px; font-size: 0.9rem;">กำลังโหลดข้อมูล...</div>
 
-      <p style="color:red; font-weight:bold; font-size:0.9rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ คำเตือน: ต้องเล่นด่านนี้ให้จบเวลา 4 นาที ห้ามออกกลางคัน ไม่เช่นนั้นคะแนนที่สะสมมาจะหาย!</p>
+      <p style="color:red; font-weight:bold; font-size:0.9rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ ภารกิจใหม่: แบ่งเล่นคำศัพท์เดี่ยว 2.5 นาที และประโยคเติมคำ 2.5 นาทีอย่างละช่วงน้า!</p>
 
-      <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (จับเวลา 4 นาที)</button>
+      <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (ด่านคำศัพท์เดี่ยวก่อน)</button>
     </div>
   </div>
 
   <div id="gamePage" class="page">
     <div class="game-header">
-      <div class="timer-box">⏳ <span id="timerDisplay">04:00</span></div>
+      <div class="timer-box">⏳ <span id="timerDisplay">🔤 ศัพท์ 02:30</span></div>
       <div class="score-box">คะแนน: <span id="liveScore">0</span></div>
     </div>
     <div class="card">
-      <div class="vocab-display" id="gameVocab">...</div>
+      <div class="vocab-display" id="gameVocab" style="transition: font-size 0.2s;">...</div>
       <button class="btn-sound" onclick="repeatSound()">🔊</button>
       <div id="choicesBox" class="choices-grid"></div>
     </div>
-    <p style="color:#888; font-size: 0.8rem;">สู้ๆ นะคนเก่ง! หมดเวลาหรือตอบครบหมดถึงจะจบเกมน้า</p>
+    <p style="color:#888; font-size: 0.8rem;">สู้ๆ นะคนเก่ง! หมดเวลาระบบจะสลับโหมดให้อัตโนมัติจ้า</p>
   </div>
 
   <div id="bridgePage" class="page">
@@ -491,6 +491,7 @@
  * CONFIGURATION & GLOBALS
  **********************************************/
 const API_URL = "https://script.google.com/macros/s/AKfycbwRcunRbh1yuGwqK3PtpUnsCP384WAx97nEWbjw2Z59m74Ezr9Q6goIUwRFUS5h3OYL/exec"; 
+const SENTENCE_API_URL = "https://script.google.com/macros/s/AKfycbzYwwOQM1aAvgguaxXiI69wm1clqgzI5OH90x4Xd8nU0ie3FjWViCKSRdQPs8F1sr_scw/exec";
 const PARENT_PIN = "0932815229";
 
 // Firebase Config
@@ -510,12 +511,15 @@ let mathScoreGlobal = 0, abcScoreGlobal = 0, thaiScoreGlobal = 0;
 let pendingMathScore = 0, pendingAbcScore = 0, pendingThaiScore = 0;
 
 // GAME VARIABLES
-const GAME_TIME = 240; 
-let words = []; let thaiWordsDB = [];
-let sessionEngPool = []; let sessionThaiPool = []; // Pool เก็บคำศัพท์เพื่อไม่ให้ซ้ำแม้เล่นหลายรอบ
-let currentRoundWords = []; let currentThaiWordsList = [];
+const PHASE_TIME = 150; // ⚙️ ตัวจับเวลาแยกเฟสละ 2.5 นาที (150 วินาที)
+let engGamePhase = 'vocab'; // คุมสถานะเฟสปัจจุบัน: 'vocab' หรือ 'sentence'
+
+let words = []; let thaiWordsDB = []; let sentencesDB = [];
+let sessionEngPool = []; let sessionThaiPool = []; let sessionSentPool = [];
+let currentThaiWordsList = [];
 let globalRounds = 0; let isSoundEnabled = true;
-let currentWord = null; let abcTimerId = null; let abcTimeLeft = 0; let abcCurrentScore = 0;
+let currentWord = null; let currentSentObj = null;
+let abcTimerId = null; let abcTimeLeft = 0; let abcCurrentScore = 0;
 let sessionCorrect = 0; let sessionWrong = 0; 
 let sessionWrongStats = {}; let sessionThaiWrongStats = {};
 
@@ -538,7 +542,7 @@ let currentFilters = { search: "", start: null, end: null, markedOnly: false };
 
 /**********************************************
  * ฟังก์ชันสับเปลี่ยนอาร์เรย์ที่แท้จริง (Fisher-Yates Shuffle)
- * ทำให้คำศัพท์สลับกันแบบสุ่ม 100%
+ * ทำความสะอาดให้สุ่มร้อยเปอร์เซ็นต์
  **********************************************/
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -554,6 +558,7 @@ function shuffleArray(array) {
 window.onload = function() { 
     toggleSoundUI(); 
     fetchAbcData(); 
+    fetchSentenceData();
     window.speechSynthesis.getVoices(); 
 
     // Fetch Firebase (Math)
@@ -587,6 +592,19 @@ function updateGrandTotal() {
     if(document.getElementById('dashThaiScore')) document.getElementById('dashThaiScore').textContent = (parseInt(thaiScoreGlobal) || 0);
 }
 
+function fetchSentenceData() {
+    const nocache = "&t=" + new Date().getTime();
+    fetch(SENTENCE_API_URL + "?action=getSentences" + nocache)
+    .then(res => res.json())
+    .then(data => {
+        if(Array.isArray(data)) {
+            sentencesDB = data.filter(s => s.question && s.correct);
+            sessionSentPool = shuffleArray([...sentencesDB]);
+            refreshLoadingUI();
+        }
+    }).catch(err => console.error("Error loading sentences:", err));
+}
+
 function fetchAbcData() {
     const nocache = "&t=" + new Date().getTime();
     
@@ -606,7 +624,6 @@ function fetchAbcData() {
     fetch(API_URL).then(res => res.json()).then(data => {
         let rawWords = data.words ? data.words : (Array.isArray(data) ? data : backupWords);
         
-        // 🔒 ป้องกันคำซ้ำในภาษาอังกฤษตั้งแต่โหลด (ใช้ Set กรองคำและคำแปลที่ซ้ำ)
         let seenEng = new Set();
         words = [];
         rawWords.forEach(w => {
@@ -618,7 +635,6 @@ function fetchAbcData() {
             }
         });
 
-        // 🔒 ป้องกันคำซ้ำในภาษาไทยตั้งแต่โหลด
         if(data.thaiWords) {
             let seenThai = new Set();
             thaiWordsDB = [];
@@ -631,23 +647,25 @@ function fetchAbcData() {
             });
         }
 
-        // 🎲 สร้าง Pool ไว้ใช้ทั้ง Session เพื่อรับประกันว่าเล่นหลายรอบคำก็จะไม่ซ้ำ (จนกว่าคำจะหมด)
         sessionEngPool = shuffleArray([...words]);
         sessionThaiPool = shuffleArray([...thaiWordsDB]);
-
-        if(words.length > 0) {
-            document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (${words.length} คำ)`;
-            document.getElementById("onlineIndicator").textContent = "🟢 Online";
-            document.getElementById("onlineIndicator").style.color = "green";
-            document.getElementById("hubStatus").textContent = "✅ เชื่อมต่อระบบ Cloud พร้อมเล่นทั้ง 3 ด่าน";
-            document.getElementById("hubStatus").style.color = "green";
-        }
+        refreshLoadingUI();
     }).catch(e => {
         words = backupWords;
         sessionEngPool = shuffleArray([...words]);
         document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์";
         document.getElementById("onlineIndicator").textContent = "🔴 Offline";
     });
+}
+
+function refreshLoadingUI() {
+    if(words.length > 0) {
+        document.getElementById("loadingStatus").textContent = `✅ พร้อมเล่น (ศัพท์ ${words.length} คำ | ประโยค ${sentencesDB.length} ข้อ)`;
+        document.getElementById("onlineIndicator").textContent = "🟢 Online";
+        document.getElementById("onlineIndicator").style.color = "green";
+        document.getElementById("hubStatus").textContent = "✅ เชื่อมต่อระบบ Cloud พร้อมเล่นทั้ง 3 ด่าน";
+        document.getElementById("hubStatus").style.color = "green";
+    }
 }
 
 function updateAbcUI() { 
@@ -792,96 +810,205 @@ function mathSummary(){
 }
 
 /**********************************************
- * GAME 2: ABC LOGIC
+ * GAME 2: ABC LOGIC (เฟสแยกคำศัพท์ 2.5 นาที / ประโยค 2.5 นาที)
  **********************************************/
 function toggleSound() { isSoundEnabled = !isSoundEnabled; toggleSoundUI(); if(isSoundEnabled) window.speechSynthesis.speak(new SpeechSynthesisUtterance("")); }
 function toggleSoundUI() {
   const btn = document.getElementById("soundToggle");
-  if(isSoundEnabled) { btn.textContent = "เปิด (1 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } else { btn.textContent = "ปิด (2 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
+  if(btn) {
+    if(isSoundEnabled) { btn.textContent = "เปิด (1 แต้ม)"; btn.style.background = "var(--correct)"; btn.style.color = "white"; } 
+    else { btn.textContent = "ปิด (2 แต้ม)"; btn.style.background = "#ccc"; btn.style.color = "#666"; }
+  }
 }
 
 function startGame() {
   if(words.length < 4) { alert("รอก่อนนะครับ (ต้องการอย่างน้อย 4 คำ)"); return; }
   
-  // ♻️ ถ้ารอบนี้คำศัพท์ใน Pool เหลือน้อยกว่า 15 คำ ให้รีเซ็ตดึงมาใหม่ทั้งหมด (ป้องกันคำหมดกลางเกมแล้วพัง)
-  if(sessionEngPool.length < 15) {
-      sessionEngPool = shuffleArray([...words]);
-  }
+  // รีเซ็ตตัวแปรคะแนนและเตรียมกองสุ่มเริ่มต้น
+  abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; sessionWrongStats = {};
+  document.getElementById("liveScore").textContent = "0";
   
-  // ใช้ Pool โดยตรงในการเล่นรอบนี้ (คำจะถูก .pop() ออกไปเรื่อยๆ ทำให้เล่นกี่รอบก็ไม่ซ้ำจนกว่ากองจะหมด)
-  currentRoundWords = sessionEngPool;
+  // 🌟 บังคับเริ่มต้นที่ เฟสคำศัพท์เดี่ยว ก่อนเสมอ!
+  engGamePhase = 'vocab'; 
+  abcTimeLeft = PHASE_TIME; // 150 วินาที (2.5 นาที)
   
-  abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; abcTimeLeft = GAME_TIME; sessionWrongStats = {};
-  
-  document.getElementById("liveScore").textContent = "0"; 
+  // ตรวจเช็คคลังและสับไพ่
+  if(sessionEngPool.length < 15) sessionEngPool = shuffleArray([...words]);
+  if(sentencesDB.length > 0 && sessionSentPool.length < 5) sessionSentPool = shuffleArray([...sentencesDB]);
+
   showPage('gamePage'); 
   updateTimerDisplay();
   
   clearInterval(abcTimerId);
-  abcTimerId = setInterval(() => { abcTimeLeft--; updateTimerDisplay(); if(abcTimeLeft <= 0) finishGameABC(); }, 1000);
+  abcTimerId = setInterval(() => { 
+      abcTimeLeft--; 
+      updateTimerDisplay(); 
+      if(abcTimeLeft <= 0) {
+          if(engGamePhase === 'vocab') {
+              switchtoSentencePhase();
+          } else {
+              finishGameABC();
+          }
+      }
+  }, 1000);
+  
   nextQuestion();
+}
+
+// ฟังก์ชันสลับไปเล่นโหมดประโยคเติมคำครึ่งหลัง
+function switchtoSentencePhase() {
+    clearInterval(abcTimerId);
+    
+    if(sentencesDB.length === 0) {
+        alert("⚠️ ไม่พบข้อมูลโจทย์ประโยคในระบบคลาวด์ ขอข้ามไปด่านภาษาไทยเลยนะครับ");
+        finishGameABC();
+        return;
+    }
+    
+    alert("🎉 หมดช่วงคำศัพท์แล้วจ้า! ต่อไปมาลุยช่วงด่าน [ เติมคำในประโยค ] อีก 2.5 นาทีกันต่อเลยนะคนเก่ง! สู้ๆ ✌️");
+    
+    engGamePhase = 'sentence';
+    abcTimeLeft = PHASE_TIME; // รีเซ็ตเวลาใหม่อีก 2.5 นาที (150 วินาที)
+    updateTimerDisplay();
+    
+    abcTimerId = setInterval(() => {
+        abcTimeLeft--;
+        updateTimerDisplay();
+        if(abcTimeLeft <= 0) {
+            finishGameABC();
+        }
+    }, 1000);
+    
+    nextQuestion();
 }
 
 function updateTimerDisplay() {
   const m = Math.floor(abcTimeLeft / 60); const s = abcTimeLeft % 60;
-  document.getElementById("timerDisplay").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  const label = engGamePhase === 'vocab' ? '🔤 ศัพท์เดี่ยว' : '🧩 โจทย์ประโยค';
+  document.getElementById("timerDisplay").textContent = `${label} ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
 
 function nextQuestion() {
   if(abcTimeLeft <= 0) return; 
-  if(currentRoundWords.length === 0) { 
-      // ถ้าระหว่าง 4 นาที ดันตอบจนคำศัพท์หมดระบบ ให้หยุดเกมทันที
-      finishGameABC(); return; 
-  }
-  
-  currentWord = currentRoundWords.pop();
-  
-  abcCurrentMode = Math.random() > 0.5 ? 'translation' : 'missing_letter';
   const box = document.getElementById("choicesBox"); box.innerHTML = "";
-
-  if (abcCurrentMode === 'translation') {
-      document.getElementById("gameVocab").textContent = currentWord.Vocabulary; 
-      speak(currentWord.Vocabulary);
-      
-      let choices = [currentWord];
-      let loopLimit = 0;
-      // 🔒 ดึงตัวเลือกหลอกมาจากฐานข้อมูลทั้งหมด (หลีกเลี่ยงการสร้างช้อยที่คำแปลซ้ำกัน)
-      while(choices.length < 4 && loopLimit < 100) { 
-          let w = words[Math.floor(Math.random() * words.length)]; 
-          if(!choices.find(c => c.Vocabulary === w.Vocabulary || c["คำแปล"] === w["คำแปล"])) choices.push(w); 
-          loopLimit++;
+  const displayBox = document.getElementById("gameVocab");
+  
+  if (engGamePhase === 'vocab') {
+      // -------------------------------------------------------------
+      // 🔤 ช่วงครึ่งแรก: โจทย์คำศัพท์เดี่ยวล้วน (สลับโหมดแปลความหมาย / เติมตัวอักษร)
+      // -------------------------------------------------------------
+      if(sessionEngPool.length === 0) {
+          // ถ้าเด็กขยันตอบจนคำศัพท์ในกองหมดก่อนเวลา ให้สลับเฟสไปประโยคเลย
+          switchtoSentencePhase();
+          return;
       }
       
-      shuffleArray(choices).forEach(w => {
-          const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
-          btn.onclick = () => checkAnswer(w.Vocabulary === currentWord.Vocabulary, btn, currentWord["คำแปล"]); 
-          box.appendChild(btn);
-      });
-  } else {
-      let wordStr = currentWord.Vocabulary;
-      let hiddenIdx = Math.floor(Math.random() * wordStr.length);
-      abcMissingLetter = wordStr[hiddenIdx];
+      currentWord = sessionEngPool.pop();
+      displayBox.style.fontSize = "3.5rem";
       
-      let displayWord = wordStr.substring(0, hiddenIdx) + "_" + wordStr.substring(hiddenIdx + 1);
-      
-      document.getElementById("gameVocab").innerHTML = `${displayWord} <div style="font-size: 1.8rem; color: var(--secondary); margin-top: 15px; font-weight: 600; text-shadow: none;">แปลว่า: ${currentWord["คำแปล"]}</div>`;
-      speak(currentWord.Vocabulary); 
-      
-      let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-      let choices = [abcMissingLetter];
-      let loopLimit = 0;
-      while(choices.length < 4 && loopLimit < 100) {
-          let rChar = alphabet[Math.floor(Math.random() * alphabet.length)];
-          if(abcMissingLetter === abcMissingLetter.toLowerCase()) rChar = rChar.toLowerCase();
-          else rChar = rChar.toUpperCase();
+      abcCurrentMode = Math.random() > 0.5 ? 'translation' : 'missing_letter';
 
-          if(!choices.includes(rChar)) choices.push(rChar);
-          loopLimit++;
+      if (abcCurrentMode === 'translation') {
+          displayBox.textContent = currentWord.Vocabulary; 
+          speak(currentWord.Vocabulary);
+          
+          let choices = [currentWord];
+          let loopLimit = 0;
+          while(choices.length < 4 && loopLimit < 100) { 
+              let w = words[Math.floor(Math.random() * words.length)]; 
+              if(!choices.find(c => c.Vocabulary === w.Vocabulary || c["คำแปล"] === w["คำแปล"])) choices.push(w); 
+              loopLimit++;
+          }
+          
+          shuffleArray(choices).forEach(w => {
+              const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = w["คำแปล"];
+              btn.onclick = () => checkAnswer(w.Vocabulary === currentWord.Vocabulary, btn, w["คำแปล"]); 
+              box.appendChild(btn);
+          });
+      } else {
+          let wordStr = currentWord.Vocabulary;
+          let hiddenIdx = Math.floor(Math.random() * wordStr.length);
+          abcMissingLetter = wordStr[hiddenIdx];
+          
+          let displayWord = wordStr.substring(0, hiddenIdx) + "_" + wordStr.substring(hiddenIdx + 1);
+          
+          displayBox.innerHTML = `${displayWord} <div style="font-size: 1.8rem; color: var(--secondary); margin-top: 15px; font-weight: 600; text-shadow: none;">แปลว่า: ${currentWord["คำแปล"]}</div>`;
+          speak(currentWord.Vocabulary); 
+          
+          let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+          let choices = [abcMissingLetter];
+          let loopLimit = 0;
+          while(choices.length < 4 && loopLimit < 100) {
+              let rChar = alphabet[Math.floor(Math.random() * alphabet.length)];
+              if(abcMissingLetter === abcMissingLetter.toLowerCase()) rChar = rChar.toLowerCase();
+              else rChar = rChar.toUpperCase();
+
+              if(!choices.includes(rChar)) choices.push(rChar);
+              loopLimit++;
+          }
+          
+          shuffleArray(choices).forEach(char => {
+              const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = char;
+              btn.onclick = () => checkAnswer(char === abcMissingLetter, btn, abcMissingLetter); 
+              box.appendChild(btn);
+          });
       }
       
-      shuffleArray(choices).forEach(char => {
-          const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = char;
-          btn.onclick = () => checkAnswer(char === abcMissingLetter, btn, abcMissingLetter); 
+  } else if (engGamePhase === 'sentence') {
+      // -------------------------------------------------------------
+      // 🧩 ช่วงครึ่งหลัง: โจทย์ประโยคเติมคำชุดใหม่ล้วน 100%
+      // -------------------------------------------------------------
+      if(sessionSentPool.length === 0) {
+          // ถ้าประโยคหมดกองก่อนเวลา ให้จบด่านอังกฤษทันที
+          finishGameABC();
+          return;
+      }
+      
+      currentSentObj = sessionSentPool.pop();
+      currentWord = { Vocabulary: currentSentObj.question, "คำแปล": currentSentObj.meaning }; 
+      
+      displayBox.style.fontSize = "1.8rem"; // บีบกระชับอักษรป้องกันล้นจอของ iOS
+      
+      // ลูปลอจิกสลับรูปแบบโจทย์สไตล์ประโยค 2 แบบ
+      let sentStyle = Math.random() > 0.5 ? 'hint_on' : 'hint_off';
+      
+      if(sentStyle === 'hint_on' && currentSentObj.meaning) {
+          displayBox.innerHTML = `<div style="color:#9b59b6; font-size:1.1rem; margin-bottom:5px; font-weight:bold;">🧩 เติมคำลงในช่องว่าง</div>${currentSentObj.question}<div style="font-size: 1.2rem; color: var(--secondary); margin-top:10px; text-shadow:none;">คำใบ้ภาษาไทย: ${currentSentObj.meaning}</div>`;
+      } else {
+          displayBox.innerHTML = `<div style="color:#e91e63; font-size:1.1rem; margin-bottom:5px; font-weight:bold;">🎧 ฟังประโยคเต็มแล้วเลือกคำตอบ</div>${currentSentObj.question}`;
+      }
+      
+      // สั่งออกเสียงประโยคเต็มที่ถูกต้องเพื่อประโยชน์การฝึกทักษะการฟัง
+      let completeSentenceText = currentSentObj.question.replace("____", currentSentObj.correct);
+      speak(completeSentenceText, 'en-US');
+
+      let correctAns = currentSentObj.correct.trim();
+      
+      // ขโมยคำเฉลยข้ออื่น ๆ มาทำตัวเลือกหลอก
+      let allOtherAns = sentencesDB
+          .map(s => s.correct.trim())
+          .filter(ans => ans.toLowerCase() !== correctAns.toLowerCase());
+      
+      let uniqueOtherAns = [...new Set(allOtherAns)];
+      shuffleArray(uniqueOtherAns);
+      let distractors = uniqueOtherAns.slice(0, 3);
+      
+      let rawChoices = [correctAns, ...distractors];
+      
+      // ป้องกันกรณีช้อยส์หลอกรันออกมาไม่ครบ 4
+      while(rawChoices.length < 4) {
+          rawChoices.push(words.length > 0 ? words[Math.floor(Math.random()*words.length)].Vocabulary : "walk");
+      }
+      
+      let finalChoices = shuffleArray([...new Set(rawChoices)].slice(0,4));
+      
+      finalChoices.forEach(choiceText => {
+          const btn = document.createElement("button");
+          btn.className = "choice-btn";
+          btn.style.borderColor = "#9b59b6";
+          btn.style.color = "#9b59b6";
+          btn.textContent = choiceText;
+          btn.onclick = () => checkSentenceAnswer(choiceText === correctAns, btn, correctAns, currentSentObj);
           box.appendChild(btn);
       });
   }
@@ -915,13 +1042,62 @@ function checkAnswer(isCorrect, btn, correctDisplay) {
   localStorage.setItem("wordStats", JSON.stringify(wordStats));
 }
 
+function checkSentenceAnswer(isCorrect, btn, correctAns, sentData) {
+    const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
+    
+    if(isCorrect) {
+        abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++;
+        btn.classList.add("correct-anim");
+        setTimeout(nextQuestion, 800);
+    } else {
+        btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++;
+        let labelKey = `[ประโยค] ${correctAns}`;
+        if(!sessionWrongStats[labelKey]) sessionWrongStats[labelKey] = 0; sessionWrongStats[labelKey]++;
+        
+        allBtns.forEach(b => { if(b.textContent === correctAns) b.classList.add("correct-anim"); });
+        
+        clearInterval(abcTimerId);
+
+        setTimeout(() => {
+            let fullSentHtml = sentData.question.replace("____", `<b style="color:green; text-decoration:underline;">${correctAns}</b>`);
+            document.getElementById("abcCorrectAnswerDisplay").innerHTML = `<span style="font-size:1.1rem; color:#666;">ประโยคสมบูรณ์ที่ถูก:</span><br><div style="font-size:1.5rem; margin-top:5px; line-height:1.3;">${fullSentHtml}</div>`;
+            document.getElementById("abcCorrectMeaningDisplay").innerHTML = `คำอ่าน: ${sentData.reading || "-"}<br>แปลว่า: ${sentData.meaning || "-"}`;
+            
+            document.getElementById("abcModalSoundBtn").onclick = () => {
+                let text = sentData.question.replace("____", sentData.correct);
+                speak(text, 'en-US');
+            };
+            document.getElementById("abcCorrectionModal").classList.add("active");
+            
+            let text = sentData.question.replace("____", sentData.correct);
+            speak(text, 'en-US');
+        }, 800);
+    }
+    document.getElementById("liveScore").textContent = abcCurrentScore; 
+}
+
 function closeAbcCorrection() {
     document.getElementById("abcCorrectionModal").classList.remove("active");
-    abcTimerId = setInterval(() => { abcTimeLeft--; updateTimerDisplay(); if(abcTimeLeft <= 0) finishGameABC(); }, 1000);
+    // รีสตาร์ตระบบลูปนับเวลาถอยหลังให้สัมพันธ์กับสถานะเฟสปัจจุบันขณะนั้น
+    abcTimerId = setInterval(() => { 
+        abcTimeLeft--; 
+        updateTimerDisplay(); 
+        if(abcTimeLeft <= 0) {
+            if(engGamePhase === 'vocab') switchtoSentencePhase();
+            else finishGameABC();
+        }
+    }, 1000);
     nextQuestion();
 }
 
-function repeatSound() { if(currentWord) speak(currentWord.Vocabulary); }
+function repeatSound() { 
+  if(engGamePhase === 'sentence' && currentItem) {
+      let completeText = currentSentObj.question.replace("____", currentSentObj.correct);
+      speak(completeText, 'en-US');
+  } else if(currentWord) {
+      speak(currentWord.Vocabulary); 
+  }
+}
 
 function finishGameABC() {
     clearInterval(abcTimerId);
@@ -935,7 +1111,6 @@ function finishGameABC() {
 /**********************************************
  * GAME 3: THAI DICTATION LOGIC
  **********************************************/
-
 function splitThaiGraphemes(word) {
     if (window.Intl && window.Intl.Segmenter) {
         const segmenter = new Intl.Segmenter("th", { granularity: "grapheme" });
@@ -951,13 +1126,11 @@ function prepThaiGame() {
         return;
     }
     
-    // ♻️ ถ้ากองคำศัพท์ภาษาไทยสำหรับรอบนี้เหลือน้อยกว่า 15 ให้ทำการสับไพ่(คำศัพท์)ใหม่ทั้งหมด (การันตีคำไม่ซ้ำรอบก่อนหน้า)
     let requiredQ = Math.min(15, thaiWordsDB.length);
     if(sessionThaiPool.length < requiredQ) {
         sessionThaiPool = shuffleArray([...thaiWordsDB]);
     }
     
-    // ดึง 15 คำออกจากกอง
     currentThaiWordsList = [];
     for(let i=0; i < requiredQ; i++) {
         currentThaiWordsList.push(sessionThaiPool.pop());
@@ -984,7 +1157,7 @@ function thaiNextQuestion() {
     if(scrambled.length > 1 && scrambled.join('') === currentThaiGraphemes.join('')) {
         let temp = scrambled[0]; scrambled[0] = scrambled[1]; scrambled[1] = temp;
     }
-    document.getElementById("thaiScrambledHint").textContent = scrambled.join('  -  ');
+    document.getElementById("thaiScrambledHint").textContent = scrambled.join('  -   ');
 
     const container = document.getElementById("thaiInputBox");
     container.innerHTML = "";
@@ -1000,7 +1173,6 @@ function thaiNextQuestion() {
     }
     
     generateThaiKeyboard(currentThaiGraphemes);
-
     speak(currentThaiWord, 'th-TH');
 }
 
@@ -1077,18 +1249,15 @@ function checkThaiAnswer() {
 }
 
 /**********************************************
- * MASTER SAVE FUNCTION (อัปเดตแบบ Optimistic)
+ * MASTER SAVE FUNCTION (บันทึกรวมเข้า Report เก่าตามต้องการ)
  **********************************************/
 function saveAllDataToCloud() {
     pendingThaiScore = parseInt(thaiCurrentScore) || 0;
-    
     let totalCurrentRoundScore = pendingMathScore + pendingAbcScore + pendingThaiScore;
     
-    // --- 🌟 ระบบบวกคะแนนเข้าแอปทันที (ไม่ต้องรอชีต) 🌟 ---
     abcScoreGlobal += pendingAbcScore;
     thaiScoreGlobal += pendingThaiScore;
     updateGrandTotal();
-    // ---------------------------------------------
 
     document.getElementById("resTotal").textContent = totalCurrentRoundScore;
     document.getElementById("resMath").textContent = pendingMathScore;
