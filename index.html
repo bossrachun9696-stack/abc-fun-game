@@ -296,7 +296,7 @@
 
       <div id="loadingStatus" style="color: orange; font-style: italic; margin-bottom: 5px; font-size: 0.9rem;">กำลังโหลดข้อมูล...</div>
 
-      <p style="color:red; font-weight:bold; font-size:0.9rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ ภารกิจใหม่: แบ่งเล่นคำศัพท์เดี่ยว 2.5 นาที และประโยคเติมคำ 2.5 นาทีอย่างละช่วงน้า!</p>
+      <p style="color:red; font-weight:bold; font-size:0.9rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ ภารกิจใหม่: แบ่งเล่นคำศัพท์เดี่ยว 2.5 นาที และแปลประโยค 2.5 นาทีอย่างละช่วงน้า!</p>
 
       <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (ด่านคำศัพท์เดี่ยวก่อน)</button>
     </div>
@@ -466,7 +466,7 @@
 <div id="abcCorrectionModal" class="modal-overlay">
     <div class="modal-box" style="border-color: #f44336; border-width: 5px;">
         <h2 style="color:#f44336; margin-top:0; font-size: 2.2rem;">❌ ยังไม่ถูกน้า</h2>
-        <p style="font-size:1.2rem; color:#666; margin-bottom: 5px;">คำที่ถูกต้องคือ:</p>
+        <p style="font-size:1.2rem; color:#666; margin-bottom: 5px;">ที่ถูกต้องคือ:</p>
         <div id="abcCorrectAnswerDisplay" style="font-size: 2.5rem; font-weight: 800; color: var(--primary); background: #e8f5e9; padding: 15px; border-radius: 20px; margin: 15px 0; border: 3px dashed #4caf50;">
             </div>
         <div id="abcCorrectMeaningDisplay" style="font-size: 1.5rem; color: #555; margin-bottom: 15px; font-weight:bold;"></div>
@@ -855,7 +855,7 @@ function startGame() {
   nextQuestion();
 }
 
-// ฟังก์ชันสลับไปเล่นโหมดประโยคเติมคำครึ่งหลัง
+// ฟังก์ชันสลับไปเล่นโหมดประโยคแปลความหมายครึ่งหลัง
 function switchtoSentencePhase() {
     clearInterval(abcTimerId);
     
@@ -865,7 +865,7 @@ function switchtoSentencePhase() {
         return;
     }
     
-    alert("🎉 หมดช่วงคำศัพท์แล้วจ้า! ต่อไปมาลุยช่วงด่าน [ เติมคำในประโยค ] อีก 2.5 นาทีกันต่อเลยนะคนเก่ง! สู้ๆ ✌️");
+    alert("🎉 หมดช่วงคำศัพท์แล้วจ้า! ต่อไปมาลุยช่วงด่าน [ แปลประโยค ] อีก 2.5 นาทีกันต่อเลยนะคนเก่ง! สู้ๆ ✌️");
     
     engGamePhase = 'sentence';
     abcTimeLeft = PHASE_TIME; // รีเซ็ตเวลาใหม่อีก 2.5 นาที (150 วินาที)
@@ -956,7 +956,7 @@ function nextQuestion() {
       
   } else if (engGamePhase === 'sentence') {
       // -------------------------------------------------------------
-      // 🧩 ช่วงครึ่งหลัง: โจทย์ประโยคเติมคำชุดใหม่ล้วน 100%
+      // 🧩 ช่วงครึ่งหลัง: แสดงประโยคเต็ม แล้วเลือกความหมายที่ถูกต้อง
       // -------------------------------------------------------------
       if(sessionSentPool.length === 0) {
           // ถ้าประโยคหมดกองก่อนเวลา ให้จบด่านอังกฤษทันที
@@ -965,29 +965,28 @@ function nextQuestion() {
       }
       
       currentSentObj = sessionSentPool.pop();
-      currentWord = { Vocabulary: currentSentObj.question, "คำแปล": currentSentObj.meaning }; 
+      
+      // สร้างประโยคภาษาอังกฤษที่สมบูรณ์
+      let fullEnglishSentence = currentSentObj.question.includes("____") ?
+          currentSentObj.question.replace("____", currentSentObj.correct) :
+          currentSentObj.question;
+
+      // บันทึกไว้เผื่อใช้ในส่วนของระบบเสียงและตัวแปรหลัก
+      currentWord = { Vocabulary: fullEnglishSentence, "คำแปล": currentSentObj.meaning }; 
       
       displayBox.style.fontSize = "1.8rem"; // บีบกระชับอักษรป้องกันล้นจอของ iOS
       
-      // ลูปลอจิกสลับรูปแบบโจทย์สไตล์ประโยค 2 แบบ
-      let sentStyle = Math.random() > 0.5 ? 'hint_on' : 'hint_off';
+      displayBox.innerHTML = `<div style="color:#e91e63; font-size:1.1rem; margin-bottom:5px; font-weight:bold;">🎧 ฟังประโยคภาษาอังกฤษแล้วเลือกความหมาย</div>${fullEnglishSentence}`;
       
-      if(sentStyle === 'hint_on' && currentSentObj.meaning) {
-          displayBox.innerHTML = `<div style="color:#9b59b6; font-size:1.1rem; margin-bottom:5px; font-weight:bold;">🧩 เติมคำลงในช่องว่าง</div>${currentSentObj.question}<div style="font-size: 1.2rem; color: var(--secondary); margin-top:10px; text-shadow:none;">คำใบ้ภาษาไทย: ${currentSentObj.meaning}</div>`;
-      } else {
-          displayBox.innerHTML = `<div style="color:#e91e63; font-size:1.1rem; margin-bottom:5px; font-weight:bold;">🎧 ฟังประโยคเต็มแล้วเลือกคำตอบ</div>${currentSentObj.question}`;
-      }
-      
-      // สั่งออกเสียงประโยคเต็มที่ถูกต้องเพื่อประโยชน์การฝึกทักษะการฟัง
-      let completeSentenceText = currentSentObj.question.replace("____", currentSentObj.correct);
-      speak(completeSentenceText, 'en-US');
+      // สั่งออกเสียงประโยคเต็มที่ถูกต้อง
+      speak(fullEnglishSentence, 'en-US');
 
-      let correctAns = currentSentObj.correct.trim();
+      let correctAns = currentSentObj.meaning ? currentSentObj.meaning.trim() : "ไม่มีคำแปล";
       
-      // ขโมยคำเฉลยข้ออื่น ๆ มาทำตัวเลือกหลอก
+      // ขโมยคำแปลข้ออื่น ๆ มาทำตัวเลือกหลอก
       let allOtherAns = sentencesDB
-          .map(s => s.correct.trim())
-          .filter(ans => ans.toLowerCase() !== correctAns.toLowerCase());
+          .filter(s => s.meaning && s.meaning.trim() !== correctAns)
+          .map(s => s.meaning.trim());
       
       let uniqueOtherAns = [...new Set(allOtherAns)];
       shuffleArray(uniqueOtherAns);
@@ -995,9 +994,10 @@ function nextQuestion() {
       
       let rawChoices = [correctAns, ...distractors];
       
-      // ป้องกันกรณีช้อยส์หลอกรันออกมาไม่ครบ 4
+      // ป้องกันกรณีช้อยส์หลอกรันออกมาไม่ครบ 4 (ดึงจากคำศัพท์ทั่วไปมาหลอกแทน)
       while(rawChoices.length < 4) {
-          rawChoices.push(words.length > 0 ? words[Math.floor(Math.random()*words.length)].Vocabulary : "walk");
+          let fallbackWord = words.length > 0 ? words[Math.floor(Math.random()*words.length)]["คำแปล"] : "ความหมายหลอก";
+          rawChoices.push(fallbackWord);
       }
       
       let finalChoices = shuffleArray([...new Set(rawChoices)].slice(0,4));
@@ -1007,8 +1007,9 @@ function nextQuestion() {
           btn.className = "choice-btn";
           btn.style.borderColor = "#9b59b6";
           btn.style.color = "#9b59b6";
+          btn.style.fontSize = "1.1rem"; // ปรับขนาดตัวหนังสือให้เหมาะกับประโยคยาวๆ
           btn.textContent = choiceText;
-          btn.onclick = () => checkSentenceAnswer(choiceText === correctAns, btn, correctAns, currentSentObj);
+          btn.onclick = () => checkSentenceAnswer(choiceText === correctAns, btn, correctAns, currentSentObj, fullEnglishSentence);
           box.appendChild(btn);
       });
   }
@@ -1042,7 +1043,7 @@ function checkAnswer(isCorrect, btn, correctDisplay) {
   localStorage.setItem("wordStats", JSON.stringify(wordStats));
 }
 
-function checkSentenceAnswer(isCorrect, btn, correctAns, sentData) {
+function checkSentenceAnswer(isCorrect, btn, correctAns, sentData, fullEnglishSentence) {
     const allBtns = document.querySelectorAll('.choice-btn'); allBtns.forEach(b => b.disabled = true);
     
     if(isCorrect) {
@@ -1051,7 +1052,7 @@ function checkSentenceAnswer(isCorrect, btn, correctAns, sentData) {
         setTimeout(nextQuestion, 800);
     } else {
         btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++;
-        let labelKey = `[ประโยค] ${correctAns}`;
+        let labelKey = `[แปลประโยค] ${fullEnglishSentence}`;
         if(!sessionWrongStats[labelKey]) sessionWrongStats[labelKey] = 0; sessionWrongStats[labelKey]++;
         
         allBtns.forEach(b => { if(b.textContent === correctAns) b.classList.add("correct-anim"); });
@@ -1059,18 +1060,15 @@ function checkSentenceAnswer(isCorrect, btn, correctAns, sentData) {
         clearInterval(abcTimerId);
 
         setTimeout(() => {
-            let fullSentHtml = sentData.question.replace("____", `<b style="color:green; text-decoration:underline;">${correctAns}</b>`);
-            document.getElementById("abcCorrectAnswerDisplay").innerHTML = `<span style="font-size:1.1rem; color:#666;">ประโยคสมบูรณ์ที่ถูก:</span><br><div style="font-size:1.5rem; margin-top:5px; line-height:1.3;">${fullSentHtml}</div>`;
-            document.getElementById("abcCorrectMeaningDisplay").innerHTML = `คำอ่าน: ${sentData.reading || "-"}<br>แปลว่า: ${sentData.meaning || "-"}`;
+            document.getElementById("abcCorrectAnswerDisplay").innerHTML = `<span style="font-size:1.1rem; color:#666;">ประโยค:</span><br><div style="font-size:1.5rem; margin-top:5px; line-height:1.3; color:#1565c0;">${fullEnglishSentence}</div>`;
+            document.getElementById("abcCorrectMeaningDisplay").innerHTML = `ความหมายที่ถูกต้อง:<br><b style="color: #4caf50;">${correctAns}</b>`;
             
             document.getElementById("abcModalSoundBtn").onclick = () => {
-                let text = sentData.question.replace("____", sentData.correct);
-                speak(text, 'en-US');
+                speak(fullEnglishSentence, 'en-US');
             };
             document.getElementById("abcCorrectionModal").classList.add("active");
             
-            let text = sentData.question.replace("____", sentData.correct);
-            speak(text, 'en-US');
+            speak(fullEnglishSentence, 'en-US');
         }, 800);
     }
     document.getElementById("liveScore").textContent = abcCurrentScore; 
@@ -1091,8 +1089,8 @@ function closeAbcCorrection() {
 }
 
 function repeatSound() { 
-  if(engGamePhase === 'sentence' && currentItem) {
-      let completeText = currentSentObj.question.replace("____", currentSentObj.correct);
+  if(engGamePhase === 'sentence' && currentSentObj) {
+      let completeText = currentSentObj.question.includes("____") ? currentSentObj.question.replace("____", currentSentObj.correct) : currentSentObj.question;
       speak(completeText, 'en-US');
   } else if(currentWord) {
       speak(currentWord.Vocabulary); 
