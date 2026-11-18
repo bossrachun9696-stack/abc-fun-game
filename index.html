@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#2196f3">
 
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&family=Sarabun:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600;700&family=Kanit:wght@300;400;600;800&family=Sarabun:wght@400;600;800&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -156,41 +156,223 @@
   #mistakeList, #mistakeListThai { text-align: left; padding: 0; list-style: none; }
   #mistakeList li, #mistakeListThai li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; }
 
+  /* =========================================================
+   * 🌈 KIDS THEME (ชั้นธีมใหม่ ทับสไตล์เดิม)
+   * ========================================================= */
+  :root {
+    --ink: #3b2a5a;
+    --sky1: #8fd8ff; --sky2: #c9b6ff; --sky3: #ffc4e6;
+    --pink: #ff6fae; --purple: #8a5cf6; --blue: #3fa9ff; --green: #34c78a; --yellow: #ffcc33; --orange: #ff9a3c;
+    --heading: 'Mali', 'Kanit', sans-serif;
+  }
+  body {
+    background: linear-gradient(160deg, var(--sky1) 0%, var(--sky2) 55%, var(--sky3) 100%) fixed;
+    color: var(--ink);
+  }
+  h1, h2, h3, h4, .btn-main, .btn-practice, .choice-btn, .score-box, .timer-box, .kid-btn { font-family: var(--heading); }
+  h1 { font-size: 2.3rem; text-shadow: 3px 3px 0 #fff, 5px 5px 0 rgba(0,0,0,0.08); }
+
+  /* ฉากหลังลอยได้ */
+  .sky-deco { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .sky-deco span { position: absolute; font-size: 2.2rem; opacity: 0.55; animation: floaty 9s ease-in-out infinite; }
+  .sky-deco span:nth-child(1) { top: 6%;  left: 4%;  animation-delay: 0s; }
+  .sky-deco span:nth-child(2) { top: 18%; right: 6%; animation-delay: 1.5s; font-size: 3rem; }
+  .sky-deco span:nth-child(3) { top: 55%; left: 2%;  animation-delay: 3s; }
+  .sky-deco span:nth-child(4) { top: 75%; right: 3%; animation-delay: 4.5s; font-size: 2.6rem; }
+  .sky-deco span:nth-child(5) { top: 90%; left: 30%; animation-delay: 2s; font-size: 1.6rem; }
+  .sky-deco span:nth-child(6) { top: 38%; right: 12%; animation-delay: 6s; font-size: 1.5rem; }
+  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-22px) rotate(6deg); } }
+  .container { position: relative; z-index: 1; }
+
+  /* การ์ดกลมมน หนาๆ */
+  .card, .math-box {
+    border-radius: 32px; border: 4px solid #fff;
+    box-shadow: 0 10px 0 rgba(90, 60, 160, 0.18), 0 18px 40px rgba(90, 60, 160, 0.15);
+  }
+
+  /* ปุ่มแบบลูกอม 3D */
+  button { transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s; }
+  button:hover { filter: brightness(1.06); }
+  button:active { transform: translateY(4px) scale(0.98); box-shadow: 0 1px 0 rgba(0,0,0,0.15) !important; }
+  .btn-main { border-radius: 24px; letter-spacing: 0.5px; }
+  .btn-practice { border-radius: 22px; }
+  .btn-back { background: #fff; color: var(--purple); border: 3px solid #e6dcff; box-shadow: 0 4px 0 #e6dcff; font-weight: 700; }
+  .btn-sound { animation: pulseRing 2.2s infinite; }
+  @keyframes pulseRing { 0% { box-shadow: 0 4px 0 #e0a85c, 0 0 0 0 rgba(255,191,105,0.6); } 70% { box-shadow: 0 4px 0 #e0a85c, 0 0 0 16px rgba(255,191,105,0); } 100% { box-shadow: 0 4px 0 #e0a85c, 0 0 0 0 rgba(255,191,105,0); } }
+
+  /* ---------- หน้าเมนูหลัก ---------- */
+  .portal-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; text-align: left; }
+  .avatar-bubble { width: 74px; height: 74px; flex-shrink: 0; border-radius: 50%; background: linear-gradient(135deg, #fff6c7, #ffd36e); border: 4px solid #fff; box-shadow: 0 5px 0 #f0b43a; font-size: 2.6rem; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; padding: 0; margin: 0; width: 74px; }
+  .avatar-bubble::after { content: '✏️'; position: absolute; bottom: -4px; right: -4px; font-size: 0.9rem; background: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+  .hello-name { font-family: var(--heading); font-size: 1.5rem; font-weight: 700; color: var(--purple); line-height: 1.1; }
+  .level-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .level-chip { background: var(--purple); color: #fff; font-weight: 800; border-radius: 12px; padding: 2px 10px; font-size: 0.85rem; white-space: nowrap; }
+  .xp-track { flex: 1; height: 14px; background: #eee6ff; border-radius: 10px; overflow: hidden; border: 2px solid #fff; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+  .xp-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ffcc33, #ff6fae); border-radius: 10px; transition: width 1s ease; }
+  .xp-text { font-size: 0.72rem; color: #8a7aa8; margin-top: 2px; }
+  .streak-pill { background: #fff1e6; color: #e8590c; border: 3px solid #ffd8b5; border-radius: 18px; padding: 4px 10px; font-weight: 800; font-size: 0.9rem; white-space: nowrap; }
+
+  .score-hero { background: linear-gradient(135deg, #fff7d6, #ffe3f1); border-radius: 26px; padding: 16px; margin: 10px 0 16px; border: 4px dashed #ffc35a; position: relative; overflow: hidden; }
+  .score-hero h2 { margin: 0; color: #f08c00; font-size: 1.25rem; }
+  .score-hero .big { font-family: var(--heading); font-size: 3.8rem; font-weight: 700; color: #f76707; line-height: 1.1; text-shadow: 3px 3px 0 #fff; }
+  .mini-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .mini-scores div { background: #fff; border-radius: 14px; padding: 6px 4px; font-size: 0.85rem; font-weight: 700; color: #6b5b8a; box-shadow: 0 3px 0 rgba(0,0,0,0.06); }
+  .mini-scores b { display: block; font-size: 1.2rem; color: var(--ink); }
+
+  /* แผนที่ภารกิจ */
+  .mission-map { display: flex; align-items: center; justify-content: space-between; margin: 6px 4px 16px; }
+  .mission-node { width: 70px; text-align: center; font-size: 0.75rem; font-weight: 700; color: #6b5b8a; }
+  .mission-node .dot { width: 58px; height: 58px; margin: 0 auto 4px; border-radius: 50%; background: #fff; border: 4px solid #e6dcff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 4px 0 #e6dcff; position: relative; }
+  .mission-node.done .dot { border-color: var(--green); box-shadow: 0 4px 0 #22a06b; }
+  .mission-node.done .dot::after { content: '✓'; position: absolute; top: -6px; right: -6px; background: var(--green); color: #fff; width: 22px; height: 22px; border-radius: 50%; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+  .mission-path { flex: 1; height: 6px; margin: 0 -4px 22px; background: repeating-linear-gradient(90deg, #d7c9ff 0 10px, transparent 10px 18px); border-radius: 4px; }
+  .mission-path.done { background: repeating-linear-gradient(90deg, var(--green) 0 10px, transparent 10px 18px); }
+  .today-done { background: #e6fcf0; color: #1e9e62; border: 3px solid #b2f2cf; border-radius: 16px; padding: 8px; font-weight: 800; margin-bottom: 12px; }
+
+  /* มาสคอต */
+  .mascot-row { display: flex; align-items: flex-end; gap: 8px; margin: 4px 0 14px; }
+  .mascot { font-size: 3rem; cursor: pointer; animation: bob 2.4s ease-in-out infinite; background: none; box-shadow: none; width: auto; padding: 0; margin: 0; }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .speech { flex: 1; background: #fff; border: 3px solid #e6dcff; border-radius: 20px 20px 20px 4px; padding: 10px 14px; text-align: left; font-weight: 600; color: var(--purple); font-size: 0.98rem; min-height: 44px; display: flex; align-items: center; }
+
+  /* สติกเกอร์สะสม */
+  .sticker-shelf { background: #fff; border-radius: 22px; padding: 12px; margin: 14px 0 6px; border: 3px solid #f1eaff; }
+  .sticker-shelf h3 { margin: 0 0 8px; font-size: 1.05rem; color: var(--purple); }
+  .stickers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .sticker { background: #faf7ff; border-radius: 16px; padding: 6px 2px; font-size: 0.65rem; font-weight: 700; color: #6b5b8a; cursor: pointer; border: 2px solid transparent; }
+  .sticker .ico { font-size: 1.9rem; display: block; }
+  .sticker.locked { filter: grayscale(1); opacity: 0.35; }
+  .sticker.unlocked { border-color: #ffe08a; background: #fffbea; animation: popIn 0.4s; }
+
+  .top-tools { position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 50%; padding: 0; margin: 0; background: #fff; border: 3px solid #e6dcff; font-size: 1.1rem; box-shadow: 0 3px 0 #e6dcff; }
+
+  /* ---------- ในเกม ---------- */
+  .timer-box { border: 3px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.08); color: var(--ink); font-size: 1.15rem; border-radius: 18px; }
+  .score-box { border-radius: 18px; font-size: 1.6rem; }
+  .bar-track { height: 16px; background: rgba(255,255,255,0.7); border-radius: 12px; overflow: hidden; margin: -4px 0 14px; border: 3px solid #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.06); }
+  .bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #34c78a, #8ee3b8); border-radius: 10px; transition: width 1s linear, background 0.4s; }
+  .bar-fill.warn { background: linear-gradient(90deg, #ffb703, #ffd166); }
+  .bar-fill.danger { background: linear-gradient(90deg, #ff5a5f, #ff8fa3); }
+  .bar-fill.progress { background: linear-gradient(90deg, #3fa9ff, #8a5cf6); transition: width 0.5s ease; }
+  .vocab-display { color: var(--purple); text-shadow: 3px 3px 0 #f1eaff; }
+  .choice-btn { border-width: 4px; border-radius: 22px; box-shadow: 0 5px 0 rgba(46,196,182,0.35); font-weight: 700; }
+  .choice-btn:nth-child(4n+1) { border-color: #ff8fab; color: #e64980; box-shadow: 0 5px 0 #ffc2d4; }
+  .choice-btn:nth-child(4n+2) { border-color: #74c0fc; color: #1c7ed6; box-shadow: 0 5px 0 #c5e3ff; }
+  .choice-btn:nth-child(4n+3) { border-color: #ffd43b; color: #e67700; box-shadow: 0 5px 0 #ffeaa0; }
+  .choice-btn:nth-child(4n+4) { border-color: #8ce99a; color: #2b8a3e; box-shadow: 0 5px 0 #c9f5d0; }
+  .qa-choice-card { border-radius: 22px; border-width: 4px; box-shadow: 0 5px 0 #e5d4f3; }
+  .combo-badge { display: inline-block; margin-top: 6px; background: linear-gradient(90deg, #ff922b, #ff6fae); color: #fff; font-weight: 800; border-radius: 14px; padding: 2px 12px; font-size: 0.95rem; visibility: hidden; }
+  .combo-badge.show { visibility: visible; animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+  /* คณิต */
+  #mathPage button.num { font-family: var(--heading); font-weight: 700; box-shadow: 0 5px 0 rgba(0,0,0,0.12); border: 3px solid #fff; }
+  #mathPage .num.c1 { background: #ffe3ec; color: #d6336c; } #mathPage .num.c2 { background: #e3f2ff; color: #1971c2; }
+  #mathPage .num.c3 { background: #fff4d6; color: #e67700; } #mathPage .num.c4 { background: #e6fcf0; color: #2b8a3e; }
+  #mathPage .num.c5 { background: #f3ecff; color: #7048e8; }
+  #mathPage input#ans { border: 4px solid var(--blue); border-radius: 22px; font-family: var(--heading); color: var(--purple); }
+  #mathPage .math-q { font-family: var(--heading); font-size: 46px; color: var(--purple); margin: 8px 0; text-shadow: 3px 3px 0 #f1eaff; }
+
+  /* ไทย */
+  .thai-char-box { border-radius: 14px; border-width: 4px; box-shadow: 0 4px 0 #c3f0d2; cursor: pointer; }
+  .thai-char-box.filled { background: #e6fcf0; animation: popIn 0.25s; }
+  .thai-key { border-radius: 16px; border-width: 3px; font-family: var(--heading); }
+  #thaiPage .btn-sound { width: auto; height: 64px; padding: 0 28px; border-radius: 40px; font-size: 1.6rem; font-family: var(--heading); color: #fff; }
+
+  /* ป๊อปอัปคำชม + เอฟเฟกต์ */
+  #praisePop { position: fixed; left: 50%; top: 38%; transform: translate(-50%, -50%); z-index: 3000; pointer-events: none; font-family: var(--heading); font-size: 2.6rem; font-weight: 700; color: #fff; text-shadow: 0 4px 0 rgba(0,0,0,0.18), 0 0 18px rgba(255,111,174,0.6); opacity: 0; white-space: nowrap; }
+  #praisePop.show { animation: praise 0.9s ease forwards; }
+  @keyframes praise { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 25% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); } 70% { opacity: 1; transform: translate(-50%, -60%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -90%) scale(0.95); } }
+  #confettiCanvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2500; }
+  .modal-box { border-radius: 32px; animation: bounceIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  @keyframes bounceIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .kid-modal-emoji { font-size: 4.5rem; line-height: 1; margin-bottom: 6px; animation: bob 1.6s ease-in-out infinite; }
+  .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+  .avatar-grid button { font-size: 2.2rem; padding: 8px 0; background: #faf7ff; border: 3px solid #eee6ff; border-radius: 18px; margin: 0; box-shadow: 0 4px 0 #eee6ff; }
+  .avatar-grid button.sel { border-color: var(--yellow); background: #fff7d6; box-shadow: 0 4px 0 #f0b43a; }
+  .result-stars { font-size: 3.2rem; letter-spacing: 6px; margin: 6px 0; }
+  .result-stars span { display: inline-block; filter: grayscale(1); opacity: 0.3; transform: scale(0.6); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .result-stars span.on { filter: none; opacity: 1; transform: scale(1); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
 </style>
 </head>
 <body>
 
+<div class="sky-deco" aria-hidden="true"><span>☁️</span><span>⭐</span><span>🎈</span><span>☁️</span><span>✨</span><span>🌟</span></div>
+<canvas id="confettiCanvas"></canvas>
+<div id="praisePop"></div>
+
 <div class="container">
 
   <div id="portalPage" class="page active">
-    <div class="card" style="text-align: center; border: 5px solid #2196f3;">
-      <h1 style="color: #e91e63; font-size: 2.8rem;">🎮 Family Hub 🎮</h1>
-      
-      <div style="background: #fff3e0; padding: 20px; border-radius: 20px; margin: 20px 0; border: 3px dashed #ffb74d;">
-          <h2 style="margin: 0; color: #ff9800;">⭐ คะแนนรวม ไดมอนด์ ⭐</h2>
-          <div id="grandTotalScore" style="font-size: 4rem; font-weight: 900; color: #f57c00;">0</div>
-          <div style="display: flex; justify-content: space-around; font-size: 0.95rem; color: #666; margin-top: 10px; font-weight:bold;">
-              <span>🧮 Math: <span id="portalMathScore">0</span></span>
-              <span>🐰 ABC: <span id="portalAbcScore">0</span></span>
-              <span>🇹🇭 ไทย: <span id="portalThaiScore">0</span></span>
+    <div class="card" style="text-align: center; padding-top: 20px;">
+      <div class="top-tools">
+        <button class="icon-btn" id="sfxToggleBtn" onclick="toggleSfx()" title="เปิด/ปิดเสียงเอฟเฟกต์">🔔</button>
+      </div>
+
+      <div class="portal-top">
+        <button class="avatar-bubble" id="portalAvatar" onclick="openAvatarPicker()" title="เปลี่ยนตัวละคร">👦</button>
+        <div style="flex:1; min-width:0; padding-right: 44px;">
+          <div class="hello-name">สวัสดี <span id="portalName">ไดมอนด์</span>!</div>
+          <div class="level-row">
+            <span class="level-chip">Lv.<span id="levelNum">1</span></span>
+            <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+          </div>
+          <div class="xp-text" id="xpText">อีก 100 ดาว เลเวลอัป!</div>
+        </div>
+      </div>
+
+      <div class="mascot-row">
+        <button class="mascot" onclick="mascotTalk()" title="จิ้มเลย!">🦉</button>
+        <div class="speech" id="mascotSpeech">จิ้มนกฮูกดูสิ มีอะไรจะบอก!</div>
+      </div>
+
+      <div class="score-hero">
+          <h2>⭐ ดาวสะสมทั้งหมด ⭐</h2>
+          <div id="grandTotalScore" class="big">0</div>
+          <div class="mini-scores">
+              <div>🧮 คณิต<b id="portalMathScore">0</b></div>
+              <div>🐰 ABC<b id="portalAbcScore">0</b></div>
+              <div>🇹🇭 ไทย<b id="portalThaiScore">0</b></div>
           </div>
       </div>
 
-      <p style="color:#d32f2f; margin-bottom: 15px; font-weight: bold; font-size: 1.1rem;">ภารกิจประจำวัน: ต้องเล่นให้จบ 3 ด่านถึงจะได้ดาว!</p>
-      
-      <button class="btn-main" style="background: #2196f3; box-shadow: 0 5px 0 #1565c0; margin-bottom: 15px;" onclick="openMathGame()">
-          🚀 เริ่มด่านที่ 1 : คิดเลข
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+        <h3 style="margin:0; color: var(--purple); font-size:1.15rem;">🗺️ ภารกิจวันนี้</h3>
+        <span class="streak-pill" id="streakPill">🔥 0 วันติด</span>
+      </div>
+      <div class="mission-map" id="missionMap">
+        <div class="mission-node"><div class="dot">🧮</div>คิดเลข</div>
+        <div class="mission-path"></div>
+        <div class="mission-node"><div class="dot">🐰</div>ABC</div>
+        <div class="mission-path"></div>
+        <div class="mission-node"><div class="dot">🇹🇭</div>ภาษาไทย</div>
+        <div class="mission-path"></div>
+        <div class="mission-node"><div class="dot">🏆</div>รับดาว!</div>
+      </div>
+      <div class="today-done" id="todayDone" style="display:none;">🎉 วันนี้ทำภารกิจครบแล้ว เก่งมาก! (เล่นซ้ำได้นะ)</div>
+
+      <button class="btn-main" style="background: linear-gradient(180deg,#4dabf7,#228be6); box-shadow: 0 6px 0 #1864ab; margin-bottom: 12px;" onclick="openMathGame()">
+          🚀 เริ่มผจญภัย!
       </button>
 
-      <button class="btn-practice" style="background: var(--secondary); box-shadow: 0 5px 0 #259f93; margin-bottom: 20px;" onclick="startPracticeFromPortal()">
-          📖 โหมดฝึกซ้อมศัพท์ ABC
+      <button class="btn-practice" style="background: linear-gradient(180deg,#38d9a9,#20c997); box-shadow: 0 6px 0 #0ca678; margin-bottom: 4px;" onclick="startPracticeFromPortal()">
+          📖 ฝึกซ้อมศัพท์ ABC
       </button>
 
-      <button class="btn-parent" style="width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 10px;" onclick="showPage('hubParentLogin')">
+      <div class="sticker-shelf">
+        <h3>🏅 สติกเกอร์สะสม <span id="stickerCount" style="font-size:0.85rem; color:#8a7aa8;"></span></h3>
+        <div class="stickers" id="stickerGrid"></div>
+      </div>
+
+      <button class="btn-parent" style="width: 100%; font-size: 0.95rem; padding: 12px; margin-top: 10px; background:#b8b0c8; box-shadow: 0 4px 0 #9a91ad;" onclick="showPage('hubParentLogin')">
           🔒 โซนผู้ปกครอง
       </button>
 
-      <div id="hubStatus" style="color: #888; font-size: 0.8rem; margin-top: 20px;">กำลังตรวจสอบการเชื่อมต่อ...</div>
+      <div id="hubStatus" style="color: #888; font-size: 0.8rem; margin-top: 14px;">กำลังตรวจสอบการเชื่อมต่อ...</div>
     </div>
   </div>
 
@@ -309,9 +491,11 @@
   <div id="gamePage" class="page">
     <div class="game-header">
       <div class="timer-box">⏳ <span id="timerDisplay">🔤 ศัพท์ 02:30</span></div>
-      <div class="score-box">คะแนน: <span id="liveScore">0</span></div>
+      <div class="score-box">⭐ <span id="liveScore">0</span></div>
     </div>
+    <div class="bar-track"><div class="bar-fill" id="abcTimeBar"></div></div>
     <div class="card">
+      <div class="combo-badge" id="comboBadge">🔥 x2</div>
       <div class="vocab-display" id="gameVocab" style="transition: font-size 0.2s;">...</div>
       <button class="btn-sound" id="mainSoundBtn" onclick="repeatSound()">🔊</button>
       <div id="choicesBox" class="choices-grid"></div>
@@ -333,9 +517,11 @@
   <div id="thaiPage" class="page">
     <div class="game-header">
       <div class="timer-box" style="font-size:1.2rem;">ข้อที่: <span id="thaiQNum">1/15</span></div>
-      <div class="score-box" style="background:#4caf50;">คะแนน: <span id="thaiLiveScore">0</span></div>
+      <div class="score-box" style="background:#34c78a; box-shadow: 0 4px 0 #22a06b;">⭐ <span id="thaiLiveScore">0</span></div>
     </div>
+    <div class="bar-track"><div class="bar-fill progress" id="thaiProgressBar" style="width:0%"></div></div>
     <div class="card">
+      <div class="combo-badge" id="thaiComboBadge">🔥 x2</div>
       <h2 style="color:#4caf50; margin-top:0;">🇹🇭 ด่าน 3: เขียนตามคำบอก</h2>
       
       <div id="thaiScrambledHint" style="font-size: 1.8rem; color: #e65100; font-weight: bold; margin-bottom: 15px; background: #fff3e0; padding: 10px; border-radius: 15px; border: 2px dashed #ffb74d;">
@@ -355,8 +541,12 @@
 
   <div id="resultPage" class="page">
     <div class="card">
+      <div class="kid-modal-emoji" id="resultMascot">🏆</div>
       <h1 style="color:var(--primary)">🎉 ภารกิจ 3 ด่านสำเร็จ! 🎉</h1>
-      
+      <div class="result-stars" id="resultStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+      <div id="resultMsg" style="font-family:var(--heading); font-size:1.2rem; color:var(--purple); font-weight:700;"></div>
+      <div id="newStickerBox" style="display:none; background:#fffbea; border:3px dashed #ffd43b; border-radius:18px; padding:10px; margin:10px 0; font-weight:700; color:#e67700;"></div>
+
       <div id="mathSavedAlert" style="background:#e8f5e9; color:#2e7d32; padding:15px; border-radius:15px; margin:15px 0; font-weight:bold; border:2px dashed #4caf50;">กำลังบันทึกคะแนน...</div>
 
       <div style="background:#fff3e0; padding:20px; border-radius:15px; margin-bottom:15px; border: 3px dashed #ff9800;">
@@ -490,6 +680,25 @@
     </div>
 </div>
 
+<!-- 💬 ป๊อปอัปแจ้งเตือนแบบน่ารัก (แทน alert) -->
+<div id="kidAlertModal" class="modal-overlay">
+    <div class="modal-box" style="border-color: var(--purple);">
+        <div class="kid-modal-emoji" id="kidAlertEmoji">🦉</div>
+        <div id="kidAlertTitle" style="font-family:var(--heading); font-size:1.6rem; font-weight:700; color:var(--purple); margin-bottom:6px;"></div>
+        <div id="kidAlertMsg" style="font-size:1.1rem; color:#555; line-height:1.5;"></div>
+        <button class="btn-main" id="kidAlertBtn" style="background:linear-gradient(180deg,#b197fc,#845ef7); box-shadow:0 6px 0 #6741d9; margin-top:18px; font-size:1.4rem;">ตกลง</button>
+    </div>
+</div>
+
+<!-- 🧑‍🎨 เลือกตัวละคร -->
+<div id="avatarModal" class="modal-overlay" onclick="if(event.target.id==='avatarModal') closeAvatarPicker()">
+    <div class="modal-box" style="border-color: var(--yellow);">
+        <button class="close-modal-btn" onclick="closeAvatarPicker()">✕</button>
+        <h2 style="color:var(--orange); margin:0;">เลือกตัวละครของหนู</h2>
+        <div class="avatar-grid" id="avatarGrid"></div>
+    </div>
+</div>
+
 <script>
 /**********************************************
  * CONFIGURATION & GLOBALS
@@ -508,7 +717,7 @@ const firebaseConfig = {
 if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const mathPlayer = "ไดมอนด์"; 
-const mathAvatar = "👦"; 
+let mathAvatar = localStorage.getItem("kidAvatar") || "👦";
 
 // SCORE VARIABLES
 let mathScoreGlobal = 0, abcScoreGlobal = 0, thaiScoreGlobal = 0;
@@ -557,10 +766,211 @@ function shuffleArray(array) {
 }
 
 /**********************************************
+ * 🎉 KIDS FUN KIT: เสียงเอฟเฟกต์ / พลุ / คำชม / คอมโบ / สติกเกอร์ / เลเวล
+ **********************************************/
+let sfxEnabled = localStorage.getItem("sfxEnabled") !== "0";
+let audioCtx = null;
+let comboCount = 0;
+let phaseTransitioning = false;
+
+function sfx(type) {
+    if(!sfxEnabled) return;
+    try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if(audioCtx.state === "suspended") audioCtx.resume();
+        const notes = {
+            correct: [[660,0,0.09],[880,0.09,0.14]],
+            combo:   [[660,0,0.07],[880,0.07,0.07],[1175,0.14,0.16]],
+            wrong:   [[220,0,0.16],[180,0.15,0.22]],
+            tap:     [[520,0,0.05]],
+            fanfare: [[523,0,0.14],[659,0.14,0.14],[784,0.28,0.14],[1047,0.42,0.4]],
+            levelup: [[784,0,0.1],[988,0.1,0.1],[1175,0.2,0.1],[1568,0.3,0.3]]
+        }[type] || [];
+        notes.forEach(([freq, start, dur]) => {
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = type === "wrong" ? "sawtooth" : "triangle";
+            o.frequency.value = freq;
+            const t = audioCtx.currentTime + start;
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(type === "wrong" ? 0.08 : 0.18, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            o.connect(g).connect(audioCtx.destination);
+            o.start(t); o.stop(t + dur + 0.05);
+        });
+    } catch(e) {}
+}
+
+function toggleSfx() {
+    sfxEnabled = !sfxEnabled;
+    localStorage.setItem("sfxEnabled", sfxEnabled ? "1" : "0");
+    document.getElementById("sfxToggleBtn").textContent = sfxEnabled ? "🔔" : "🔕";
+    if(sfxEnabled) sfx("tap");
+}
+
+// พลุกระดาษ (canvas เบาๆ ไม่ต้องใช้ไลบรารี)
+let confettiParts = [], confettiRunning = false;
+function confetti(amount = 80) {
+    if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cv = document.getElementById("confettiCanvas");
+    cv.width = window.innerWidth; cv.height = window.innerHeight;
+    const colors = ["#ff6fae","#ffcc33","#3fa9ff","#34c78a","#8a5cf6","#ff9a3c"];
+    for(let i = 0; i < amount; i++) {
+        confettiParts.push({
+            x: cv.width / 2 + (Math.random() - 0.5) * 120, y: cv.height * 0.35,
+            vx: (Math.random() - 0.5) * 14, vy: Math.random() * -12 - 4,
+            s: Math.random() * 8 + 5, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4,
+            c: colors[Math.floor(Math.random() * colors.length)], life: 0
+        });
+    }
+    if(!confettiRunning) { confettiRunning = true; requestAnimationFrame(drawConfetti); }
+}
+function drawConfetti() {
+    const cv = document.getElementById("confettiCanvas"), ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    confettiParts.forEach(p => {
+        p.vy += 0.35; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
+        ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore();
+    });
+    confettiParts = confettiParts.filter(p => p.y < cv.height + 30 && p.life < 240);
+    if(confettiParts.length) requestAnimationFrame(drawConfetti);
+    else { confettiRunning = false; ctx.clearRect(0, 0, cv.width, cv.height); }
+}
+
+const PRAISE_WORDS = ["เก่งมาก! 🎉", "สุดยอด! 🌟", "ถูกต้อง! ✨", "เยี่ยมเลย! 👍", "ว้าว! 🤩", "เก่งที่สุด! 💖", "Great! 🚀", "Awesome! 🦄"];
+function showPraise(text) {
+    const el = document.getElementById("praisePop");
+    el.textContent = text || PRAISE_WORDS[Math.floor(Math.random() * PRAISE_WORDS.length)];
+    el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+}
+
+// เรียกตอนตอบถูก/ผิด (เพิ่มลูกเล่นอย่างเดียว ไม่แตะกติกาคะแนนเดิม)
+function onCorrectFx(badgeId) {
+    comboCount++;
+    if(comboCount >= 3) { sfx("combo"); showPraise(`🔥 ${comboCount} ติด! สุดยอด!`); confetti(comboCount >= 5 ? 90 : 50); }
+    else { sfx("correct"); showPraise(); confetti(25); }
+    updateComboBadge(badgeId);
+}
+function onWrongFx(badgeId) {
+    comboCount = 0; sfx("wrong");
+    if(navigator.vibrate) navigator.vibrate(120);
+    updateComboBadge(badgeId);
+}
+function updateComboBadge(badgeId) {
+    const b = badgeId && document.getElementById(badgeId);
+    if(!b) return;
+    if(comboCount >= 2) { b.textContent = `🔥 คอมโบ x${comboCount}`; b.classList.remove("show"); void b.offsetWidth; b.classList.add("show"); }
+    else b.classList.remove("show");
+}
+
+// ป๊อปอัปแจ้งเตือนน่ารัก (แทน alert ที่ดูน่ากลัวสำหรับเด็ก)
+function kidAlert(msg, opts = {}) {
+    document.getElementById("kidAlertEmoji").textContent = opts.emoji || "🦉";
+    document.getElementById("kidAlertTitle").textContent = opts.title || "";
+    document.getElementById("kidAlertMsg").innerHTML = msg;
+    const btn = document.getElementById("kidAlertBtn");
+    btn.textContent = opts.button || "ตกลง";
+    btn.onclick = () => {
+        document.getElementById("kidAlertModal").classList.remove("active");
+        sfx("tap");
+        if(opts.onClose) opts.onClose();
+    };
+    document.getElementById("kidAlertModal").classList.add("active");
+}
+
+// ตัวละคร
+const AVATARS = ["👦","👧","🦸","🧚","🐯","🐼","🦊","🐸","🦖","🐱","🐶","🤖","🐵","🦁","🐧","🦄"];
+function openAvatarPicker() {
+    document.getElementById("avatarGrid").innerHTML = AVATARS.map(a =>
+        `<button class="${a === mathAvatar ? 'sel' : ''}" onclick="pickAvatar('${a}')">${a}</button>`).join("");
+    document.getElementById("avatarModal").classList.add("active");
+}
+function closeAvatarPicker() { document.getElementById("avatarModal").classList.remove("active"); }
+function pickAvatar(a) {
+    mathAvatar = a; localStorage.setItem("kidAvatar", a);
+    sfx("correct"); confetti(30); closeAvatarPicker(); renderPortalExtras();
+}
+
+// มาสคอตพูดได้
+const MASCOT_LINES = [
+    "วันนี้มาเก็บดาวกันเถอะ! ⭐", "ตอบถูกติดกัน 3 ข้อ จะได้คอมโบไฟลุก 🔥", "ไม่ต้องกลัวผิดนะ ผิดแล้วเราจะได้จำ 💪",
+    "ฟังเสียงดีๆ ก่อนตอบนะ 🎧", "สะสมดาวเยอะๆ จะได้สติกเกอร์ใหม่! 🏅", "เล่นทุกวัน ไฟ 🔥 จะติดยาวเลย!",
+    "เก่งคณิต เก่งอังกฤษ เก่งไทย = ซูเปอร์ฮีโร่! 🦸", "หนูทำได้แน่นอน! 🌈"
+];
+let mascotIdx = -1;
+function mascotTalk() {
+    mascotIdx = (mascotIdx + 1 + Math.floor(Math.random() * (MASCOT_LINES.length - 1))) % MASCOT_LINES.length;
+    document.getElementById("mascotSpeech").textContent = MASCOT_LINES[mascotIdx];
+    sfx("tap");
+    speak(MASCOT_LINES[mascotIdx].replace(/[^฀-๿0-9a-zA-Z\s!]/g, ""), "th-TH");
+}
+
+// สติกเกอร์ปลดล็อกตามดาวสะสม
+const STICKERS = [
+    { at: 10,   ico: "🌱", name: "ต้นกล้า" },
+    { at: 50,   ico: "⭐", name: "ดาวดวงแรก" },
+    { at: 100,  ico: "🚀", name: "จรวด" },
+    { at: 250,  ico: "🦄", name: "ยูนิคอร์น" },
+    { at: 500,  ico: "🐉", name: "มังกร" },
+    { at: 1000, ico: "👑", name: "ราชา" },
+    { at: 2000, ico: "💎", name: "ไดมอนด์" },
+    { at: 5000, ico: "🌈", name: "ตำนาน" }
+];
+function getGrandTotal() { return (parseInt(abcScoreGlobal) || 0) + (parseInt(mathScoreGlobal) || 0) + (parseInt(thaiScoreGlobal) || 0); }
+
+function todayKey() { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
+function getStreak() { return JSON.parse(localStorage.getItem("dailyStreak") || '{"last":"","count":0}'); }
+function recordDailyMission() {
+    const s = getStreak(), today = todayKey();
+    if(s.last === today) return s;
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    const yKey = `${y.getFullYear()}-${y.getMonth() + 1}-${y.getDate()}`;
+    s.count = (s.last === yKey) ? s.count + 1 : 1;
+    s.last = today;
+    localStorage.setItem("dailyStreak", JSON.stringify(s));
+    return s;
+}
+
+function renderPortalExtras() {
+    const total = getGrandTotal();
+    // ตัวละคร + ชื่อ
+    const av = document.getElementById("portalAvatar"); if(av) av.textContent = mathAvatar;
+    const nm = document.getElementById("portalName"); if(nm) nm.textContent = mathPlayer;
+    // เลเวล (ทุก 100 ดาว = 1 เลเวล)
+    const lv = Math.floor(total / 100) + 1, into = total % 100;
+    document.getElementById("levelNum").textContent = lv;
+    document.getElementById("xpFill").style.width = into + "%";
+    document.getElementById("xpText").textContent = `อีก ${100 - into} ดาว จะเลเวลอัปเป็น Lv.${lv + 1}!`;
+    // สติกเกอร์
+    let got = 0;
+    document.getElementById("stickerGrid").innerHTML = STICKERS.map(s => {
+        const ok = total >= s.at; if(ok) got++;
+        return `<div class="sticker ${ok ? 'unlocked' : 'locked'}" onclick="stickerInfo(${s.at})"><span class="ico">${s.ico}</span>${ok ? s.name : s.at + ' ดาว'}</div>`;
+    }).join("");
+    document.getElementById("stickerCount").textContent = `(${got}/${STICKERS.length})`;
+    // ไฟต่อเนื่อง + ภารกิจวันนี้
+    const st = getStreak(), today = todayKey();
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    const alive = st.last === today || st.last === `${y.getFullYear()}-${y.getMonth() + 1}-${y.getDate()}`;
+    document.getElementById("streakPill").textContent = `🔥 ${alive ? st.count : 0} วันติด`;
+    const doneToday = st.last === today;
+    document.getElementById("todayDone").style.display = doneToday ? "block" : "none";
+    document.querySelectorAll("#missionMap .mission-node").forEach(n => n.classList.toggle("done", doneToday));
+    document.querySelectorAll("#missionMap .mission-path").forEach(n => n.classList.toggle("done", doneToday));
+}
+function stickerInfo(at) {
+    const s = STICKERS.find(x => x.at === at), total = getGrandTotal();
+    if(total >= at) { sfx("correct"); confetti(30); kidAlert(`หนูได้สติกเกอร์ <b>${s.name}</b> แล้ว!`, { emoji: s.ico, title: "เก่งมาก!", button: "เย้! 🎉" }); }
+    else kidAlert(`สะสมดาวให้ครบ <b>${at}</b> ดวง<br>(ตอนนี้มี ${total} ดวง อีก ${at - total} ดวงเอง!)`, { emoji: "🔒", title: "สติกเกอร์ลับ", button: "สู้ๆ! 💪" });
+}
+
+/**********************************************
  * INITIALIZATION & UI
  **********************************************/
-window.onload = function() { 
-    toggleSoundUI(); 
+window.onload = function() {
+    document.getElementById("sfxToggleBtn").textContent = sfxEnabled ? "🔔" : "🔕";
+    renderPortalExtras();
+    toggleSoundUI();
     fetchAbcData(); 
     fetchSentenceData();
     window.speechSynthesis.getVoices(); 
@@ -594,6 +1004,7 @@ function updateGrandTotal() {
     if(document.getElementById('dashAbcScore')) document.getElementById('dashAbcScore').textContent = (parseInt(abcScoreGlobal) || 0);
     if(document.getElementById('dashMathScore')) document.getElementById('dashMathScore').textContent = (parseInt(mathScoreGlobal) || 0);
     if(document.getElementById('dashThaiScore')) document.getElementById('dashThaiScore').textContent = (parseInt(thaiScoreGlobal) || 0);
+    renderPortalExtras();
 }
 
 function fetchSentenceData() {
@@ -694,8 +1105,9 @@ const mathTotalQ = 7;
 
 function openMathGame() {
     if(words.length === 0 || thaiWordsDB.length === 0) {
-        alert("รอระบบโหลดข้อมูลแป๊บนึงนะครับ..."); return;
+        kidAlert("รอระบบโหลดข้อมูลแป๊บนึงนะครับ...", { emoji: "⏳", title: "แป๊บนึงน้า" }); return;
     }
+    comboCount = 0;
     pendingMathScore = 0; pendingAbcScore = 0; pendingThaiScore = 0;
     sessionWrongStats = {}; sessionThaiWrongStats = {};
     showPage('mathPage');
@@ -705,7 +1117,8 @@ function openMathGame() {
 function mathHomeInit(){
     document.getElementById("mathScoreBox")?.remove();
     document.getElementById("mathAppContent").innerHTML = `
-        <h2 style="color:#1565c0">ด่านที่ 1: 🧮 คิดเลขออนไลน์</h2>
+        <div class="kid-modal-emoji">🧮</div>
+        <h2 style="color:#1565c0">ด่านที่ 1: คิดเลขผจญภัย</h2>
         <div style="font-size:30px; margin-bottom:15px; background:#e3f2fd; padding:10px; border-radius:15px; border:2px solid #2196f3;">
             ${mathAvatar} <b>${mathPlayer}</b>
         </div>
@@ -751,24 +1164,35 @@ function mathNextQ(){
     }
     
     mathTimeLeft = 60;
+    const mathMax = mathTimeLeft;
     document.getElementById("mathAppContent").innerHTML = `
-        <div class="timer">⏳ <span id="t-val">${mathTimeLeft}</span> วินาที</div>
-        <div style="font-size:18px; color:#666">ข้อที่ ${mathQCount} / ${mathTotalQ}</div>
-        <h1 style="font-size:45px; margin:10px 0;">${expressionStr}</h1>
-        <input id="ans" type="number" readonly placeholder="?"><br><br>
+        <div style="display:flex; justify-content:space-between; align-items:center; font-weight:700; color:#6b5b8a;">
+            <span>ข้อที่ ${mathQCount} / ${mathTotalQ}</span>
+            <span>⏳ <span id="t-val">${mathTimeLeft}</span> วิ</span>
+        </div>
+        <div class="bar-track" style="margin:8px 0 6px;"><div class="bar-fill" id="mathTimeBar"></div></div>
+        <div style="font-size:1.4rem; letter-spacing:2px;">${"🟣".repeat(mathQCount - 1)}${"⚪".repeat(mathTotalQ - mathQCount + 1)}</div>
+        <div class="combo-badge" id="mathComboBadge">🔥 x2</div>
+        <div class="math-q">${expressionStr}</div>
+        <input id="ans" type="number" readonly placeholder="?"><br>
         <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 300px; margin: auto;">
-            ${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button class="num" onclick="mathPress(${n})">${n}</button>`).join("")}
-            <button class="num" style="background:#f44336; color:#fff" onclick="document.getElementById('ans').value=''">C</button>
-        </div><br>
-        <button style="width:90%; background:#4caf50; height:60px; font-size:24px;" onclick="mathCheck()">ส่งคำตอบ</button>
+            ${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button class="num c${(n % 5) + 1}" onclick="mathPress(${n})">${n}</button>`).join("")}
+            <button class="num" style="background:#ffe8cc; color:#e8590c" onclick="mathBackspace()">⌫</button>
+            <button class="num" style="background:#ff6b6b; color:#fff" onclick="document.getElementById('ans').value=''">C</button>
+        </div>
+        <button style="width:90%; background:linear-gradient(180deg,#51cf66,#37b24d); color:#fff; height:64px; font-size:26px; box-shadow:0 6px 0 #2b8a3e; font-family:var(--heading); font-weight:700;" onclick="mathCheck()">✅ ส่งคำตอบ</button>
     `;
-    mathTimerId = setInterval(() => { 
-        mathTimeLeft--; document.getElementById('t-val').innerText=mathTimeLeft; 
-        if(mathTimeLeft<=0) mathCheck(); 
+    updateComboBadge("mathComboBadge");
+    mathTimerId = setInterval(() => {
+        mathTimeLeft--; document.getElementById('t-val').innerText=mathTimeLeft;
+        const bar = document.getElementById('mathTimeBar');
+        if(bar) { const pct = (mathTimeLeft / mathMax) * 100; bar.style.width = pct + "%"; bar.className = "bar-fill" + (pct <= 20 ? " danger" : pct <= 50 ? " warn" : ""); }
+        if(mathTimeLeft<=0) mathCheck();
     }, 1000);
 }
 
-function mathPress(n){ document.getElementById('ans').value += n; }
+function mathPress(n){ sfx("tap"); document.getElementById('ans').value += n; }
+function mathBackspace(){ sfx("tap"); const a = document.getElementById('ans'); a.value = a.value.slice(0, -1); }
 
 function mathUpdateScoreUI(){
     let sb = document.getElementById("mathScoreBox") || (document.body.insertAdjacentHTML("beforeend", `<div id="mathScoreBox" class="mathScoreBox"></div>`), document.getElementById("mathScoreBox"));
@@ -781,10 +1205,16 @@ function mathCheck(){
 
     if(userAns === mathAnswer){
         mathCurrentScore += 5;
-        mathNextQ(); 
+        mathUpdateScoreUI();
+        onCorrectFx("mathComboBadge");
+        const ansBox = document.getElementById("ans");
+        if(ansBox) { ansBox.style.background = "#d3f9d8"; ansBox.style.borderColor = "#37b24d"; }
+        setTimeout(mathNextQ, 650);
     } else {
+        onWrongFx("mathComboBadge");
         document.getElementById("mathAppContent").innerHTML = `
-            <h2 style="color:red">❌ ยังไม่ถูกจ้า</h2>
+            <div class="kid-modal-emoji">🤔</div>
+            <h2 style="color:red">ยังไม่ถูกจ้า</h2>
             <h1 style="font-size:30px">คำตอบที่ถูกคือ <span style="color:green; font-size:50px">${mathAnswer}</span></h1>
             <p style="color:#2196f3; font-size:20px; font-weight:bold;">ไม่เป็นไรนะ ไม่มีการหักดาว สู้ๆ! ✌️</p>
             <button style="width:90%; background:#2196f3;" onclick="mathNextQ()">ข้อต่อไป ▶</button>
@@ -808,8 +1238,10 @@ function mathSummary(){
             </div>
         `;
     } else {
+        sfx("fanfare"); confetti(120);
         document.getElementById("mathAppContent").innerHTML = `
             <div style="padding:20px;">
+                <div class="kid-modal-emoji">🏅</div>
                 <h2 style="color:#4caf50">🎊 จบด่าน 1 คณิตศาสตร์แล้ว!</h2>
                 <p>รอบนี้ทำเพิ่มไปได้: <b style="color:#e65100; font-size:1.5rem;">+${mathCurrentScore}</b> แต้ม</p>
                 <div style="background:#fff3e0; padding:10px; border-radius:10px; margin:15px 0; color:#d32f2f; font-weight:bold; font-size:0.9rem; border:1px solid #ffb74d;">
@@ -835,10 +1267,11 @@ function toggleSoundUI() {
 }
 
 function startGame() {
-  if(words.length < 4) { alert("รอก่อนนะครับ (ต้องการอย่างน้อย 4 คำ)"); return; }
-  
+  if(words.length < 4) { kidAlert("รอก่อนนะครับ (ต้องการอย่างน้อย 4 คำ)", { emoji: "⏳" }); return; }
+
   // รีเซ็ตตัวแปรคะแนนและเตรียมกองสุ่มเริ่มต้น
   abcCurrentScore = 0; sessionCorrect = 0; sessionWrong = 0; sessionWrongStats = {};
+  comboCount = 0; phaseTransitioning = false; updateComboBadge("comboBadge");
   document.getElementById("liveScore").textContent = "0";
   
   // 🌟 บังคับเริ่มต้นที่ เฟสคำศัพท์เดี่ยว ก่อนเสมอ!
@@ -872,57 +1305,68 @@ function startGame() {
 }
 
 // ฟังก์ชันสลับไปเล่นโหมดแปลความหมายประโยค
-function switchtoSentencePhase() {
+function startAbcTimer() {
     clearInterval(abcTimerId);
-    
+    abcTimerId = setInterval(() => {
+        abcTimeLeft--;
+        updateTimerDisplay();
+        if(abcTimeLeft <= 0) {
+            if(engGamePhase === 'vocab') switchtoSentencePhase();
+            else if(engGamePhase === 'sentence') switchtoQAPhase();
+            else finishGameABC();
+        }
+    }, 1000);
+}
+
+// ป๊อปอัปประกาศช่วงใหม่ (แทน alert) — เวลาจะเริ่มนับเมื่อเด็กกดปุ่มพร้อม
+function announcePhase(newPhase, opts) {
+    phaseTransitioning = true;
+    abcTimeLeft = 0;
+    sfx("levelup"); confetti(70);
+    kidAlert(opts.msg, {
+        emoji: opts.emoji, title: opts.title, button: "พร้อมแล้ว! ไปกันเลย 🚀",
+        onClose: () => {
+            phaseTransitioning = false;
+            engGamePhase = newPhase;
+            abcTimeLeft = PHASE_TIME;
+            updateTimerDisplay();
+            startAbcTimer();
+            nextQuestion();
+        }
+    });
+}
+
+function switchtoSentencePhase() {
+    if(phaseTransitioning) return;
+    clearInterval(abcTimerId);
+
     if(sentencesDB.length === 0) {
         if(qaConversationsDB.length > 0) switchtoQAPhase();
         else finishGameABC();
         return;
     }
-    
-    alert("🎉 หมดช่วงคำศัพท์แล้วจ้า! ต่อไปมาลุยช่วงด่าน [ แปลประโยค ] อีก 2.5 นาทีกันต่อเลยนะคนเก่ง! สู้ๆ ✌️");
-    
-    engGamePhase = 'sentence';
-    abcTimeLeft = PHASE_TIME; // รีเซ็ตเวลาใหม่อีก 2.5 นาที (150 วินาที)
-    updateTimerDisplay();
-    
-    abcTimerId = setInterval(() => {
-        abcTimeLeft--;
-        updateTimerDisplay();
-        if(abcTimeLeft <= 0) {
-            switchtoQAPhase();
-        }
-    }, 1000);
-    
-    nextQuestion();
+
+    announcePhase('sentence', {
+        emoji: "🧩", title: "ผ่านช่วงคำศัพท์แล้ว!",
+        msg: "ต่อไปลุยช่วง <b>แปลประโยค</b> อีก 2.5 นาที<br>สู้ๆ นะคนเก่ง ✌️"
+    });
 }
 
 // ฟังก์ชันสลับไปเล่นโหมดถาม-ตอบประโยคสนทนา (QA Conversation)
 function switchtoQAPhase() {
+    if(phaseTransitioning) return;
     clearInterval(abcTimerId);
-    
+
     if(qaConversationsDB.length === 0) {
-        alert("⚠️ ไม่พบข้อมูลโจทย์ถาม-ตอบประโยคในระบบคลาวด์ ขอข้ามไปด่านภาษาไทยเลยนะครับ");
-        finishGameABC();
+        phaseTransitioning = true; abcTimeLeft = 0;
+        kidAlert("ไม่พบโจทย์ถาม-ตอบในระบบ ขอข้ามไปต่อเลยนะครับ", { emoji: "🙈", onClose: () => { phaseTransitioning = false; finishGameABC(); } });
         return;
     }
-    
-    alert("💬 สุดยอดมาก! มาลุยช่วงสุดท้ายของด่าน 2 [ ถาม-ตอบประโยคสนทนา ] อีก 2.5 นาทีกันเลย! เลือกตอบคำถามให้ถูกต้องนะ 🚀");
-    
-    engGamePhase = 'qa_conversation';
-    abcTimeLeft = PHASE_TIME; // รีเซ็ตเวลาใหม่อีก 2.5 นาที
-    updateTimerDisplay();
-    
-    abcTimerId = setInterval(() => {
-        abcTimeLeft--;
-        updateTimerDisplay();
-        if(abcTimeLeft <= 0) {
-            finishGameABC();
-        }
-    }, 1000);
-    
-    nextQuestion();
+
+    announcePhase('qa_conversation', {
+        emoji: "💬", title: "สุดยอดมาก!",
+        msg: "ช่วงสุดท้ายของด่าน 2 <b>ถาม-ตอบสนทนา</b> อีก 2.5 นาที<br>เลือกคำตอบให้ถูกนะ 🚀"
+    });
 }
 
 function updateTimerDisplay() {
@@ -932,10 +1376,18 @@ function updateTimerDisplay() {
   else if (engGamePhase === 'qa_conversation') label = '💬 ถาม-ตอบประโยค';
   
   document.getElementById("timerDisplay").textContent = `${label} ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+
+  const bar = document.getElementById("abcTimeBar");
+  if(bar) {
+    const pct = Math.max(0, abcTimeLeft / PHASE_TIME * 100);
+    bar.style.width = pct + "%";
+    bar.className = "bar-fill" + (abcTimeLeft <= 15 ? " danger" : abcTimeLeft <= 45 ? " warn" : "");
+  }
+  if(abcTimeLeft > 0 && abcTimeLeft <= 5) sfx("tap");
 }
 
 function nextQuestion() {
-  if(abcTimeLeft <= 0) return; 
+  if(phaseTransitioning || abcTimeLeft <= 0) return;
   const box = document.getElementById("choicesBox"); box.innerHTML = "";
   const displayBox = document.getElementById("gameVocab");
   const mainSoundBtn = document.getElementById("mainSoundBtn");
@@ -1125,9 +1577,10 @@ function checkAnswer(isCorrect, btn, correctDisplay) {
   
   if(isCorrect) {
     abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
-    btn.classList.add("correct-anim");
+    btn.classList.add("correct-anim"); onCorrectFx("comboBadge");
     setTimeout(nextQuestion, 800);
   } else {
+    onWrongFx("comboBadge");
     btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++; wordStats[currentWord.Vocabulary].wrong++;
     if(!sessionWrongStats[currentWord.Vocabulary]) sessionWrongStats[currentWord.Vocabulary] = 0; sessionWrongStats[currentWord.Vocabulary]++;
     
@@ -1152,9 +1605,10 @@ function checkSentenceAnswer(isCorrect, btn, correctAns, sentData, fullEnglishSe
     
     if(isCorrect) {
         abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++;
-        btn.classList.add("correct-anim");
+        btn.classList.add("correct-anim"); onCorrectFx("comboBadge");
         setTimeout(nextQuestion, 800);
     } else {
+        onWrongFx("comboBadge");
         btn.classList.add("wrong-anim"); abcCurrentScore -= 1; sessionWrong++;
         let labelKey = `[แปลประโยค] ${fullEnglishSentence}`;
         if(!sessionWrongStats[labelKey]) sessionWrongStats[labelKey] = 0; sessionWrongStats[labelKey]++;
@@ -1187,8 +1641,10 @@ function checkQACorrectness(isCorrect, cardElement, correctAnsText, qaData) {
         cardElement.style.background = "var(--correct)";
         cardElement.style.color = "white";
         cardElement.querySelectorAll('div').forEach(d => d.style.color = "white");
+        onCorrectFx("comboBadge");
         setTimeout(nextQuestion, 800);
     } else {
+        onWrongFx("comboBadge");
         cardElement.style.background = "var(--wrong)";
         cardElement.style.color = "white";
         cardElement.querySelectorAll('div').forEach(d => d.style.color = "white");
@@ -1258,9 +1714,10 @@ function finishGameABC() {
     clearInterval(abcTimerId);
     globalRounds++;
     pendingAbcScore = Math.max(0, abcCurrentScore);
-    
+
     document.getElementById("bridgeAbcScore").textContent = pendingAbcScore;
     showPage('bridgePage');
+    sfx("fanfare"); confetti(120);
 }
 
 /**********************************************
@@ -1277,7 +1734,7 @@ function splitThaiGraphemes(word) {
 
 function prepThaiGame() {
     if(thaiWordsDB.length === 0) {
-        alert("ไม่มีคำศัพท์ภาษาไทย เล่นต่อไม่ได้ แจ้งผู้ปกครองด่วน!");
+        kidAlert("ไม่มีคำศัพท์ภาษาไทย เล่นต่อไม่ได้ แจ้งผู้ปกครองด่วน!", { emoji: "🙈" });
         return;
     }
     
@@ -1291,15 +1748,18 @@ function prepThaiGame() {
         currentThaiWordsList.push(sessionThaiPool.pop());
     }
 
-    thaiQIndex = 0; thaiCurrentScore = 0;
-    
+    thaiQIndex = 0; thaiCurrentScore = 0; comboCount = 0;
+    document.getElementById("thaiLiveScore").textContent = "0";
+    updateComboBadge("thaiComboBadge");
+
     showPage('thaiPage');
     thaiNextQuestion();
 }
 
 function thaiNextQuestion() {
-    if(thaiQIndex >= currentThaiWordsList.length) { 
-        saveAllDataToCloud(); 
+    if(thaiQIndex >= currentThaiWordsList.length) {
+        document.getElementById("thaiProgressBar").style.width = "100%";
+        saveAllDataToCloud();
         return; 
     }
     
@@ -1307,6 +1767,7 @@ function thaiNextQuestion() {
     currentThaiGraphemes = splitThaiGraphemes(currentThaiWord);
     
     document.getElementById("thaiQNum").textContent = `${thaiQIndex + 1}/${currentThaiWordsList.length}`;
+    document.getElementById("thaiProgressBar").style.width = (thaiQIndex / currentThaiWordsList.length * 100) + "%";
     
     let scrambled = shuffleArray([...currentThaiGraphemes]);
     if(scrambled.length > 1 && scrambled.join('') === currentThaiGraphemes.join('')) {
@@ -1323,7 +1784,9 @@ function thaiNextQuestion() {
         input.className = "thai-char-box";
         input.maxLength = currentThaiGraphemes[i].length;
         input.id = "tbox_" + i;
-        input.readOnly = true; 
+        input.readOnly = true;
+        input.title = "จิ้มเพื่อลบตัวนี้";
+        input.onclick = () => { if(input.value) { input.value = ""; input.classList.remove("filled"); sfx("tap"); } };
         container.appendChild(input);
     }
     
@@ -1352,6 +1815,8 @@ function pressThaiKey(char) {
         let box = document.getElementById("tbox_" + i);
         if(box.value === "") {
             box.value = char;
+            box.classList.add("filled");
+            sfx("tap");
             break;
         }
     }
@@ -1362,7 +1827,9 @@ function deleteThaiKey() {
         let box = document.getElementById("tbox_" + i);
         if(box.value !== "") {
             box.value = "";
-            break; 
+            box.classList.remove("filled");
+            sfx("tap");
+            break;
         }
     }
 }
@@ -1386,10 +1853,12 @@ function checkThaiAnswer() {
     if(userAnswer === currentThaiWord) {
         thaiCurrentScore += 3;
         document.getElementById("thaiLiveScore").textContent = thaiCurrentScore;
-        
+        onCorrectFx("thaiComboBadge");
+
         document.getElementById("thaiInputBox").style.backgroundColor = "#c8e6c9";
-        setTimeout(() => { document.getElementById("thaiInputBox").style.backgroundColor = "transparent"; thaiQIndex++; thaiNextQuestion(); }, 500);
+        setTimeout(() => { document.getElementById("thaiInputBox").style.backgroundColor = "transparent"; thaiQIndex++; thaiNextQuestion(); }, 700);
     } else {
+        onWrongFx("thaiComboBadge");
         if(!sessionThaiWrongStats[currentThaiWord]) sessionThaiWrongStats[currentThaiWord] = 0;
         sessionThaiWrongStats[currentThaiWord]++;
         thaiWordStats[currentThaiWord].wrong++;
@@ -1409,10 +1878,33 @@ function checkThaiAnswer() {
 function saveAllDataToCloud() {
     pendingThaiScore = parseInt(thaiCurrentScore) || 0;
     let totalCurrentRoundScore = pendingMathScore + pendingAbcScore + pendingThaiScore;
-    
+
+    const totalBefore = getGrandTotal(); // ก่อนบวกคะแนนรอบนี้
     abcScoreGlobal += pendingAbcScore;
     thaiScoreGlobal += pendingThaiScore;
     updateGrandTotal();
+    recordDailyMission();
+    renderPortalExtras();
+
+    // ⭐ ให้ดาว 1-3 ดวงตามความแม่นยำด่านไทย + ABC
+    const thaiMax = Math.max(1, currentThaiWordsList.length * 3);
+    const abcAcc = (sessionCorrect + sessionWrong) > 0 ? sessionCorrect / (sessionCorrect + sessionWrong) : 0;
+    const acc = ((thaiCurrentScore / thaiMax) + abcAcc) / 2;
+    const starsEarned = acc >= 0.85 ? 3 : acc >= 0.6 ? 2 : 1;
+    const msgs = ["ทำได้ดีแล้ว พรุ่งนี้มาลุยใหม่นะ 💪", "เก่งมาก! อีกนิดเดียวได้ 3 ดาว 🌟", "สุดยอดไปเลย! ซูเปอร์สตาร์ 🤩"];
+    document.getElementById("resultMsg").textContent = msgs[starsEarned - 1];
+    document.getElementById("resultMascot").textContent = ["👍","🥳","🏆"][starsEarned - 1];
+    const starEls = document.querySelectorAll("#resultStars span");
+    starEls.forEach(s => s.classList.remove("on"));
+    starEls.forEach((s, i) => { if(i < starsEarned) setTimeout(() => { s.classList.add("on"); sfx("correct"); }, 500 + i * 450); });
+    setTimeout(() => { sfx("fanfare"); confetti(180); }, 500 + starsEarned * 450);
+
+    // 🏅 สติกเกอร์ใหม่ที่ปลดล็อกรอบนี้
+    const totalAfter = totalBefore + totalCurrentRoundScore;
+    const newStickers = STICKERS.filter(s => totalBefore < s.at && totalAfter >= s.at);
+    const nsBox = document.getElementById("newStickerBox");
+    if(newStickers.length) { nsBox.style.display = "block"; nsBox.innerHTML = `🎁 ได้สติกเกอร์ใหม่! ${newStickers.map(s => `<span style="font-size:2rem;">${s.ico}</span> ${s.name}`).join(" ")}`; }
+    else nsBox.style.display = "none";
 
     document.getElementById("resTotal").textContent = totalCurrentRoundScore;
     document.getElementById("resMath").textContent = pendingMathScore;
