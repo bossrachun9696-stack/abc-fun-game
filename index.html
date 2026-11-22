@@ -421,6 +421,18 @@
     </div>
   </div>
 
+  <!-- 🔒 ยังไม่มีสิทธิ์ (ส่วนขยาย DarkChat) -->
+  <div id="gatePage" class="page">
+    <div class="card">
+      <div class="kid-modal-emoji">🔒</div>
+      <h1 style="font-size:1.8rem; margin-bottom:6px;">ยังเข้าเกมไม่ได้</h1>
+      <div id="gateMsg" style="color:#6b5b8a; font-weight:600; line-height:1.6; margin-bottom:14px;"></div>
+      <a id="gateGo" class="btn-main" target="_blank" rel="noopener" style="display:block; text-decoration:none; padding:14px; background:linear-gradient(180deg,#b197fc,#845ef7); box-shadow:0 6px 0 #6741d9; color:#fff; border-radius:24px;">🧩 ไปเปิดสิทธิ์ใน DarkChat</a>
+      <button class="btn-practice" style="margin-top:14px;" onclick="enterApp()">🔄 ตรวจสิทธิ์อีกครั้ง</button>
+      <button class="btn-back" style="margin-top:10px;" onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
   <!-- 👧 / 👨‍👩‍👧 เลือกว่าเป็นใคร -->
   <div id="rolePage" class="page">
     <div class="card">
@@ -2286,6 +2298,7 @@ let api = null;
 function thaiErr(e) {
   const m = String(e?.message || e || "");
   if (/Invalid login credentials/i.test(m)) return "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+  if (/ext_locked/.test(m)) return "ยังไม่มีสิทธิ์ใช้เกมเด็ก: เปิดสิทธิ์ได้ที่ DarkChat > ส่วนขยาย";
   if (/Email not confirmed/i.test(m)) return "อีเมลนี้ยังไม่ได้ยืนยัน ให้กดลิงก์ยืนยันในอีเมลก่อน";
   if (/kg_|does not exist|schema cache|Could not find the function/i.test(m)) return "ระบบเกมยังไม่ได้ติดตั้ง: ให้รันไฟล์ supabase-kg.sql ใน Supabase ก่อน";
   if (/Failed to fetch|NetworkError|Load failed|network/i.test(m)) return "เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่";
@@ -2302,6 +2315,7 @@ function makeApi() {
     async signIn(email, password) { const r = await sb.auth.signInWithPassword({ email, password }); if (r.error) throw new Error(thaiErr(r.error)); },
     async signOut() { try { await sb.auth.signOut({ scope: "local" }); } catch (e) { /* ไม่เป็นไร */ } },
     me: () => rpc("kg_me"),
+    async access() { const r = await sb.rpc("ext_kind_access", { p_kind: "kidgame" }); if (r.error) { if (/ext_kind_access|Could not find/i.test(r.error.message || "")) return { ok: true }; throw new Error(thaiErr(r.error)); } return r.data; },
     async load(fid) {
       const since = new Date(Date.now() - 400 * 864e5).toISOString();
       const [fam, parents, kids, totals, rounds, adjust, rewards, tasks, red] = await Promise.all([
@@ -2370,7 +2384,8 @@ function makeDemoApi() {
       if (!u) { u = { id: uid(), email, password }; D.users[u.id] = u; } else if (u.password !== password) throw new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง"); D.session = u.id; },
     async signOut() { D.session = null; },
     async me() { const u = me(); if (!u) return { signed_in: false }; const p = D.parents.find(x => x.user_id === u.id), k = D.kids.find(x => x.user_id === u.id);
-      return { signed_in: true, email: u.email, is_parent: !!p, kid_id: k?.id || null, family_id: p?.family_id || k?.family_id || null }; },
+      return { signed_in: true, email: u.email, is_parent: !!p, kid_id: k?.id || null, family_id: p?.family_id || k?.family_id || null, access: !/nolic/.test(u.email) }; },
+    async access() { return /nolic/.test(me()?.email || "") ? { ok: false, reason: "no_license", ext_name: "เกมเด็ก", price: 49, trial_days: 7, trial_used: false, darkchat_url: "https://example.com/darkchat/" } : { ok: true }; },
     async load(fid) {
       const f = (a) => a.filter(x => x.family_id === fid);
       const totals = f(D.kids).map(k => ({ kid_id: k.id,
@@ -2448,6 +2463,8 @@ async function enterApp() {
     try {
       KG.me = await api.me();
       if (!KG.me?.signed_in) { showPage("authPage"); return; }
+      // ไม่มีสิทธิ์ส่วนขยาย "เกมเด็ก" (ผู้ปกครองซื้อ/ทดลองใช้ใน DarkChat · ลูกใช้สิทธิ์ของผู้ปกครอง)
+      if (KG.me.access === false && (KG.me.is_parent || KG.me.kid_id)) { await showGate(); return; }
       if (KG.me.family_id) await loadFamily();
       else KG.data = null;
       break;
@@ -2558,6 +2575,7 @@ async function kidJoin() {
 }
 function chooseParentRole() {
   sfx("tap");
+  if (KG.me.access === false) { showGate(); return; }
   if (KG.me.kid_id && !KG.me.is_parent) { kidAlert("บัญชีนี้เป็นบัญชีของเด็ก<br>ผู้ปกครองให้เข้าด้วยอีเมลของตัวเองนะ", { emoji: "🔒" }); return; }
   if (!KG.me.is_parent) { document.getElementById("setupErr").textContent = ""; showPage("setupPage"); return; }
   openParentZone();
@@ -2572,6 +2590,22 @@ async function setupJoin() {
   if (c.length < 6) { err.textContent = "ใส่รหัสผู้ปกครองให้ครบ 6 ตัว"; return; }
   try { await api.joinParent(c); KG.unlockedAt = Date.now(); await enterApp(); showParentDash(); }
   catch (e) { err.textContent = thaiErr(e); }
+}
+
+/* ---------- 🔒 ยังไม่มีสิทธิ์ใช้เกม ---------- */
+async function showGate() {
+  showPage("gatePage");
+  const box = document.getElementById("gateMsg"); box.innerHTML = "กำลังตรวจสิทธิ์...";
+  let a = null; try { a = await api.access(); } catch (e) { box.textContent = thaiErr(e); return; }
+  if (a?.ok) { await enterApp(); return; }
+  const kidAcc = KG.me?.kid_id && !KG.me?.is_parent;
+  const url = a?.darkchat_url || "../darkchat/";
+  box.innerHTML = kidAcc
+    ? `เกมนี้ต้องให้ <b>คุณพ่อคุณแม่</b> เปิดสิทธิ์ก่อนนะ<br><span style="font-size:0.9rem;">ผู้ปกครองเปิดได้ที่ DarkChat > 🧩 ส่วนขยาย > ${esc(a?.ext_name || "เกมเด็ก")}</span>`
+    : `${a?.reason === "trial_expired" ? "ช่วงทดลองใช้หมดแล้ว" : "บัญชีนี้ยังไม่มีสิทธิ์ใช้"} <b>${esc(a?.ext_name || "เกมเด็ก")}</b><br>
+       <span style="font-size:0.9rem;">${a?.price ? `ราคา ${a.price} บาท${a.family_price ? ` · แบบครอบครัว ${a.family_price} บาท` : ""}` : ""}${a?.trial_days && !a?.trial_used ? `<br>🎁 ทดลองใช้ฟรี ${a.trial_days} วัน` : ""}</span><br>
+       <span style="font-size:0.9rem;">ซื้อหรือทดลองใช้ได้ที่ DarkChat > 🧩 ส่วนขยาย</span>`;
+  const go = document.getElementById("gateGo"); go.href = url; go.style.display = kidAcc ? "none" : "block";
 }
 
 /* ---------- 🛍️ ร้านแลกรางวัล (ฝั่งเด็ก) ---------- */
