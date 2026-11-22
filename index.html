@@ -509,8 +509,9 @@
       </div>
 
       <div class="score-hero">
-          <h2>⭐ ดาวสะสมทั้งหมด ⭐</h2>
+          <h2>⭐ ดาวที่มีอยู่ ⭐</h2>
           <div id="grandTotalScore" class="big">0</div>
+          <div id="grandSpentLine" style="display:none; margin:-4px 0 10px; font-size:0.85rem; color:#b06a2c; font-weight:600;"></div>
           <div class="mini-scores">
               <div>🧮 คณิต<b id="portalMathScore">0</b></div>
               <div>🐰 ABC<b id="portalAbcScore">0</b></div>
@@ -1260,7 +1261,11 @@ function updateGrandTotal() {
     document.getElementById('portalMathScore').textContent = (parseInt(mathScoreGlobal) || 0);
     document.getElementById('portalThaiScore').textContent = (parseInt(thaiScoreGlobal) || 0);
     document.getElementById('portalBonusScore').textContent = (parseInt(bonusScoreGlobal) || 0);
-    document.getElementById('grandTotalScore').textContent = total.toLocaleString();
+    // ดาวที่เหลือ = ดาวที่ได้มาทั้งหมด − ดาวที่ใช้แลกรางวัลไปแล้ว (เลเวล/สติกเกอร์ยังนับจากดาวที่ได้มาทั้งหมด จะได้ไม่ลดลง)
+    const spent = +shopData.spent || 0;
+    document.getElementById('grandTotalScore').textContent = Math.max(0, total - spent).toLocaleString();
+    const sl = document.getElementById('grandSpentLine');
+    if (sl) { sl.style.display = spent > 0 ? 'block' : 'none'; sl.textContent = `🛍️ แลกรางวัลไปแล้ว ${spent.toLocaleString()} ดาว · ได้มาทั้งหมด ${total.toLocaleString()} ดาว`; }
     
     if(document.getElementById('dashGrandTotal')) document.getElementById('dashGrandTotal').textContent = total.toLocaleString();
     if(document.getElementById('dashAbcScore')) document.getElementById('dashAbcScore').textContent = (parseInt(abcScoreGlobal) || 0);
