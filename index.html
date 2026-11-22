@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🌟 Family Games Hub (Diamond Edition)</title>
+<title>🌟 Family Games Hub</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -14,8 +14,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600;700&family=Kanit:wght@300;400;600;800&family=Sarabun:wght@400;600;800&display=swap" rel="stylesheet">
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
   :root {
@@ -294,6 +293,101 @@
   .result-stars span { display: inline-block; filter: grayscale(1); opacity: 0.3; transform: scale(0.6); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   .result-stars span.on { filter: none; opacity: 1; transform: scale(1); }
 
+  /* ระดับชั้นคณิต */
+  .grade-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 12px; }
+  .grade-btn { margin: 0; padding: 10px 0; border-radius: 18px; background: #fff; border: 3px solid #e6dcff; color: var(--purple); font-family: var(--heading); font-size: 1.35rem; font-weight: 700; box-shadow: 0 4px 0 #e6dcff; width: 100%; }
+  .grade-btn small { display: block; font-size: 0.75rem; color: #f08c00; }
+  .grade-btn.sel { background: linear-gradient(180deg, #4dabf7, #228be6); color: #fff; border-color: #fff; box-shadow: 0 4px 0 #1864ab; }
+  .grade-btn.sel small { color: #fff3bf; }
+  .grade-btn:disabled { opacity: 0.35; }
+
+  /* ปุ่มลัดหน้าเมนู */
+  .tile-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 4px; }
+  .tile { margin: 0; padding: 12px 4px; border-radius: 22px; color: #fff; font-family: var(--heading); font-weight: 700; font-size: 0.95rem; line-height: 1.2; position: relative; }
+  .tile .ico { display: block; font-size: 1.9rem; margin-bottom: 2px; }
+  .tile .tag { position: absolute; top: -8px; right: -4px; background: #ff4d6d; color: #fff; border: 2px solid #fff; border-radius: 12px; font-size: 0.72rem; padding: 1px 7px; }
+
+  /* ร้านแลกรางวัล */
+  .wallet { background: linear-gradient(135deg, #fff3bf, #ffd8a8); border-radius: 24px; padding: 14px; border: 4px solid #fff; box-shadow: 0 5px 0 #f0b43a; margin-bottom: 14px; }
+  .wallet .big { font-family: var(--heading); font-size: 2.8rem; font-weight: 700; color: #e8590c; line-height: 1; }
+  .reward-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .reward-card { background: #fff; border-radius: 22px; padding: 12px 8px; border: 3px solid #f1eaff; box-shadow: 0 5px 0 #f1eaff; }
+  .reward-card .ico { font-size: 2.6rem; }
+  .reward-card .nm { font-weight: 700; color: var(--ink); min-height: 2.6em; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; }
+  .reward-card .cost { color: #f08c00; font-weight: 800; margin: 4px 0; }
+  .reward-card button { margin: 6px 0 0; padding: 8px; border-radius: 16px; font-size: 1rem; font-family: var(--heading); font-weight: 700; background: linear-gradient(180deg, #ff8fab, #f06595); color: #fff; box-shadow: 0 4px 0 #c2255c; }
+  .reward-card button:disabled { background: #e9e4f2; color: #9a8fb0; box-shadow: 0 4px 0 #d6cfe4; }
+  .coupon { display: flex; align-items: center; gap: 10px; background: #fff; border: 3px dashed #ffc35a; border-radius: 16px; padding: 8px 12px; margin-top: 8px; text-align: left; }
+  .coupon .ico { font-size: 1.8rem; }
+  .coupon .st { margin-left: auto; font-size: 0.8rem; font-weight: 800; border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
+  .st.pending { background: #fff3bf; color: #e67700; } .st.given { background: #d3f9d8; color: #2b8a3e; }
+  .pz-row { display: flex; gap: 6px; align-items: center; background: #fff; border-radius: 12px; padding: 8px; margin-bottom: 6px; border: 1px solid #eee; font-size: 0.95rem; }
+  .pz-row button { width: auto; margin: 0; padding: 6px 10px; font-size: 0.85rem; }
+  .pz-input { padding: 10px; border-radius: 10px; border: 2px solid #ddd; text-align: center; font-family: inherit; font-size: 1rem; }
+
+  /* ทบทวนคำผิด */
+  .review-word { font-family: var(--heading); font-size: 3rem; font-weight: 700; color: var(--purple); margin: 6px 0; text-shadow: 3px 3px 0 #f1eaff; }
+  .review-tag { display: inline-block; background: #ffe3ec; color: #d6336c; border-radius: 12px; padding: 2px 10px; font-weight: 700; font-size: 0.85rem; }
+
+  /* ---------- เข้าสู่ระบบ / เลือกบทบาท / โซนผู้ปกครองใหม่ ---------- */
+  .kg-input { width: 100%; box-sizing: border-box; padding: 14px 16px; font-size: 1.1rem; border: 3px solid #e6dcff; border-radius: 18px; margin: 6px 0; font-family: 'Kanit', sans-serif; color: var(--ink); background: #fff; outline: none; user-select: text; }
+  .kg-input:focus { border-color: var(--purple); }
+  .kg-code { text-align: center; letter-spacing: 6px; font-weight: 800; text-transform: uppercase; font-size: 1.5rem; }
+  .kg-pass { position: relative; }
+  .kg-pass .kg-input { padding-right: 56px; }
+  .kg-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; margin: 0; padding: 0; border-radius: 50%; background: #f3f0ff; box-shadow: none; font-size: 1.1rem; }
+  .kg-err { color: #e03131; font-weight: 600; min-height: 1.2em; margin: 4px 0; font-size: 0.95rem; }
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .role-btn { margin: 0; padding: 18px 6px; border-radius: 26px; color: #fff; font-family: var(--heading); font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+  .role-btn span { display: block; font-size: 2.6rem; margin-bottom: 4px; }
+  .role-btn small { display: block; font-size: 0.78rem; font-weight: 500; opacity: 0.9; margin-top: 4px; font-family: 'Kanit', sans-serif; }
+  .role-btn.kid { background: linear-gradient(180deg, #38d9a9, #20c997); box-shadow: 0 6px 0 #0ca678; }
+  .role-btn.parent { background: linear-gradient(180deg, #b197fc, #845ef7); box-shadow: 0 6px 0 #6741d9; }
+  .kid-pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin: 10px 0; }
+  .kid-pick { margin: 0; padding: 14px 6px; background: #fff; border: 4px solid #e6dcff; border-radius: 24px; box-shadow: 0 5px 0 #e6dcff; font-family: var(--heading); font-weight: 700; font-size: 1.2rem; color: var(--ink); }
+  .kid-pick span { display: block; font-size: 3rem; }
+  .kid-pick small { display: block; color: #f08c00; font-size: 0.9rem; }
+  .pz { text-align: left; }
+  .pz h2, .pz-tabs { text-align: center; }
+  .pz-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: #f3f0ff; padding: 4px; border-radius: 18px; margin-bottom: 14px; }
+  .pz-tabs button { margin: 0; padding: 8px 0; border-radius: 14px; background: transparent; box-shadow: none; color: #6b5b8a; font-size: 0.8rem; line-height: 1.2; }
+  .pz-tabs button.on { background: #fff; color: var(--purple); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+  .pz-sec { background: #faf8ff; border: 2px solid #eee6ff; border-radius: 18px; padding: 12px; margin-bottom: 12px; }
+  .pz-sec h4 { margin: 0 0 8px; color: #5f3dc4; font-size: 1.02rem; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .pz-sec h4 small { font-weight: 500; color: #8a7aa8; font-size: 0.8rem; }
+  .pz-hint { color: #8a7aa8; font-size: 0.85rem; margin: 4px 0 8px; line-height: 1.45; }
+  .pz-btn { width: auto; margin: 0; padding: 8px 14px; font-size: 0.9rem; border-radius: 14px; color: #fff; background: var(--purple); box-shadow: 0 3px 0 #6741d9; }
+  .pz-btn.green { background: #20c997; box-shadow: 0 3px 0 #0ca678; }
+  .pz-btn.red { background: #ff6b6b; box-shadow: 0 3px 0 #e03131; }
+  .pz-btn.gray { background: #f1f3f5; color: #555; box-shadow: 0 3px 0 #dee2e6; }
+  .pz-btn.sm { padding: 6px 10px; font-size: 0.82rem; }
+  .pz-kid { display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid #eee6ff; border-radius: 16px; padding: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .pz-kid .av { font-size: 2.2rem; }
+  .pz-kid .nm { flex: 1; min-width: 120px; }
+  .pz-kid .nm b { font-size: 1.1rem; }
+  .pz-kid .nm div { font-size: 0.8rem; color: #8a7aa8; }
+  .pz-actions { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
+  .pz-kidsel { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pz-kidsel button { width: auto; margin: 0; padding: 6px 12px; border-radius: 14px; background: #fff; border: 2px solid #e6dcff; color: var(--ink); box-shadow: none; font-size: 0.95rem; }
+  .pz-kidsel button.on { background: var(--purple); color: #fff; border-color: var(--purple); }
+  .pz-grid4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .pz-grid4 div { background: #fff; border-radius: 12px; padding: 8px; font-size: 0.82rem; color: #6b5b8a; }
+  .pz-grid4 b { display: block; font-size: 1.25rem; color: var(--ink); }
+  .pz-line { display: flex; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px dashed #e6dcff; font-size: 0.92rem; }
+  .pz-line:last-child { border-bottom: 0; }
+  .pz-line .f { flex: 1; min-width: 0; }
+  .pz-line .f div { font-size: 0.75rem; color: #999; }
+  .pz-line .ico { font-size: 1.4rem; }
+  .pz-scroll { max-height: 280px; overflow-y: auto; }
+  .pz-form { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+  .pz-form .pz-input { flex: 0 0 auto; }
+  .pz-task { width: auto; margin: 0; padding: 8px 12px; border-radius: 14px; background: #fff; border: 2px solid #b2f2bb; color: #2b8a3e; box-shadow: 0 3px 0 #d3f9d8; font-size: 0.92rem; }
+  .pz-code { font-family: var(--heading); font-size: 1.8rem; font-weight: 800; letter-spacing: 5px; color: var(--purple); background: #fff; border: 3px dashed #d0bfff; border-radius: 14px; padding: 4px 14px; display: inline-block; user-select: all; }
+  .pz-switch { display: flex; align-items: center; gap: 10px; margin: 8px 0; cursor: pointer; font-size: 0.95rem; }
+  .pz-switch input { transform: scale(1.4); }
+  .reward-card .detail { font-size: 0.78rem; color: #8a7aa8; min-height: 1em; }
+  .mini-scores { grid-template-columns: repeat(4, 1fr) !important; }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
@@ -307,9 +401,77 @@
 
 <div class="container">
 
-  <div id="portalPage" class="page active">
+  <!-- 🔑 เข้าสู่ระบบ (อีเมลเดียวกับทุกแอป) -->
+  <div id="bootPage" class="page active">
+    <div class="card"><div class="kid-modal-emoji">🦉</div><h2 style="color:var(--purple)">กำลังเปิดเกม...</h2><div id="bootMsg" style="color:#888;"></div></div>
+  </div>
+  <div id="authPage" class="page">
+    <div class="card">
+      <div class="kid-modal-emoji">🌟</div>
+      <h1 style="font-size:2rem;">Family Games Hub</h1>
+      <p style="color:#6b5b8a; margin-top:0;">เข้าสู่ระบบด้วยอีเมลเดียวกับ DarkChat / สมุดบ้าน</p>
+      <form id="authForm" onsubmit="event.preventDefault(); doLogin();">
+        <input id="authEmail" class="kg-input" type="email" autocomplete="username" placeholder="อีเมล" required>
+        <div class="kg-pass"><input id="authPass" class="kg-input" type="password" autocomplete="current-password" placeholder="รหัสผ่าน" required>
+          <button type="button" class="kg-eye" onclick="togglePass('authPass', this)" aria-label="แสดงรหัสผ่าน">👁️</button></div>
+        <div id="authErr" class="kg-err"></div>
+        <button class="btn-main" id="authBtn" type="submit" style="background:linear-gradient(180deg,#b197fc,#845ef7); box-shadow:0 6px 0 #6741d9;">เข้าสู่ระบบ</button>
+      </form>
+      <p style="font-size:0.85rem; color:#888;">ยังไม่มีบัญชี หรือลืมรหัสผ่าน? สมัคร/กู้คืนได้ที่<br><a href="../Family_Expense/" style="color:var(--purple); font-weight:700;">สมุดบ้าน</a> หรือ <a href="../darkchat/" style="color:var(--purple); font-weight:700;">DarkChat</a> แล้วกลับมาเข้าเกม</p>
+    </div>
+  </div>
+
+  <!-- 👧 / 👨‍👩‍👧 เลือกว่าเป็นใคร -->
+  <div id="rolePage" class="page">
+    <div class="card">
+      <div class="kid-modal-emoji">🎮</div>
+      <h1 style="font-size:2rem; margin-bottom:4px;">ใครจะเข้าเกม?</h1>
+      <div id="roleWho" style="color:#8a7aa8; font-size:0.9rem; margin-bottom:14px;"></div>
+      <div class="role-grid">
+        <button class="role-btn kid" onclick="chooseKidRole()"><span>👧👦</span>เด็ก<small>มาเล่นเกมเก็บดาว</small></button>
+        <button class="role-btn parent" onclick="chooseParentRole()"><span>👨‍👩‍👧</span>ผู้ปกครอง<small>ดูแลคะแนน รางวัล ตั้งค่า</small></button>
+      </div>
+      <button class="btn-back" style="margin-top:16px;" onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <!-- เลือกเด็กที่จะเล่น (เครื่องของผู้ปกครอง) / ลูกใส่รหัสเข้าร่วม -->
+  <div id="kidPickPage" class="page">
+    <div class="card">
+      <div class="kid-modal-emoji">👧👦</div>
+      <h1 style="font-size:1.9rem; margin-bottom:6px;" id="kidPickTitle">ใครจะเล่น?</h1>
+      <div id="kidPickList" class="kid-pick-grid"></div>
+      <div id="kidJoinBox" style="display:none;">
+        <p style="color:#6b5b8a; font-weight:600;">ให้คุณพ่อคุณแม่เพิ่มหนูเข้าเกม<br>แล้วเอา <b>รหัส 6 ตัว</b> มาใส่ตรงนี้นะ</p>
+        <input id="kidJoinCode" class="kg-input kg-code" maxlength="6" placeholder="ABC123" autocomplete="off">
+        <div id="kidJoinErr" class="kg-err"></div>
+        <button class="btn-main" onclick="kidJoin()" style="background:linear-gradient(180deg,#38d9a9,#20c997); box-shadow:0 6px 0 #0ca678;">เข้าร่วมเกม 🚀</button>
+      </div>
+      <button class="btn-back" style="margin-top:14px;" id="kidPickBack" onclick="goRole()">⬅️ กลับ</button>
+    </div>
+  </div>
+
+  <!-- ผู้ปกครองครั้งแรก: สร้างบ้านเกม หรือเข้าร่วมบ้านเกมของอีกคน -->
+  <div id="setupPage" class="page">
+    <div class="card">
+      <div class="kid-modal-emoji">🏡</div>
+      <h1 style="font-size:1.9rem; margin-bottom:6px;">เริ่มต้นสำหรับผู้ปกครอง</h1>
+      <p style="color:#6b5b8a;">สร้างบ้านเกม แล้วเพิ่มลูกเข้ามาเล่น</p>
+      <input id="setupName" class="kg-input" maxlength="60" placeholder="ชื่อบ้าน เช่น บ้านไดมอนด์">
+      <button class="btn-main" onclick="setupCreate()" style="background:linear-gradient(180deg,#4dabf7,#228be6); box-shadow:0 6px 0 #1864ab;">🏡 สร้างบ้านเกม</button>
+      <div style="margin:18px 0 8px; color:#aaa;">— หรือ —</div>
+      <p style="color:#6b5b8a; margin:0 0 6px;">อีกคนสร้างไว้แล้ว? ใส่ <b>รหัสผู้ปกครอง</b></p>
+      <input id="setupCode" class="kg-input kg-code" maxlength="6" placeholder="รหัส 6 ตัว" autocomplete="off">
+      <button class="btn-practice" onclick="setupJoin()">เข้าร่วมเป็นผู้ปกครอง</button>
+      <div id="setupErr" class="kg-err"></div>
+      <button class="btn-back" style="margin-top:12px;" onclick="goRole()">⬅️ กลับ</button>
+    </div>
+  </div>
+
+  <div id="portalPage" class="page">
     <div class="card" style="text-align: center; padding-top: 20px;">
       <div class="top-tools">
+        <button class="icon-btn" id="switchKidBtn" onclick="goRole()" title="เปลี่ยนคน" style="display:none;">🔄</button>
         <button class="icon-btn" id="sfxToggleBtn" onclick="toggleSfx()" title="เปิด/ปิดเสียงเอฟเฟกต์">🔔</button>
       </div>
 
@@ -337,6 +499,7 @@
               <div>🧮 คณิต<b id="portalMathScore">0</b></div>
               <div>🐰 ABC<b id="portalAbcScore">0</b></div>
               <div>🇹🇭 ไทย<b id="portalThaiScore">0</b></div>
+              <div>🎯 พิเศษ<b id="portalBonusScore">0</b></div>
           </div>
       </div>
 
@@ -359,103 +522,52 @@
           🚀 เริ่มผจญภัย!
       </button>
 
-      <button class="btn-practice" style="background: linear-gradient(180deg,#38d9a9,#20c997); box-shadow: 0 6px 0 #0ca678; margin-bottom: 4px;" onclick="startPracticeFromPortal()">
-          📖 ฝึกซ้อมศัพท์ ABC
-      </button>
+      <div class="tile-row">
+        <button class="tile" style="background: linear-gradient(180deg,#38d9a9,#20c997); box-shadow: 0 5px 0 #0ca678;" onclick="startPracticeFromPortal()"><span class="ico">📖</span>ฝึกศัพท์</button>
+        <button class="tile" style="background: linear-gradient(180deg,#ffa8a8,#ff6b6b); box-shadow: 0 5px 0 #e03131;" onclick="openReview('portalPage')"><span class="ico">🔁</span>ทบทวนคำผิด<span class="tag" id="reviewTag" style="display:none;"></span></button>
+        <button class="tile" style="background: linear-gradient(180deg,#ffd43b,#fab005); box-shadow: 0 5px 0 #e67700;" onclick="openShop()"><span class="ico">🛍️</span>ร้านรางวัล</button>
+      </div>
 
       <div class="sticker-shelf">
         <h3>🏅 สติกเกอร์สะสม <span id="stickerCount" style="font-size:0.85rem; color:#8a7aa8;"></span></h3>
         <div class="stickers" id="stickerGrid"></div>
       </div>
 
-      <button class="btn-parent" style="width: 100%; font-size: 0.95rem; padding: 12px; margin-top: 10px; background:#b8b0c8; box-shadow: 0 4px 0 #9a91ad;" onclick="showPage('hubParentLogin')">
+      <button class="btn-parent" style="width: 100%; font-size: 0.95rem; padding: 12px; margin-top: 10px; background:#b8b0c8; box-shadow: 0 4px 0 #9a91ad;" onclick="openParentZone()">
           🔒 โซนผู้ปกครอง
       </button>
 
       <div id="hubStatus" style="color: #888; font-size: 0.8rem; margin-top: 14px;">กำลังตรวจสอบการเชื่อมต่อ...</div>
+      <div id="whoLine" style="color:#aaa; font-size:0.75rem; margin-top:4px;"></div>
     </div>
   </div>
 
   <div id="hubParentLogin" class="page">
     <div class="card">
       <h2>🔒 โซนผู้ปกครอง</h2>
-      <input type="password" id="hubPinInput" placeholder="รหัสผ่าน" style="padding:15px; font-size:1.2rem; text-align:center; width:80%; border:2px solid #ddd; border-radius:15px;">
-      <br><br>
-      <button class="btn-main" style="width: auto; padding: 10px 40px;" onclick="checkHubPin()">ตกลง</button>
-      <br>
-      <button class="btn-back" onclick="showPage('portalPage')">กลับ</button>
+      <p style="color:#6b5b8a; margin-top:0;">ใส่ <b>รหัสผ่านที่ใช้เข้าอีเมล</b><br><span id="pinEmail" style="color:#8a7aa8; font-size:0.9rem;"></span></p>
+      <form onsubmit="event.preventDefault(); checkHubPin();">
+        <input type="email" autocomplete="username" id="pinUser" style="display:none;">
+        <div class="kg-pass" style="max-width:340px; margin:0 auto;"><input type="password" id="hubPinInput" class="kg-input" autocomplete="current-password" placeholder="รหัสผ่าน">
+          <button type="button" class="kg-eye" onclick="togglePass('hubPinInput', this)" aria-label="แสดงรหัสผ่าน">👁️</button></div>
+        <div id="pinErr" class="kg-err"></div>
+        <button class="btn-main" id="pinBtn" type="submit" style="width: auto; padding: 10px 40px;">ตกลง</button>
+      </form>
+      <button class="btn-back" id="pinBack" onclick="pinBack()">กลับ</button>
     </div>
   </div>
 
   <div id="hubParentDashboard" class="page">
-    <div class="card">
-       <h2 style="color:#673ab7;">👨‍👩‍👧 การจัดการครอบครัว</h2>
-       
-       <div style="background: #f0f4f8; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #9c27b0;">
-           <span style="font-size: 1.1rem;">⭐ คะแนนรวมสุทธิ:</span>
-           <div id="dashGrandTotal" style="font-size: 3rem; font-weight: bold; color: #9c27b0;">0</div>
-       </div>
-
-       <div class="score-mgmt-box">
-          <h4 style="margin:0 0 10px 0; color:#2196f3;">🧮 คะแนนเกมคิดเลข (Firebase)</h4>
-          <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashMathScore">0</b> ดาว</div>
-          <div style="display:flex; gap:5px; align-items:center;">
-              <input type="number" id="mathAdjInput" placeholder="จำนวนดาว" style="padding:10px; width:100px; border-radius:10px; border:2px solid #ddd; text-align:center;">
-              <button style="background:var(--correct); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustMathScore(1)">+ เพิ่ม</button>
-              <button style="background:var(--wrong); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustMathScore(-1)">- ลด</button>
-          </div>
-       </div>
-
-       <div class="score-mgmt-box">
-          <h4 style="margin:0 0 10px 0; color:var(--primary);">🐰 คะแนนเกม ABC (Google Sheets)</h4>
-          <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashAbcScore">0</b> ดาว</div>
-          <div style="display:flex; gap:5px; align-items:center;">
-              <input type="number" id="abcAdjInput" placeholder="จำนวนดาว" style="padding:10px; width:100px; border-radius:10px; border:2px solid #ddd; text-align:center;">
-              <button style="background:var(--correct); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustAbcScore(1)">+ เพิ่ม</button>
-              <button style="background:var(--wrong); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustAbcScore(-1)">- ลด</button>
-          </div>
-       </div>
-
-       <div class="score-mgmt-box">
-          <h4 style="margin:0 0 10px 0; color:#4caf50;">🇹🇭 คะแนนเกมภาษาไทย (Google Sheets)</h4>
-          <div style="font-size: 1.1rem; margin-bottom: 10px;">ปัจจุบัน: <b id="dashThaiScore">0</b> ดาว</div>
-          <div style="display:flex; gap:5px; align-items:center;">
-              <input type="number" id="thaiAdjInput" placeholder="จำนวนดาว" style="padding:10px; width:100px; border-radius:10px; border:2px solid #ddd; text-align:center;">
-              <button style="background:var(--correct); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustThaiScore(1)">+ เพิ่ม</button>
-              <button style="background:var(--wrong); color:white; margin:0; width:auto; padding:10px 15px;" onclick="adjustThaiScore(-1)">- ลด</button>
-          </div>
-       </div>
-
-       <div style="background:#fff3e0; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ffb74d;">
-          <h4 style="margin:0 0 10px 0; color:#f57c00;">📜 ประวัติการเพิ่ม/หักคะแนน</h4>
-          <ul id="scoreManageHistory" class="history-list" style="max-height:200px; overflow-y:auto; font-size: 0.9rem; padding:0; margin:0; list-style:none;">
-              <li style="color:#888; text-align:center; padding:10px;">ยังไม่มีประวัติ</li>
-          </ul>
-          <button class="btn-back" style="font-size: 0.8rem; padding: 5px 10px; margin-top: 10px; background:#ffe0b2; color:#d84315;" onclick="clearScoreHistory()">🗑️ ล้างประวัติ</button>
-       </div>
-
-       <div style="background:#f0f8ff; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ddd;">
-          <h4 style="margin:0 0 10px 0; color:#555;">📊 ประวัติเกม ABC ล่าสุด</h4>
-          <ul id="historyList" class="history-list" style="max-height:200px;"><li>กำลังโหลด...</li></ul>
-          <h4 style="margin:15px 0 10px 0; color:#555;">📌 คำผิดบ่อย ABC รวม</h4>
-          <ul id="mistakeList" style="max-height:150px; overflow-y:auto;"></ul>
-       </div>
-
-       <div style="background:#f1f8e9; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #ddd;">
-          <h4 style="margin:0 0 10px 0; color:#555;">🇹🇭 ประวัติเกมภาษาไทย ล่าสุด</h4>
-          <ul id="historyListThai" class="history-list" style="max-height:200px;"><li>กำลังโหลด...</li></ul>
-          <h4 style="margin:15px 0 10px 0; color:#555;">📌 คำผิดบ่อย ภาษาไทย รวม</h4>
-          <ul id="mistakeListThai" style="max-height:150px; overflow-y:auto;"></ul>
-       </div>
-
-       <div style="border: 2px dashed #f44336; padding: 15px; border-radius: 15px; text-align:left;">
-          <h4 style="color:#f44336; margin-top:0;">🛑 ล้างข้อมูล (Danger Zone)</h4>
-          <button class="btn-reset" onclick="mathResetScores()">🗑️ รีเซ็ตคะแนน Math</button>
-          <button class="btn-reset" onclick="resetCloudData()" style="margin-top:5px;">🗑️ ล้างประวัติ+คะแนน ABC & ไทย</button>
-       </div>
-       
-       <br>
-       <button class="btn-back" style="width:100%; border: 2px solid #ddd;" onclick="showPage('portalPage')">🏠 กลับเมนูหลัก</button>
+    <div class="card pz">
+      <h2 style="color:#673ab7; margin-top:0;">👨‍👩‍👧 โซนผู้ปกครอง</h2>
+      <div id="pzFamName" style="color:#8a7aa8; font-size:0.9rem; margin:-6px 0 10px;"></div>
+      <div class="pz-tabs" id="pzTabs">
+        <button data-pz="kids" class="on">👧 ลูก</button><button data-pz="stars">⭐ ดาว</button><button data-pz="shop">🛍️ รางวัล</button>
+        <button data-pz="words">📌 คำผิด</button><button data-pz="settings">⚙️ ตั้งค่า</button>
+      </div>
+      <div id="pzBody"></div>
+      <br>
+      <button class="btn-back" style="width:100%; border: 2px solid #ddd;" onclick="leaveParentZone()">🏠 ออกจากโซนผู้ปกครอง</button>
     </div>
   </div>
 
@@ -484,8 +596,37 @@
 
       <p style="color:red; font-weight:bold; font-size:0.85rem; margin-top:15px; background:#ffebee; padding:10px; border-radius:10px;">⚠️ ภารกิจใหม่: แบ่งเล่น 3 ช่วง! ศัพท์เดี่ยว 2.5 นาที, แปลประโยค 2.5 นาที และถาม-ตอบสนทนา 2.5 นาที!</p>
 
+      <button class="btn-practice" id="abcReviewBtn" style="display:none; background: linear-gradient(180deg,#ffa8a8,#ff6b6b); box-shadow: 0 6px 0 #e03131; margin-bottom: 12px;" onclick="openReview('homePage')">🔁 อุ่นเครื่อง: ทบทวนคำที่เคยผิดก่อน</button>
       <button class="btn-main" onclick="startGame()">🚀 เริ่มเกม (ด่านคำศัพท์เดี่ยวก่อน)</button>
     </div>
+  </div>
+
+  <!-- 🔁 ทบทวนคำที่ผิดบ่อย -->
+  <div id="reviewPage" class="page">
+    <div class="header-bar">
+      <div class="timer-box">🔁 ทบทวน <span id="reviewNum">1/1</span></div>
+      <div class="score-box" style="background:#ff6b6b; box-shadow: 0 4px 0 #e03131;">✅ <span id="reviewOk">0</span></div>
+    </div>
+    <div class="bar-track"><div class="bar-fill progress" id="reviewBar" style="width:0%"></div></div>
+    <div class="card" id="reviewCard"></div>
+    <button class="btn-back" onclick="showPage(reviewReturnPage)">⬅️ เลิกทบทวน</button>
+  </div>
+
+  <!-- 🛍️ ร้านแลกรางวัล -->
+  <div id="shopPage" class="page">
+    <div class="card">
+      <div class="kid-modal-emoji">🛍️</div>
+      <h1 style="color:#f08c00; margin:0 0 10px;">ร้านแลกรางวัล</h1>
+      <div class="wallet">
+        <div style="font-weight:700; color:#a65e00;">💰 ดาวที่ใช้แลกได้</div>
+        <div class="big" id="shopBalance">0</div>
+        <div style="font-size:0.8rem; color:#a65e00;">(แลกแล้วเลเวลกับสติกเกอร์ไม่หายนะ)</div>
+      </div>
+      <div class="reward-grid" id="rewardGrid"></div>
+      <h3 style="color:var(--purple); margin:20px 0 4px; text-align:left;">🎟️ คูปองของหนู</h3>
+      <div id="couponList"></div>
+    </div>
+    <button class="btn-back" onclick="showPage('portalPage')">🏠 กลับเมนูหลัก</button>
   </div>
 
   <div id="gamePage" class="page">
@@ -687,6 +828,7 @@
         <div id="kidAlertTitle" style="font-family:var(--heading); font-size:1.6rem; font-weight:700; color:var(--purple); margin-bottom:6px;"></div>
         <div id="kidAlertMsg" style="font-size:1.1rem; color:#555; line-height:1.5;"></div>
         <button class="btn-main" id="kidAlertBtn" style="background:linear-gradient(180deg,#b197fc,#845ef7); box-shadow:0 6px 0 #6741d9; margin-top:18px; font-size:1.4rem;">ตกลง</button>
+        <button class="btn-back" id="kidAlertCancel" style="display:none; width:100%; margin-top:10px;">ยังก่อน</button>
     </div>
 </div>
 
@@ -705,22 +847,17 @@
  **********************************************/
 const API_URL = "https://script.google.com/macros/s/AKfycbwRcunRbh1yuGwqK3PtpUnsCP384WAx97nEWbjw2Z59m74Ezr9Q6goIUwRFUS5h3OYL/exec"; 
 const SENTENCE_API_URL = "https://script.google.com/macros/s/AKfycbx0DPxtp-vyfUZn5D0HUlqqw1BdFYlzkGj_fDqX6iCCO9BTDDzMlxH4rWqVuTLVQA9M/exec";
-const PARENT_PIN = "0932815229";
-
-// Firebase Config
-const firebaseConfig = {
-    apiKey: "AIzaSyD5Nhoo-gr8PopUEJK7YWRny-AY2ezKgAY",
-    authDomain: "mathgamefamily.firebaseapp.com",
-    databaseURL: "https://mathgamefamily-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "mathgamefamily"
-};
-if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const mathPlayer = "ไดมอนด์"; 
-let mathAvatar = localStorage.getItem("kidAvatar") || "👦";
+// ☁️ Supabase โปรเจกต์เดียวกับ DarkChat / สมุดบ้าน (บัญชีอีเมลเดียวกัน)
+const SUPABASE_URL = "https://ealxfgjuiwoewwxxyppu.supabase.co";
+const SUPABASE_KEY = "sb_publishable_E3FljLn7ipcoNzfXds3T9A_o4pj4d7z";
+// ระบบเดิม: ใช้แค่ตอน "ยกยอดดาวเดิม" ครั้งเดียวในโซนผู้ปกครอง (อ่านอย่างเดียว)
+const OLD_FIREBASE_DB = "https://mathgamefamily-default-rtdb.asia-southeast1.firebasedatabase.app";
+const OLD_PLAYER = "ไดมอนด์";
+let mathPlayer = "";
+let mathAvatar = "👦";
 
 // SCORE VARIABLES
-let mathScoreGlobal = 0, abcScoreGlobal = 0, thaiScoreGlobal = 0;
+let mathScoreGlobal = 0, abcScoreGlobal = 0, thaiScoreGlobal = 0, bonusScoreGlobal = 0;
 let pendingMathScore = 0, pendingAbcScore = 0, pendingThaiScore = 0;
 
 // GAME VARIABLES
@@ -747,9 +884,9 @@ let currentThaiGraphemes = [];
 // PRACTICE & VOCAB VARIABLES
 let practiceIndex = 0; let currentModalWord = null; 
 const backupWords = [{Vocabulary:"Apple", "คำอ่านไทย":"แอป-เปิล", "คำแปล":"แอปเปิล"},{Vocabulary:"Banana", "คำอ่านไทย":"บะ-แน-นะ", "คำแปล":"กล้วย"}];
-let wordStats = JSON.parse(localStorage.getItem("wordStats")) || {};
-let thaiWordStats = JSON.parse(localStorage.getItem("thaiWordStats")) || {};
-let markedWords = JSON.parse(localStorage.getItem("markedWords")) || {};
+let wordStats = {};      // โหลดจาก Supabase ตามเด็กที่กำลังเล่น
+let thaiWordStats = {};
+let markedWords = {};
 let userSettings = JSON.parse(localStorage.getItem("userSettings")) || { showRead: true, showMean: true };
 let currentFilters = { search: "", start: null, end: null, markedOnly: false };
 
@@ -845,11 +982,19 @@ function showPraise(text) {
 }
 
 // เรียกตอนตอบถูก/ผิด (เพิ่มลูกเล่นอย่างเดียว ไม่แตะกติกาคะแนนเดิม)
+// คืนค่า "ดาวโบนัส" — ตอบถูกติดกันครบทุก 5 ข้อ ได้ +2 (ผู้ปกครองปิดได้)
+let COMBO_BONUS_EVERY = 5, COMBO_BONUS_STARS = 2;
 function onCorrectFx(badgeId) {
     comboCount++;
-    if(comboCount >= 3) { sfx("combo"); showPraise(`🔥 ${comboCount} ติด! สุดยอด!`); confetti(comboCount >= 5 ? 90 : 50); }
+    let bonus = 0;
+    if(shopData.settings.comboBonus && comboCount % COMBO_BONUS_EVERY === 0) {
+        bonus = COMBO_BONUS_STARS;
+        sfx("levelup"); showPraise(`🔥 ${comboCount} ติด! โบนัส +${bonus} ⭐`); confetti(140);
+    }
+    else if(comboCount >= 3) { sfx("combo"); showPraise(`🔥 ${comboCount} ติด! สุดยอด!`); confetti(50); }
     else { sfx("correct"); showPraise(); confetti(25); }
     updateComboBadge(badgeId);
+    return bonus;
 }
 function onWrongFx(badgeId) {
     comboCount = 0; sfx("wrong");
@@ -859,7 +1004,9 @@ function onWrongFx(badgeId) {
 function updateComboBadge(badgeId) {
     const b = badgeId && document.getElementById(badgeId);
     if(!b) return;
-    if(comboCount >= 2) { b.textContent = `🔥 คอมโบ x${comboCount}`; b.classList.remove("show"); void b.offsetWidth; b.classList.add("show"); }
+    if(comboCount >= 2) {
+        const toBonus = COMBO_BONUS_EVERY - (comboCount % COMBO_BONUS_EVERY);
+        b.textContent = `🔥 คอมโบ x${comboCount}` + (shopData.settings.comboBonus && toBonus < COMBO_BONUS_EVERY ? ` · อีก ${toBonus} ได้โบนัส!` : ""); b.classList.remove("show"); void b.offsetWidth; b.classList.add("show"); }
     else b.classList.remove("show");
 }
 
@@ -875,6 +1022,10 @@ function kidAlert(msg, opts = {}) {
         sfx("tap");
         if(opts.onClose) opts.onClose();
     };
+    const cancel = document.getElementById("kidAlertCancel");
+    cancel.style.display = opts.cancel ? "block" : "none";
+    cancel.textContent = opts.cancel || "";
+    cancel.onclick = () => { document.getElementById("kidAlertModal").classList.remove("active"); sfx("tap"); };
     document.getElementById("kidAlertModal").classList.add("active");
 }
 
@@ -887,7 +1038,7 @@ function openAvatarPicker() {
 }
 function closeAvatarPicker() { document.getElementById("avatarModal").classList.remove("active"); }
 function pickAvatar(a) {
-    mathAvatar = a; localStorage.setItem("kidAvatar", a);
+    mathAvatar = a; if(KG.kid) { KG.kid.avatar = a; api.setAvatar(KG.kid.id, a).catch(e => console.warn(e)); }
     sfx("correct"); confetti(30); closeAvatarPicker(); renderPortalExtras();
 }
 
@@ -916,20 +1067,21 @@ const STICKERS = [
     { at: 2000, ico: "💎", name: "ไดมอนด์" },
     { at: 5000, ico: "🌈", name: "ตำนาน" }
 ];
-function getGrandTotal() { return (parseInt(abcScoreGlobal) || 0) + (parseInt(mathScoreGlobal) || 0) + (parseInt(thaiScoreGlobal) || 0); }
+function getGrandTotal() { return (parseInt(abcScoreGlobal) || 0) + (parseInt(mathScoreGlobal) || 0) + (parseInt(thaiScoreGlobal) || 0) + (parseInt(bonusScoreGlobal) || 0); }
 
 function todayKey() { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
-function getStreak() { return JSON.parse(localStorage.getItem("dailyStreak") || '{"last":"","count":0}'); }
-function recordDailyMission() {
-    const s = getStreak(), today = todayKey();
-    if(s.last === today) return s;
-    const y = new Date(); y.setDate(y.getDate() - 1);
-    const yKey = `${y.getFullYear()}-${y.getMonth() + 1}-${y.getDate()}`;
-    s.count = (s.last === yKey) ? s.count + 1 : 1;
-    s.last = today;
-    localStorage.setItem("dailyStreak", JSON.stringify(s));
-    return s;
+// ไฟต่อเนื่อง: นับจากวันที่เล่นจริงในฐานข้อมูล (ซิงก์ทุกเครื่อง)
+function dayKeyOf(d) { d = new Date(d); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
+function getStreak() {
+    const days = new Set(kidRows("rounds").map(r => dayKeyOf(r.played_at)));
+    if(!days.size) return { last: "", count: 0 };
+    const d = new Date(); let last = "";
+    if(!days.has(dayKeyOf(d))) { d.setDate(d.getDate() - 1); if(!days.has(dayKeyOf(d))) { const all = [...days]; return { last: all[0], count: 0 }; } }
+    last = dayKeyOf(d); let count = 0;
+    while(days.has(dayKeyOf(d))) { count++; d.setDate(d.getDate() - 1); }
+    return { last, count };
 }
+function recordDailyMission() { return getStreak(); }
 
 function renderPortalExtras() {
     const total = getGrandTotal();
@@ -948,6 +1100,12 @@ function renderPortalExtras() {
         return `<div class="sticker ${ok ? 'unlocked' : 'locked'}" onclick="stickerInfo(${s.at})"><span class="ico">${s.ico}</span>${ok ? s.name : s.at + ' ดาว'}</div>`;
     }).join("");
     document.getElementById("stickerCount").textContent = `(${got}/${STICKERS.length})`;
+    // ทบทวนคำผิด: ป้ายจำนวนคำ
+    const rc = getReviewItems().length;
+    const tag = document.getElementById("reviewTag");
+    if(tag) { tag.style.display = rc ? "block" : "none"; tag.textContent = rc; }
+    const rb = document.getElementById("abcReviewBtn");
+    if(rb) { rb.style.display = rc ? "block" : "none"; rb.textContent = `🔁 อุ่นเครื่อง: ทบทวนคำที่เคยผิด (${rc} คำ)`; }
     // ไฟต่อเนื่อง + ภารกิจวันนี้
     const st = getStreak(), today = todayKey();
     const y = new Date(); y.setDate(y.getDate() - 1);
@@ -964,24 +1122,111 @@ function stickerInfo(at) {
     else kidAlert(`สะสมดาวให้ครบ <b>${at}</b> ดวง<br>(ตอนนี้มี ${total} ดวง อีก ${at - total} ดวงเอง!)`, { emoji: "🔒", title: "สติกเกอร์ลับ", button: "สู้ๆ! 💪" });
 }
 
+/* ร้านแลกรางวัล + โซนผู้ปกครอง: อยู่ท้ายไฟล์ (ส่วน Supabase) */
+/**********************************************
+ * 🔁 ทบทวนคำที่ผิดบ่อย (ABC = เลือกคำแปล / ไทย = ฟังแล้วเลือกคำที่สะกดถูก)
+ * คำที่ตอบถูกในโหมดทบทวนจะหายจากรายการ จนกว่าจะผิดเพิ่มในเกมอีก
+ * (สถิติคำผิดในโซนผู้ปกครองไม่ถูกแก้)
+ **********************************************/
+const REVIEW_MAX = 8;
+let reviewMastery = {};
+let reviewQueue = [], reviewIdx = 0, reviewOkCount = 0, reviewTotal = 0, reviewReturnPage = 'portalPage', reviewRequeued = {};
+
+function getReviewItems() {
+    const items = [];
+    const ts = thaiWordStats || {};
+    Object.entries(wordStats || {}).forEach(([w, st]) => {
+        const obj = words.find(x => x.Vocabulary === w);
+        if(obj && obj["คำแปล"] && st.wrong > (reviewMastery["en:" + w] || 0)) items.push({ type: "en", key: "en:" + w, wrong: st.wrong, word: obj });
+    });
+    Object.entries(ts).forEach(([w, st]) => {
+        if(thaiWordsDB.includes(w) && st.wrong > (reviewMastery["th:" + w] || 0)) items.push({ type: "th", key: "th:" + w, wrong: st.wrong, word: w });
+    });
+    return items.sort((a, b) => b.wrong - a.wrong).slice(0, REVIEW_MAX);
+}
+
+function openReview(returnPage) {
+    reviewReturnPage = returnPage || 'portalPage';
+    const items = getReviewItems();
+    if(!items.length) {
+        kidAlert(words.length ? "ยังไม่มีคำที่ต้องทบทวนเลย เก่งมาก!" : "รอโหลดคำศัพท์สักครู่นะ...", { emoji: words.length ? "🌟" : "⏳", title: words.length ? "ว้าว!" : "" });
+        return;
+    }
+    reviewQueue = shuffleArray(items.slice()); reviewIdx = 0; reviewOkCount = 0; reviewTotal = items.length; reviewRequeued = {};
+    comboCount = 0;
+    showPage('reviewPage');
+    renderReviewQ();
+}
+
+function pickOthers(pool, correct, n) {
+    return shuffleArray(pool.filter(x => x && x !== correct)).filter((x, i, a) => a.indexOf(x) === i).slice(0, n);
+}
+
+function renderReviewQ() {
+    document.getElementById("reviewOk").textContent = reviewOkCount;
+    document.getElementById("reviewBar").style.width = (reviewOkCount / reviewTotal * 100) + "%";
+    if(reviewIdx >= reviewQueue.length) return finishReview();
+    const it = reviewQueue[reviewIdx];
+    document.getElementById("reviewNum").textContent = `${Math.min(reviewIdx + 1, reviewQueue.length)}/${reviewQueue.length}`;
+    let html, correct, choices;
+    if(it.type === "en") {
+        correct = it.word["คำแปล"];
+        choices = shuffleArray([correct, ...pickOthers(words.map(w => w["คำแปล"]), correct, 3)]);
+        html = `<span class="review-tag">🐰 เคยผิด ${it.wrong} ครั้ง</span>
+            <div class="review-word">${esc(it.word.Vocabulary)}</div>
+            <button class="btn-sound" style="margin:6px auto 14px;" onclick="speak(reviewQueue[reviewIdx].word.Vocabulary)">🔊</button>
+            <div style="color:#6b5b8a; font-weight:700; margin-bottom:6px;">แปลว่าอะไรนะ?</div>`;
+        speak(it.word.Vocabulary);
+    } else {
+        correct = it.word;
+        const sameLen = thaiWordsDB.filter(w => Math.abs(w.length - correct.length) <= 1);
+        choices = shuffleArray([correct, ...pickOthers(sameLen.length >= 4 ? sameLen : thaiWordsDB, correct, 3)]);
+        html = `<span class="review-tag">🇹🇭 เคยผิด ${it.wrong} ครั้ง</span>
+            <div style="color:#6b5b8a; font-weight:700; margin:10px 0;">ฟังแล้วเลือกคำที่ <b>สะกดถูก</b></div>
+            <button class="btn-sound" style="margin:6px auto 14px; width:auto; padding:0 28px; border-radius:40px; height:70px; font-size:1.6rem; color:#fff;" onclick="speak(reviewQueue[reviewIdx].word, 'th-TH')">🔊 ฟัง</button>`;
+        speak(it.word, 'th-TH');
+    }
+    html += `<div class="choices-grid">${choices.map(c => `<button class="choice-btn" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
+    const card = document.getElementById("reviewCard");
+    card.innerHTML = html;
+    card.querySelectorAll(".choice-btn").forEach(b => b.onclick = () => answerReview(b, b.dataset.v === correct, correct));
+}
+
+function answerReview(btn, ok, correct) {
+    const all = document.querySelectorAll("#reviewCard .choice-btn");
+    all.forEach(b => b.disabled = true);
+    const it = reviewQueue[reviewIdx];
+    if(ok) {
+        btn.classList.add("correct-anim");
+        sfx("correct"); showPraise(reviewRequeued[it.key] ? "จำได้แล้ว! 💪" : null); confetti(30);
+        reviewOkCount++;
+        reviewMastery[it.key] = it.wrong; // ผ่านแล้ว — จะกลับมาอีกถ้าผิดเพิ่มในเกม
+        kgWordMark(it.type, it.type === "en" ? it.word.Vocabulary : it.word, { mastered: true });
+        setTimeout(() => { reviewIdx++; renderReviewQ(); }, 800);
+    } else {
+        btn.classList.add("wrong-anim"); sfx("wrong");
+        all.forEach(b => { if(b.dataset.v === correct) b.classList.add("correct-anim"); });
+        if(it.type === "en") speak(it.word.Vocabulary); else speak(it.word, 'th-TH');
+        if(!reviewRequeued[it.key]) { reviewRequeued[it.key] = true; reviewQueue.push(it); } // วนกลับมาถามอีกรอบท้ายสุด
+        setTimeout(() => { reviewIdx++; renderReviewQ(); }, 1800);
+    }
+}
+
+function finishReview() {
+    sfx("fanfare"); confetti(150);
+    const back = reviewReturnPage === 'homePage';
+    document.getElementById("reviewBar").style.width = "100%";
+    document.getElementById("reviewCard").innerHTML = `
+        <div class="kid-modal-emoji">🧠</div>
+        <h2 style="color:var(--purple); margin:0;">ทบทวนครบแล้ว!</h2>
+        <p style="font-size:1.2rem;">จำได้ <b style="color:#2b8a3e; font-size:1.6rem;">${reviewOkCount}</b> / ${reviewTotal} คำ</p>
+        <button class="btn-main" style="background:linear-gradient(180deg,#4dabf7,#228be6); box-shadow:0 6px 0 #1864ab;" onclick="showPage('${reviewReturnPage}')">${back ? "🚀 ไปเล่นเกม ABC ต่อ" : "🏠 กลับเมนูหลัก"}</button>`;
+    renderPortalExtras();
+}
+
 /**********************************************
  * INITIALIZATION & UI
  **********************************************/
-window.onload = function() {
-    document.getElementById("sfxToggleBtn").textContent = sfxEnabled ? "🔔" : "🔕";
-    renderPortalExtras();
-    toggleSoundUI();
-    fetchAbcData(); 
-    fetchSentenceData();
-    window.speechSynthesis.getVoices(); 
-
-    // Fetch Firebase (Math)
-    db.ref('scores/' + mathPlayer).on('value', snap => {
-        mathScoreGlobal = snap.exists() ? (parseInt(snap.val().score) || 0) : 0;
-        updateGrandTotal();
-    });
-};
-
 function showPage(id) {
     if(id !== 'mathPage') {
         const mathSb = document.getElementById("mathScoreBox");
@@ -993,11 +1238,12 @@ function showPage(id) {
 }
 
 function updateGrandTotal() {
-    let total = (parseInt(abcScoreGlobal) || 0) + (parseInt(mathScoreGlobal) || 0) + (parseInt(thaiScoreGlobal) || 0);
+    let total = getGrandTotal();
     
     document.getElementById('portalAbcScore').textContent = (parseInt(abcScoreGlobal) || 0);
     document.getElementById('portalMathScore').textContent = (parseInt(mathScoreGlobal) || 0);
     document.getElementById('portalThaiScore').textContent = (parseInt(thaiScoreGlobal) || 0);
+    document.getElementById('portalBonusScore').textContent = (parseInt(bonusScoreGlobal) || 0);
     document.getElementById('grandTotalScore').textContent = total.toLocaleString();
     
     if(document.getElementById('dashGrandTotal')) document.getElementById('dashGrandTotal').textContent = total.toLocaleString();
@@ -1032,20 +1278,8 @@ function fetchSentenceData() {
 function fetchAbcData() {
     const nocache = "&t=" + new Date().getTime();
     
-    fetch(API_URL + "?action=getReport" + nocache).then(res => res.json()).then(data => { 
-        if(data.summary) { 
-            abcScoreGlobal = parseInt(data.summary.stars) || 0; 
-            globalRounds = parseInt(data.summary.rounds) || 0; 
-            thaiScoreGlobal = parseInt(data.summary.thaiStars) || parseInt(data.summary.thaistars) || 0;
-            updateAbcUI(); 
-            updateGrandTotal(); 
-        } 
-        
-        if(data.history) renderHistoryList("historyList", data.history);
-        if(data.thaiHistory) renderHistoryList("historyListThai", data.thaiHistory);
-    }).catch(console.error);
-
-    fetch(API_URL).then(res => res.json()).then(data => {
+    // คลังคำศัพท์อังกฤษ + ไทย จาก Google Sheets (คะแนนย้ายไปเก็บใน Supabase แล้ว)
+    fetch(API_URL + "?t=" + Date.now()).then(res => res.json()).then(data => {
         let rawWords = data.words ? data.words : (Array.isArray(data) ? data : backupWords);
         
         let seenEng = new Set();
@@ -1114,56 +1348,97 @@ function openMathGame() {
     mathHomeInit();
 }
 
+// 🎓 ระดับชั้น ป.1–ป.6 : แต้มต่อข้อ / เวลา / ตัวอย่างโจทย์
+const MATH_GRADES = {
+    1: { pts: 2, time: 45, hint: "บวก-ลบ ไม่เกิน 20" },
+    2: { pts: 3, time: 60, hint: "บวก-ลบ ไม่เกิน 100, สูตรคูณแม่ 2, 5, 10" },
+    3: { pts: 5, time: 60, hint: "บวก-ลบ หลักพัน, คูณ, หาร" },
+    4: { pts: 6, time: 75, hint: "บวก-ลบ หลักหมื่น, คูณ 2 หลัก, หาร 3 หลัก" },
+    5: { pts: 7, time: 90, hint: "คูณ 3 หลัก, หาร 2 หลัก, หลายเครื่องหมาย" },
+    6: { pts: 8, time: 90, hint: "วงเล็บ, ลำดับการคำนวณ, ร้อยละ" }
+};
+let mathGrade = parseInt(localStorage.getItem("mathGrade")) || 3;
+let mathCorrectCount = 0;
+function mathGradeInfo() { return MATH_GRADES[mathGrade] || MATH_GRADES[3]; }
+function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
 function mathHomeInit(){
     document.getElementById("mathScoreBox")?.remove();
+    const lock = parseInt(KG.kid?.grade_lock) || 0;
+    if(lock) mathGrade = lock;
+    const g = mathGradeInfo();
     document.getElementById("mathAppContent").innerHTML = `
         <div class="kid-modal-emoji">🧮</div>
         <h2 style="color:#1565c0">ด่านที่ 1: คิดเลขผจญภัย</h2>
         <div style="font-size:30px; margin-bottom:15px; background:#e3f2fd; padding:10px; border-radius:15px; border:2px solid #2196f3;">
             ${mathAvatar} <b>${mathPlayer}</b>
         </div>
-        🎓 <b>ระดับชั้น:</b> <br><br>
-        <button id="lv3" class="btn-lv sel">ป.3</button><br><br>
-        <div style="font-size:0.9rem; color:#888; margin-bottom:15px;">* ป.3 (+5 คะแนน)<br>(ตอบถูกได้ 5 คะแนน / ตอบผิดไม่หักคะแนน)</div>
+        🎓 <b>เลือกระดับชั้น:</b>${lock ? ' <span style="font-size:0.8rem; color:#888;">(🔒 ผู้ปกครองล็อกไว้)</span>' : ''}
+        <div class="grade-grid">
+            ${[1,2,3,4,5,6].map(n => `<button class="grade-btn ${n === mathGrade ? 'sel' : ''}" ${lock && n !== lock ? 'disabled' : ''} onclick="pickMathGrade(${n})">ป.${n}<small>+${MATH_GRADES[n].pts} ⭐</small></button>`).join("")}
+        </div>
+        <div style="font-size:0.9rem; color:#6b5b8a; margin-bottom:15px; background:#faf7ff; border-radius:14px; padding:8px;">
+            📚 ${g.hint}<br>ตอบถูกได้ <b>${g.pts}</b> ดาว · ข้อละ ${g.time} วิ · ตอบผิดไม่หักดาว
+        </div>
         <button style="width:90%; background:#4caf50;" onclick="mathStart()">▶ ลุยด่านแรก!</button><br>
         <button class="back" style="width:100%; margin-top:15px; border: 2px solid #e65100;" onclick="showPage('portalPage')">⬅ กลับหน้าเมนูหลัก</button>
     `;
 }
+function pickMathGrade(n) { mathGrade = n; localStorage.setItem("mathGrade", n); sfx("tap"); mathHomeInit(); }
 
-function mathStart(){ mathCurrentScore=0; mathQCount=0; pendingMathScore=0; mathNextQ(); }
+function mathStart(){ mathCurrentScore=0; mathQCount=0; mathCorrectCount=0; pendingMathScore=0; comboCount=0; mathNextQ(); }
+
+// สร้างโจทย์ตามระดับชั้น (คำตอบเป็นจำนวนเต็มไม่ติดลบเสมอ เพราะแป้นกดไม่มีจุด/ลบ)
+function makeMathProblem(grade) {
+    let a, b, c, ans, str;
+    const op = rnd(0, 3);
+    switch(grade) {
+        case 1:
+            if(op % 2 === 0) { a = rnd(1, 10); b = rnd(1, 10); ans = a + b; str = `${a} + ${b}`; }
+            else { a = rnd(5, 20); b = rnd(1, a); ans = a - b; str = `${a} - ${b}`; }
+            break;
+        case 2:
+            if(op === 0) { a = rnd(10, 89); b = rnd(1, 99 - a); ans = a + b; str = `${a} + ${b}`; }
+            else if(op === 1) { a = rnd(20, 99); b = rnd(1, a); ans = a - b; str = `${a} - ${b}`; }
+            else { a = [2, 5, 10][rnd(0, 2)]; b = rnd(1, 10); if(Math.random() > 0.5) [a, b] = [b, a]; ans = a * b; str = `${a} × ${b}`; }
+            break;
+        case 4:
+            if(op === 0) { a = rnd(1000, 60000); b = rnd(1000, 39000); ans = a + b; str = `${a} + ${b}`; }
+            else if(op === 1) { a = rnd(10000, 99999); b = rnd(1000, a - 1); ans = a - b; str = `${a} - ${b}`; }
+            else if(op === 2) { a = rnd(12, 99); b = rnd(11, 30); ans = a * b; str = `${a} × ${b}`; }
+            else { b = rnd(2, 9); ans = rnd(12, 111); a = b * ans; str = `${a} ÷ ${b}`; }
+            break;
+        case 5:
+            if(op === 0) { a = rnd(101, 999); b = rnd(11, 50); ans = a * b; str = `${a} × ${b}`; }
+            else if(op === 1) { b = rnd(11, 40); ans = rnd(11, 99); a = b * ans; str = `${a} ÷ ${b}`; }
+            else if(op === 2) { a = rnd(10, 200); b = rnd(2, 12); c = rnd(2, 12); ans = a + b * c; str = `${a} + ${b} × ${c}`; }
+            else { b = rnd(2, 12); c = rnd(2, 12); a = rnd(b * c, b * c + 300); ans = a - b * c; str = `${a} - ${b} × ${c}`; }
+            break;
+        case 6:
+            if(op === 0) { a = rnd(2, 40); b = rnd(2, 40); c = rnd(2, 12); ans = (a + b) * c; str = `(${a} + ${b}) × ${c}`; }
+            else if(op === 1) { c = rnd(2, 12); const q = rnd(2, 30); b = rnd(1, 50); a = q * c + b; ans = (a - b) / c; str = `(${a} - ${b}) ÷ ${c}`; }
+            else if(op === 2) { const pct = [10, 20, 25, 50, 75][rnd(0, 4)]; const base = (100 / gcd(pct, 100)) * rnd(1, 20); ans = base * pct / 100; str = `${pct}% ของ ${base}`; }
+            else { a = rnd(2, 15); b = rnd(2, 15); c = rnd(2, 9); const d = c * rnd(1, 9); ans = a * b + d / c; str = `${a} × ${b} + ${d} ÷ ${c}`; }
+            break;
+        default: // ป.3 (โจทย์ชุดเดิม)
+            if(op === 0) { a = rnd(100, 9999); b = rnd(100, 9999); ans = a + b; str = `${a} + ${b}`; }
+            else if(op === 1) { a = rnd(100, 9999); b = rnd(10, a - 1); ans = a - b; str = `${a} - ${b}`; }
+            else if(op === 2) { a = rnd(2, 25); b = rnd(2, 12); if(Math.random() > 0.5) [a, b] = [b, a]; ans = a * b; str = `${a} × ${b}`; }
+            else { ans = rnd(2, 25); b = rnd(2, 12); a = b * ans; str = `${a} ÷ ${b}`; }
+    }
+    return { ans, str };
+}
+function gcd(x, y) { return y ? gcd(y, x % y) : x; }
 
 function mathNextQ(){
     if(mathQCount >= mathTotalQ){ mathSummary(); return; }
     mathQCount++; clearInterval(mathTimerId); mathUpdateScoreUI();
     
-    let op = Math.floor(Math.random() * 4);
-    let a, b, expressionStr;
-
-    if (op === 0) { 
-        a = Math.floor(Math.random() * 9900) + 100;
-        b = Math.floor(Math.random() * 9900) + 100;
-        mathAnswer = a + b;
-        expressionStr = `${a} + ${b}`;
-    } else if (op === 1) { 
-        a = Math.floor(Math.random() * 9900) + 100;
-        b = Math.floor(Math.random() * (a - 10)) + 10;
-        mathAnswer = a - b;
-        expressionStr = `${a} - ${b}`;
-    } else if (op === 2) { 
-        a = Math.floor(Math.random() * 24) + 2;
-        b = Math.floor(Math.random() * 11) + 2;
-        if (Math.random() > 0.5) { let temp = a; a = b; b = temp; }
-        mathAnswer = a * b;
-        expressionStr = `${a} × ${b}`;
-    } else if (op === 3) { 
-        let answer = Math.floor(Math.random() * 24) + 2;
-        b = Math.floor(Math.random() * 11) + 2;
-        a = b * answer;
-        mathAnswer = answer;
-        expressionStr = `${a} ÷ ${b}`;
-    }
+    const prob = makeMathProblem(mathGrade);
+    mathAnswer = prob.ans;
+    const expressionStr = prob.str;
     
-    mathTimeLeft = 60;
+    mathTimeLeft = mathGradeInfo().time;
     const mathMax = mathTimeLeft;
     document.getElementById("mathAppContent").innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; font-weight:700; color:#6b5b8a;">
@@ -1173,7 +1448,7 @@ function mathNextQ(){
         <div class="bar-track" style="margin:8px 0 6px;"><div class="bar-fill" id="mathTimeBar"></div></div>
         <div style="font-size:1.4rem; letter-spacing:2px;">${"🟣".repeat(mathQCount - 1)}${"⚪".repeat(mathTotalQ - mathQCount + 1)}</div>
         <div class="combo-badge" id="mathComboBadge">🔥 x2</div>
-        <div class="math-q">${expressionStr}</div>
+        <div class="math-q" style="${expressionStr.length > 14 ? 'font-size:34px;' : ''}">${expressionStr}</div>
         <input id="ans" type="number" readonly placeholder="?"><br>
         <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 300px; margin: auto;">
             ${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button class="num c${(n % 5) + 1}" onclick="mathPress(${n})">${n}</button>`).join("")}
@@ -1204,9 +1479,9 @@ function mathCheck(){
     let userAns = parseInt(document.getElementById("ans").value);
 
     if(userAns === mathAnswer){
-        mathCurrentScore += 5;
+        mathCurrentScore += mathGradeInfo().pts + onCorrectFx("mathComboBadge");
+        mathCorrectCount++;
         mathUpdateScoreUI();
-        onCorrectFx("mathComboBadge");
         const ansBox = document.getElementById("ans");
         if(ansBox) { ansBox.style.background = "#d3f9d8"; ansBox.style.borderColor = "#37b24d"; }
         setTimeout(mathNextQ, 650);
@@ -1226,13 +1501,13 @@ function mathSummary(){
     document.getElementById("mathScoreBox")?.remove();
     pendingMathScore = mathCurrentScore; 
 
-    if (mathCurrentScore < 10) {
+    if (mathCorrectCount < 2) {
         document.getElementById("mathAppContent").innerHTML = `
             <div style="padding:20px;">
                 <h2 style="color:#f44336">⚠️ ยังไปต่อไม่ได้!</h2>
                 <p>คะแนนรอบนี้: <b style="color:#f44336; font-size:1.5rem;">${mathCurrentScore}</b> แต้ม</p>
                 <div style="background:#ffebee; padding:15px; border-radius:10px; margin:15px 0; color:#c62828; font-weight:bold; font-size:1.1rem; border:2px dashed #ef5350;">
-                    หนูต้องตั้งใจทำนะครับ!<br>ต้องตอบให้ถูกอย่างน้อย 2 ข้อ (10 คะแนน) ถึงจะผ่านด่านได้น้า
+                    หนูต้องตั้งใจทำนะครับ!<br>ต้องตอบให้ถูกอย่างน้อย 2 ข้อ ถึงจะผ่านด่านได้น้า
                 </div>
                 <button style="width:100%; background:#2196f3; color:white; padding:15px; font-size:1.5rem; border-radius:20px; box-shadow:0 5px 0 #1565c0; margin-top:10px;" onclick="mathHomeInit()">🔄 เริ่มเล่นคณิตศาสตร์ใหม่</button>
             </div>
@@ -1577,7 +1852,7 @@ function checkAnswer(isCorrect, btn, correctDisplay) {
   
   if(isCorrect) {
     abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++; wordStats[currentWord.Vocabulary].correct++;
-    btn.classList.add("correct-anim"); onCorrectFx("comboBadge");
+    btn.classList.add("correct-anim"); abcCurrentScore += onCorrectFx("comboBadge");
     setTimeout(nextQuestion, 800);
   } else {
     onWrongFx("comboBadge");
@@ -1597,7 +1872,6 @@ function checkAnswer(isCorrect, btn, correctDisplay) {
     }, 800);
   }
   document.getElementById("liveScore").textContent = abcCurrentScore; 
-  localStorage.setItem("wordStats", JSON.stringify(wordStats));
 }
 
 function checkSentenceAnswer(isCorrect, btn, correctAns, sentData, fullEnglishSentence) {
@@ -1605,7 +1879,7 @@ function checkSentenceAnswer(isCorrect, btn, correctAns, sentData, fullEnglishSe
     
     if(isCorrect) {
         abcCurrentScore += isSoundEnabled ? 1 : 2; sessionCorrect++;
-        btn.classList.add("correct-anim"); onCorrectFx("comboBadge");
+        btn.classList.add("correct-anim"); abcCurrentScore += onCorrectFx("comboBadge");
         setTimeout(nextQuestion, 800);
     } else {
         onWrongFx("comboBadge");
@@ -1641,7 +1915,7 @@ function checkQACorrectness(isCorrect, cardElement, correctAnsText, qaData) {
         cardElement.style.background = "var(--correct)";
         cardElement.style.color = "white";
         cardElement.querySelectorAll('div').forEach(d => d.style.color = "white");
-        onCorrectFx("comboBadge");
+        abcCurrentScore += onCorrectFx("comboBadge");
         setTimeout(nextQuestion, 800);
     } else {
         onWrongFx("comboBadge");
@@ -1851,9 +2125,8 @@ function checkThaiAnswer() {
     if(!thaiWordStats[currentThaiWord]) thaiWordStats[currentThaiWord] = { wrong: 0 };
 
     if(userAnswer === currentThaiWord) {
-        thaiCurrentScore += 3;
+        thaiCurrentScore += (parseInt(shopData.settings.thaiPts) || 3) + onCorrectFx("thaiComboBadge");
         document.getElementById("thaiLiveScore").textContent = thaiCurrentScore;
-        onCorrectFx("thaiComboBadge");
 
         document.getElementById("thaiInputBox").style.backgroundColor = "#c8e6c9";
         setTimeout(() => { document.getElementById("thaiInputBox").style.backgroundColor = "transparent"; thaiQIndex++; thaiNextQuestion(); }, 700);
@@ -1862,7 +2135,6 @@ function checkThaiAnswer() {
         if(!sessionThaiWrongStats[currentThaiWord]) sessionThaiWrongStats[currentThaiWord] = 0;
         sessionThaiWrongStats[currentThaiWord]++;
         thaiWordStats[currentThaiWord].wrong++;
-        localStorage.setItem("thaiWordStats", JSON.stringify(thaiWordStats));
         
         document.getElementById("thaiInputBox").style.backgroundColor = "#ffcdd2";
         
@@ -1887,7 +2159,7 @@ function saveAllDataToCloud() {
     renderPortalExtras();
 
     // ⭐ ให้ดาว 1-3 ดวงตามความแม่นยำด่านไทย + ABC
-    const thaiMax = Math.max(1, currentThaiWordsList.length * 3);
+    const thaiMax = Math.max(1, currentThaiWordsList.length * (parseInt(shopData.settings.thaiPts) || 3));
     const abcAcc = (sessionCorrect + sessionWrong) > 0 ? sessionCorrect / (sessionCorrect + sessionWrong) : 0;
     const acc = ((thaiCurrentScore / thaiMax) + abcAcc) / 2;
     const starsEarned = acc >= 0.85 ? 3 : acc >= 0.6 ? 2 : 1;
@@ -1913,166 +2185,28 @@ function saveAllDataToCloud() {
     
     showPage('resultPage');
     
-    if(pendingMathScore > 0) {
-        db.ref('scores/'+mathPlayer).once('value', snap => {
-            let oldScore = snap.exists() ? (parseInt(snap.val().score) || 0) : 0;
-            db.ref('scores/'+mathPlayer).set({ name: mathPlayer, score: oldScore + pendingMathScore, avatar: mathAvatar, lastPlayed: new Date().toLocaleString('th-TH') });
-        });
-    }
-
-    const abcWrongStr = Object.entries(sessionWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([k,v]) => `${k}(${v})`).join(", ");
-    const thaiWrongStr = Object.entries(sessionThaiWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([k,v]) => `${k}(${v})`).join(", ");
-
-    fetch(API_URL, { 
-        method: "POST", 
-        body: JSON.stringify({ 
-            action: 'save_all', 
-            abcStars: pendingAbcScore, 
-            abcWrong: abcWrongStr,
-            thaiStars: pendingThaiScore,
-            thaiWrong: thaiWrongStr
-        }) 
-    }).then(res => res.json()).then(data => {
-        document.getElementById("mathSavedAlert").innerHTML = "✅ บันทึกคะแนนสำเร็จเรียบร้อย!";
-        setTimeout(fetchAbcData, 4000); 
+    const abcWrong = {}, thaiWrong = {};
+    Object.entries(sessionWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 30).forEach(([k, v]) => abcWrong[k] = v);
+    Object.entries(sessionThaiWrongStats).sort((a,b) => b[1] - a[1]).slice(0, 30).forEach(([k, v]) => thaiWrong[k] = v);
+    const alertBox = document.getElementById("mathSavedAlert");
+    alertBox.innerHTML = "⏳ กำลังบันทึกคะแนน...";
+    const payload = [KG.kid.id, pendingMathScore, pendingAbcScore, pendingThaiScore, starsEarned, abcWrong, thaiWrong];
+    const trySave = (n) => api.saveRound(...payload).then(() => {
+        alertBox.innerHTML = "✅ บันทึกคะแนนสำเร็จเรียบร้อย!";
+        return reloadKid();
     }).catch(err => {
-        document.getElementById("mathSavedAlert").innerHTML = "✅ เล่นจบแล้ว (แต่ส่งข้อมูลเข้า Sheet ขัดข้อง)";
+        if(n < 2 && !/เพิ่งบันทึก|ไม่มีสิทธิ์|เกิน/.test(err.message || "")) return new Promise(r => setTimeout(r, 1500 * (n + 1))).then(() => trySave(n + 1));
+        alertBox.innerHTML = `⚠️ บันทึกไม่สำเร็จ: ${esc(err.message || err)}<br><button class="btn-practice" style="margin-top:8px;" onclick="retrySave()">🔄 ลองบันทึกอีกครั้ง</button>`;
+        KG.pendingSave = payload;
     });
+    trySave(0);
 }
-
-/**********************************************
- * PARENT ZONE LOGIC
- **********************************************/
-function checkHubPin() { 
-    if(document.getElementById("hubPinInput").value === PARENT_PIN) { 
-        document.getElementById("hubPinInput").value = ""; 
-        showPage('hubParentDashboard'); 
-        renderMistakes(); 
-        renderScoreHistory(); 
-    } else { 
-        alert("รหัสผ่านไม่ถูกต้อง"); 
-    } 
+function retrySave() {
+    if(!KG.pendingSave) return;
+    const box = document.getElementById("mathSavedAlert"); box.innerHTML = "⏳ กำลังบันทึกคะแนน...";
+    api.saveRound(...KG.pendingSave).then(() => { KG.pendingSave = null; box.innerHTML = "✅ บันทึกคะแนนสำเร็จเรียบร้อย!"; reloadKid(); })
+      .catch(err => { box.innerHTML = `⚠️ บันทึกไม่สำเร็จ: ${esc(err.message || err)}<br><button class="btn-practice" style="margin-top:8px;" onclick="retrySave()">🔄 ลองอีกครั้ง</button>`; });
 }
-
-function saveScoreHistory(gameName, action, amount) {
-    let history = JSON.parse(localStorage.getItem('scoreManageHistory') || '[]');
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH');
-    history.unshift({ game: gameName, action: action, amount: amount, timestamp: dateStr });
-    if (history.length > 50) history.pop(); 
-    localStorage.setItem('scoreManageHistory', JSON.stringify(history));
-    renderScoreHistory();
-}
-
-function renderScoreHistory() {
-    const list = document.getElementById('scoreManageHistory');
-    if (!list) return;
-    let history = JSON.parse(localStorage.getItem('scoreManageHistory') || '[]');
-    if (history.length === 0) { list.innerHTML = '<li style="color:#888; text-align:center; padding:10px;">ยังไม่มีประวัติ</li>'; return; }
-    list.innerHTML = '';
-    history.forEach(item => {
-        const li = document.createElement('li');
-        li.style.cssText = "background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; flex-direction: column; border-radius: 8px; margin-bottom: 5px;";
-        const color = item.action === 'add' ? '#4caf50' : '#f44336';
-        const sign = item.action === 'add' ? '+' : '-';
-        const actionText = item.action === 'add' ? 'เพิ่มคะแนน' : 'หักคะแนน';
-        li.innerHTML = `
-            <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:4px;">
-                <span style="font-weight:bold; color:#333;">${item.game}</span>
-                <span style="color:${color}; font-weight:bold; font-size:1.1rem;">${sign}${item.amount}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#888;">
-                <span>${actionText}</span>
-                <span>🕒 ${item.timestamp}</span>
-            </div>
-        `;
-        list.appendChild(li);
-    });
-}
-
-function clearScoreHistory() { if(confirm("⚠️ ล้างประวัติการปรับคะแนน?")) { localStorage.removeItem('scoreManageHistory'); renderScoreHistory(); } }
-
-function adjustMathScore(multiplier) {
-    const inputVal = parseInt(document.getElementById("mathAdjInput").value);
-    if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
-    const amount = inputVal * multiplier; 
-    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
-    if (!confirm(`ยืนยันการ${actionText}คะแนนคณิตศาสตร์ จำนวน ${inputVal} ดาว?`)) return;
-    db.ref('scores/'+mathPlayer+'/score').once('value', sn => {
-        let curMath = parseInt(sn.val()) || 0;
-        db.ref('scores/'+mathPlayer+'/score').set(curMath + amount);
-        saveScoreHistory('🧮 เกมคิดเลข', multiplier > 0 ? 'add' : 'deduct', inputVal);
-        document.getElementById("mathAdjInput").value = ""; 
-        alert(`บันทึกการ${actionText}คะแนนคณิตศาสตร์เรียบร้อย`);
-    });
-}
-
-function adjustAbcScore(multiplier) {
-    const inputVal = parseInt(document.getElementById("abcAdjInput").value);
-    if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
-    const amount = inputVal * multiplier; 
-    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
-    if (!confirm(`ยืนยันการ${actionText}คะแนน ABC จำนวน ${inputVal} ดาว?`)) return;
-    
-    fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save_all', abcStars: amount, abcWrong: `[ผู้ปกครอง${actionText}คะแนน]` }) })
-    .then(() => { 
-        saveScoreHistory('🐰 เกม ABC', multiplier > 0 ? 'add' : 'deduct', inputVal);
-        document.getElementById("abcAdjInput").value = ""; 
-        alert(`บันทึกคะแนน ABC เรียบร้อย`);
-        fetchAbcData();
-    });
-}
-
-function adjustThaiScore(multiplier) {
-    const inputVal = parseInt(document.getElementById("thaiAdjInput").value);
-    if (isNaN(inputVal) || inputVal <= 0) { alert("ใส่จำนวนดาวก่อนครับ"); return; }
-    const amount = inputVal * multiplier; 
-    const actionText = multiplier > 0 ? 'เพิ่ม' : 'ลด';
-    if (!confirm(`ยืนยันการ${actionText}คะแนนภาษาไทย จำนวน ${inputVal} ดาว?`)) return;
-    
-    fetch(API_URL, { method: "POST", body: JSON.stringify({ action: 'save_all', thaiStars: amount, thaiWrong: `[ผู้ปกครอง${actionText}คะแนน]` }) })
-    .then(() => { 
-        saveScoreHistory('🇹🇭 เกมภาษาไทย', multiplier > 0 ? 'add' : 'deduct', inputVal);
-        document.getElementById("thaiAdjInput").value = ""; 
-        alert(`บันทึกคะแนนภาษาไทยเรียบร้อย`);
-        fetchAbcData();
-    });
-}
-
-function renderHistoryList(elementId, historyData) {
-    const list = document.getElementById(elementId);
-    list.innerHTML = "";
-    if(!historyData || historyData.length === 0) { list.innerHTML = "<li>ไม่มีข้อมูล</li>"; return; }
-    historyData.forEach(item => {
-        const dateObj = new Date(item.timestamp); 
-        const dateStr = dateObj.toLocaleDateString("th-TH") + " " + dateObj.toLocaleTimeString("th-TH", {hour:'2-digit', minute:'2-digit'});
-        
-        const li = document.createElement("li");
-        li.innerHTML = `
-            <div class="history-header">
-                <span class="date-label">${dateStr}</span>
-                <div class="badge-group">
-                    <span class="count-label" style="background:var(--primary)">⭐ ${item.stars}</span>
-                </div>
-            </div>
-            ${item.wrong ? `<div class="wrong-text">❌ ${item.wrong}</div>` : ''}
-        `;
-        list.appendChild(li);
-    });
-}
-
-function renderMistakes() {
-  const list = document.getElementById("mistakeList"); list.innerHTML = "";
-  const sorted = Object.entries(wordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
-  sorted.forEach(([vocab, s]) => { if(s.wrong > 0) { const li = document.createElement("li"); li.innerHTML = `<span><b>${vocab}</b></span> <span style="color:red">ผิด ${s.wrong}</span>`; list.appendChild(li); }});
-  
-  const listThai = document.getElementById("mistakeListThai"); listThai.innerHTML = "";
-  const sortedThai = Object.entries(thaiWordStats).sort((a,b) => b[1].wrong - a[1].wrong).slice(0, 15);
-  sortedThai.forEach(([vocab, s]) => { if(s.wrong > 0) { const li = document.createElement("li"); li.innerHTML = `<span><b>${vocab}</b></span> <span style="color:red">ผิด ${s.wrong}</span>`; listThai.appendChild(li); }});
-}
-
-function resetCloudData() { if(confirm("ล้างข้อมูลประวัติและคะแนนทั้งหมดของ ABC และ ภาษาไทย?")) { fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "reset" }) }).then(res => { location.reload(); }); } }
-function mathResetScores() { if(confirm("🛑 ลบคะแนนเกมคณิตศาสตร์เป็นศูนย์?")){ db.ref('scores/'+mathPlayer).remove(); alert("ล้างเรียบร้อย!"); } }
 
 /**********************************************
  * PRACTICE & VOCAB 
@@ -2116,10 +2250,19 @@ function applyFilters() { currentFilters.search = document.getElementById('filte
 function resetFilters() { currentFilters = { search: "", start: null, end: null, markedOnly: false }; document.getElementById('filterSearch').value = ""; document.getElementById('filterStart').value = ""; document.getElementById('filterEnd').value = ""; document.getElementById('filterMarkedOnly').checked = false; renderVocabTable(); closeFilterModal(); }
 function toggleVocabColumn(type, isUserAction = true) { const cbId = type === 'read' ? 'showRead' : 'showMean'; const isChecked = document.getElementById(cbId).checked; if(isUserAction) { userSettings[cbId] = isChecked; localStorage.setItem("userSettings", JSON.stringify(userSettings)); } const cells = document.querySelectorAll(type === 'read' ? '.col-read' : '.col-mean'); cells.forEach(c => { if(isChecked) c.classList.remove('hidden-text'); else c.classList.add('hidden-text'); }); }
 
-function openWordModal(wordObj, trElement) { currentModalWord = wordObj; document.getElementById('modalVocab').textContent = wordObj.Vocabulary; document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"]; const meanElem = document.getElementById('modalMean'); meanElem.textContent = wordObj["คำแปล"]; meanElem.onclick = function() { speak(wordObj["คำแปล"], 'th-TH'); }; const statusText = document.getElementById('markStatusText'); if(markedWords[wordObj.Vocabulary]) { statusText.style.display = "block"; } else { markedWords[wordObj.Vocabulary] = true; localStorage.setItem("markedWords", JSON.stringify(markedWords)); if(trElement) trElement.classList.add("marked-row"); statusText.style.display = "block"; } document.getElementById('wordModal').classList.add('active'); speak(wordObj.Vocabulary); }
+function openWordModal(wordObj, trElement) { currentModalWord = wordObj; document.getElementById('modalVocab').textContent = wordObj.Vocabulary; document.getElementById('modalRead').textContent = wordObj["คำอ่านไทย"]; const meanElem = document.getElementById('modalMean'); meanElem.textContent = wordObj["คำแปล"]; meanElem.onclick = function() { speak(wordObj["คำแปล"], 'th-TH'); }; const statusText = document.getElementById('markStatusText'); if(markedWords[wordObj.Vocabulary]) { statusText.style.display = "block"; } else { markedWords[wordObj.Vocabulary] = true; kgWordMark("en", wordObj.Vocabulary, { marked: true }); if(trElement) trElement.classList.add("marked-row"); statusText.style.display = "block"; } document.getElementById('wordModal').classList.add('active'); speak(wordObj.Vocabulary); }
 function closeModal(event) { if(event && event.target.id !== "wordModal" && !event.target.classList.contains('close-modal-btn')) return; document.getElementById('wordModal').classList.remove('active'); renderVocabTable(); }
 function speakFromModal() { if(currentModalWord) speak(currentModalWord.Vocabulary); }
-function resetWordStatus() { if(!currentModalWord) return; const pin = prompt("รหัสผู้ปกครอง:"); if(pin === PARENT_PIN) { delete markedWords[currentModalWord.Vocabulary]; localStorage.setItem("markedWords", JSON.stringify(markedWords)); alert("ลบเรียบร้อย"); document.getElementById('markStatusText').style.display = "none"; closeModal(); } else if (pin !== null) { alert("ผิด!"); } }
+async function resetWordStatus() {
+    if(!currentModalWord) return;
+    if(!KG.me?.is_parent) { kidAlert("ให้คุณพ่อคุณแม่ลบสีแดงในโซนผู้ปกครองนะ (แท็บ 📌 คำผิด)", { emoji: "🔒" }); return; }
+    if(!parentUnlocked()) { const pw = prompt("รหัสผ่านที่ใช้เข้าอีเมล (ผู้ปกครอง):"); if(pw === null) return;
+        const r = await api.checkPassword(pw).catch(e => ({ ok: false, reason: e.message }));
+        if(!r.ok) { alert(pwFailText(r)); return; } KG.unlockedAt = Date.now(); }
+    const w = currentModalWord.Vocabulary;
+    try { await api.wordMark(KG.kid.id, "en", w, null, false); delete markedWords[w]; document.getElementById('markStatusText').style.display = "none"; closeModal(); }
+    catch(e) { alert(e.message || e); }
+}
 
 function speak(text, lang = "en-US") {
   if(!isSoundEnabled) return; window.speechSynthesis.cancel();
@@ -2128,6 +2271,774 @@ function speak(text, lang = "en-US") {
   if(lang === "en-US") { const f = voices.find(v => v.name.includes("Female") || v.name.includes("Google US English")); if(f) u.voice = f; } else if (lang === "th-TH") { const t = voices.find(v => v.lang === "th-TH"); if(t) u.voice = t; }
   window.speechSynthesis.speak(u);
 }
+
+/* =====================================================================
+ * ☁️ SUPABASE: บัญชีอีเมลเดียวกับทุกแอป · คะแนน รางวัล ตั้งค่า เก็บที่นี่
+ * (คลังคำศัพท์ยังโหลดจาก Google Sheets เหมือนเดิม)
+ * ===================================================================== */
+function esc(t) { return String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+const DEMO = /[?&]demo\b/.test(location.search);
+const DEFAULT_SETTINGS = { comboBonus: true, comboEvery: 5, comboStars: 2, thaiPts: 3 };
+let shopData = { settings: { ...DEFAULT_SETTINGS }, rewards: [], redemptions: [], spent: 0 };
+const KG = { me: null, data: null, kid: null, unlockedAt: 0, pzTab: "kids", pzKid: null, pendingSave: null, homeMembers: null, chan: null };
+let api = null;
+
+function thaiErr(e) {
+  const m = String(e?.message || e || "");
+  if (/Invalid login credentials/i.test(m)) return "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+  if (/Email not confirmed/i.test(m)) return "อีเมลนี้ยังไม่ได้ยืนยัน ให้กดลิงก์ยืนยันในอีเมลก่อน";
+  if (/kg_|does not exist|schema cache|Could not find the function/i.test(m)) return "ระบบเกมยังไม่ได้ติดตั้ง: ให้รันไฟล์ supabase-kg.sql ใน Supabase ก่อน";
+  if (/Failed to fetch|NetworkError|Load failed|network/i.test(m)) return "เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่";
+  if (/row-level security|permission denied/i.test(m)) return "ไม่มีสิทธิ์ทำรายการนี้";
+  return m || "เกิดข้อผิดพลาด";
+}
+
+function makeApi() {
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const must = (r) => { if (r.error) throw new Error(thaiErr(r.error)); return r.data; };
+  const rpc = async (f, args) => must(await sb.rpc(f, args || {}));
+  return {
+    async session() { const { data } = await sb.auth.getSession(); return data.session; },
+    async signIn(email, password) { const r = await sb.auth.signInWithPassword({ email, password }); if (r.error) throw new Error(thaiErr(r.error)); },
+    async signOut() { try { await sb.auth.signOut({ scope: "local" }); } catch (e) { /* ไม่เป็นไร */ } },
+    me: () => rpc("kg_me"),
+    async load(fid) {
+      const since = new Date(Date.now() - 400 * 864e5).toISOString();
+      const [fam, parents, kids, totals, rounds, adjust, rewards, tasks, red] = await Promise.all([
+        sb.from("kg_families").select("*").eq("id", fid).maybeSingle(),
+        sb.from("kg_parents").select("user_id,created_at").eq("family_id", fid),
+        sb.from("kg_kids").select("*").eq("family_id", fid).order("sort").order("created_at"),
+        sb.rpc("kg_totals", { p_family: fid }),
+        sb.from("kg_rounds").select("id,kid_id,math,abc,thai,stars,wrong_en,wrong_th,played_at").eq("family_id", fid).gte("played_at", since).order("played_at", { ascending: false }).limit(1000),
+        sb.from("kg_adjust").select("*").eq("family_id", fid).order("created_at", { ascending: false }).limit(300),
+        sb.from("kg_rewards").select("*").eq("family_id", fid).order("sort").order("created_at"),
+        sb.from("kg_tasks").select("*").eq("family_id", fid).order("sort").order("created_at"),
+        sb.from("kg_redemptions").select("*").eq("family_id", fid).order("created_at", { ascending: false }).limit(300)]);
+      return { fam: must(fam), parents: must(parents), kids: must(kids), totals: must(totals), rounds: must(rounds), adjust: must(adjust),
+               rewards: must(rewards), tasks: must(tasks), redemptions: must(red) };
+    },
+    async wordStats(kid) { return must(await sb.from("kg_word_stats").select("*").eq("kid_id", kid).order("wrong", { ascending: false }).limit(1000)); },
+    saveRound: (kid, m, a, t, st, we, wt) => rpc("kg_save_round", { p_kid: kid, p_math: m, p_abc: a, p_thai: t, p_stars: st, p_wrong_en: we, p_wrong_th: wt }),
+    wordMark: (kid, lang, word, mastered, marked) => rpc("kg_word_mark", { p_kid: kid, p_lang: lang, p_word: word, p_mastered: mastered, p_marked: marked }),
+    setAvatar: (kid, a) => rpc("kg_set_avatar", { p_kid: kid, p_avatar: a }),
+    redeem: (kid, reward) => rpc("kg_redeem", { p_kid: kid, p_reward: reward }),
+    createFamily: (name) => rpc("kg_create_family", { p_name: name }),
+    joinParent: (code) => rpc("kg_join_parent", { p_code: code }),
+    linkKid: (code) => rpc("kg_link_kid", { p_code: code }),
+    newLinkCode: (kid) => rpc("kg_new_link_code", { p_kid: kid }),
+    linkMember: (kid, member) => rpc("kg_link_member", { p_kid: kid, p_member: member }),
+    homeMembers: () => rpc("kg_home_members"),
+    checkPassword: (pw) => rpc("kg_check_password", { p_password: pw }),
+    leaveFamily: () => rpc("kg_leave_family"),
+    async ins(t, row) { return must(await sb.from(t).insert(row).select().single()); },
+    async insMany(t, rows) { if (rows.length) must(await sb.from(t).insert(rows)); },
+    async upd(t, id, patch) { must(await sb.from(t).update(patch).eq("id", id)); },
+    async del(t, id) { must(await sb.from(t).delete().eq("id", id)); },
+    async delWhere(t, col, val, extra) { let q = sb.from(t).delete().eq(col, val); if (extra) q = q.eq(extra[0], extra[1]); must(await q); },
+    async updFam(fid, patch) { must(await sb.from("kg_families").update(patch).eq("id", fid)); },
+    async delWord(kid, lang, word) { must(await sb.from("kg_word_stats").delete().eq("kid_id", kid).eq("lang", lang).eq("word", word)); },
+    async upsertWords(rows) { if (rows.length) must(await sb.from("kg_word_stats").upsert(rows, { onConflict: "kid_id,lang,word" })); },
+    subscribe(fid, cb) {
+      try {
+        const ch = sb.channel("kg-" + fid);
+        ["kg_kids", "kg_adjust", "kg_redemptions", "kg_rewards", "kg_rounds"].forEach(t =>
+          ch.on("postgres_changes", { event: "*", schema: "public", table: t, filter: `family_id=eq.${fid}` }, cb));
+        ch.on("postgres_changes", { event: "*", schema: "public", table: "kg_families", filter: `id=eq.${fid}` }, cb);
+        ch.subscribe(); return ch;
+      } catch (e) { console.warn(e); return null; }
+    }
+  };
+}
+
+/* ---------- โหมดทดลอง (?demo) ไม่ต่อเน็ต ใช้ทดสอบหน้าจอ ---------- */
+function makeDemoApi() {
+  const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  const D = { users: {}, session: null, fams: [], parents: [], kids: [], rounds: [], adjust: [], rewards: [], tasks: [], red: [], ws: [], members: [] };
+  const me = () => D.session && D.users[D.session];
+  const isParent = (fid) => D.parents.some(p => p.user_id === me()?.id && (!fid || p.family_id === fid));
+  const canPlay = (kid) => { const k = D.kids.find(x => x.id === kid); return k && (k.user_id === me()?.id || isParent(k.family_id)); };
+  const famOf = (kid) => D.kids.find(x => x.id === kid)?.family_id;
+  const code = () => Math.random().toString(36).slice(2, 8).toUpperCase();
+  const bal = (kid) => D.rounds.filter(r => r.kid_id === kid).reduce((a, r) => a + r.math + r.abc + r.thai, 0)
+    + D.adjust.filter(r => r.kid_id === kid).reduce((a, r) => a + r.amount, 0) - D.red.filter(r => r.kid_id === kid).reduce((a, r) => a + r.cost, 0);
+  const T = { kg_kids: "kids", kg_adjust: "adjust", kg_rewards: "rewards", kg_tasks: "tasks", kg_redemptions: "red", kg_rounds: "rounds", kg_word_stats: "ws" };
+  const chk = (fid) => { if (!isParent(fid)) throw new Error("ไม่มีสิทธิ์ทำรายการนี้"); };
+  window.__kgDemo = D;
+  return {
+    async session() { return D.session ? { user: me() } : null; },
+    async signIn(email, password) { email = email.toLowerCase(); let u = Object.values(D.users).find(x => x.email === email);
+      if (!u) { u = { id: uid(), email, password }; D.users[u.id] = u; } else if (u.password !== password) throw new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง"); D.session = u.id; },
+    async signOut() { D.session = null; },
+    async me() { const u = me(); if (!u) return { signed_in: false }; const p = D.parents.find(x => x.user_id === u.id), k = D.kids.find(x => x.user_id === u.id);
+      return { signed_in: true, email: u.email, is_parent: !!p, kid_id: k?.id || null, family_id: p?.family_id || k?.family_id || null }; },
+    async load(fid) {
+      const f = (a) => a.filter(x => x.family_id === fid);
+      const totals = f(D.kids).map(k => ({ kid_id: k.id,
+        math: f(D.rounds).filter(r => r.kid_id === k.id).reduce((a, r) => a + r.math, 0) + f(D.adjust).filter(r => r.kid_id === k.id && r.subject === "math").reduce((a, r) => a + r.amount, 0),
+        abc: f(D.rounds).filter(r => r.kid_id === k.id).reduce((a, r) => a + r.abc, 0) + f(D.adjust).filter(r => r.kid_id === k.id && r.subject === "abc").reduce((a, r) => a + r.amount, 0),
+        thai: f(D.rounds).filter(r => r.kid_id === k.id).reduce((a, r) => a + r.thai, 0) + f(D.adjust).filter(r => r.kid_id === k.id && r.subject === "thai").reduce((a, r) => a + r.amount, 0),
+        bonus: f(D.adjust).filter(r => r.kid_id === k.id && r.subject === "bonus").reduce((a, r) => a + r.amount, 0),
+        spent: f(D.red).filter(r => r.kid_id === k.id).reduce((a, r) => a + r.cost, 0),
+        rounds: f(D.rounds).filter(r => r.kid_id === k.id).length }));
+      const desc = (k) => (a, b) => String(b[k]).localeCompare(String(a[k]));
+      return { fam: D.fams.find(x => x.id === fid), parents: f(D.parents), kids: f(D.kids), totals, rounds: f(D.rounds).sort(desc("played_at")),
+        adjust: f(D.adjust).sort(desc("created_at")), rewards: f(D.rewards), tasks: f(D.tasks), redemptions: f(D.red).sort(desc("created_at")) };
+    },
+    async wordStats(kid) { return D.ws.filter(x => x.kid_id === kid).sort((a, b) => b.wrong - a.wrong); },
+    async saveRound(kid, m, a, t, st, we, wt) { if (!canPlay(kid)) throw new Error("ไม่มีสิทธิ์เล่นในชื่อเด็กคนนี้");
+      const fid = famOf(kid), now = new Date().toISOString();
+      D.rounds.push({ id: uid(), family_id: fid, kid_id: kid, math: m, abc: a, thai: t, stars: st, wrong_en: Object.entries(we).map(([k, v]) => `${k}(${v})`).join(", "), wrong_th: Object.entries(wt).map(([k, v]) => `${k}(${v})`).join(", "), played_at: now });
+      [["en", we], ["th", wt]].forEach(([lang, o]) => Object.entries(o).forEach(([w, n]) => { if (w.startsWith("[")) return;
+        let r = D.ws.find(x => x.kid_id === kid && x.lang === lang && x.word === w); if (!r) D.ws.push(r = { kid_id: kid, family_id: fid, lang, word: w, wrong: 0, mastered: 0, marked: false }); r.wrong += n; }));
+    },
+    async wordMark(kid, lang, word, mastered, marked) { if (!canPlay(kid)) throw new Error("ไม่มีสิทธิ์");
+      if (marked === false && !isParent(famOf(kid))) throw new Error("ลบสีแดงได้เฉพาะผู้ปกครอง");
+      let r = D.ws.find(x => x.kid_id === kid && x.lang === lang && x.word === word); if (!r) D.ws.push(r = { kid_id: kid, family_id: famOf(kid), lang, word, wrong: 0, mastered: 0, marked: false });
+      if (mastered) r.mastered = r.wrong; if (marked != null) r.marked = marked; },
+    async setAvatar(kid, a) { if (!canPlay(kid)) throw new Error("ไม่มีสิทธิ์"); D.kids.find(x => x.id === kid).avatar = a; },
+    async redeem(kid, rid) { if (!canPlay(kid)) throw new Error("ไม่มีสิทธิ์"); const r = D.rewards.find(x => x.id === rid && x.active);
+      if (!r) throw new Error("ไม่พบของรางวัลนี้"); if (bal(kid) < r.cost) throw new Error("ดาวยังไม่พอ");
+      D.red.push({ id: uid(), family_id: famOf(kid), kid_id: kid, reward_id: r.id, icon: r.icon, name: r.name, cost: r.cost, status: "pending", created_at: new Date().toISOString() }); },
+    async createFamily(name) { if (isParent()) throw new Error("คุณมีบ้านเกมอยู่แล้ว"); const id = uid();
+      D.fams.push({ id, name: name || "บ้านของเรา", parent_code: code(), settings: {} }); D.parents.push({ family_id: id, user_id: me().id });
+      [["🍦", "ไอศกรีม 1 ถ้วย", 150], ["📺", "ดูการ์ตูน 30 นาที", 200], ["🎮", "เล่นเกม 30 นาที", 250], ["🧸", "ของเล่นชิ้นเล็ก", 800]].forEach(([icon, n, cost], i) =>
+        D.rewards.push({ id: uid(), family_id: id, icon, name: n, detail: "", cost, active: true, sort: i }));
+      [["🧹", "ช่วยงานบ้าน", 10], ["📚", "ทำการบ้านเสร็จเอง", 10], ["🛏️", "เก็บที่นอน", 5]].forEach(([icon, n, stars], i) => D.tasks.push({ id: uid(), family_id: id, icon, name: n, stars, sort: i }));
+      D.members = [{ member_id: "m-kid", name: "น้องไดมอนด์ (สมุดบ้าน)", is_child: true, linked_kid: null }];
+      return id; },
+    async joinParent(c) { const f = D.fams.find(x => x.parent_code === String(c).toUpperCase()); if (!f) throw new Error("รหัสไม่ถูกต้อง"); D.parents.push({ family_id: f.id, user_id: me().id }); return f.id; },
+    async linkKid(c) { const k = D.kids.find(x => x.link_code && x.link_code === String(c).toUpperCase().trim()); if (!k) throw new Error("รหัสไม่ถูกต้อง ขอรหัสใหม่จากผู้ปกครอง");
+      if (isParent()) throw new Error("บัญชีนี้เป็นผู้ปกครองอยู่ ใช้บัญชีอีเมลของลูกแทน"); k.user_id = me().id; k.link_code = null; return k.id; },
+    async newLinkCode(kid) { chk(famOf(kid)); const k = D.kids.find(x => x.id === kid); k.link_code = code(); return k.link_code; },
+    async linkMember(kid, mid) { chk(famOf(kid)); const k = D.kids.find(x => x.id === kid); k.user_id = "u-" + mid; k.link_code = null; D.members.forEach(m => { if (m.member_id === mid) m.linked_kid = kid; }); },
+    async homeMembers() { return D.members; },
+    async checkPassword(pw) { if (!isParent()) return { ok: false, reason: "not_parent" }; return me().password === pw ? { ok: true } : { ok: false, reason: "wrong", left: 4 }; },
+    async leaveFamily() { D.parents = D.parents.filter(p => p.user_id !== me().id); },
+    async ins(t, row) { const fid = row.family_id; chk(fid); const r = { id: uid(), created_at: new Date().toISOString(), ...row };
+      if (t === "kg_kids") Object.assign(r, { avatar: row.avatar || "👦", grade_lock: 0, sort: 0, user_id: null, link_code: null });
+      if (t === "kg_rewards") r.active = row.active ?? true; D[T[t]].push(r); return r; },
+    async insMany(t, rows) { for (const r of rows) await this.ins(t, r); },
+    async upd(t, id, patch) { const r = D[T[t]].find(x => x.id === id); chk(r.family_id); Object.assign(r, patch); },
+    async del(t, id) { const r = D[T[t]].find(x => x.id === id); if (!r) return; chk(r.family_id); D[T[t]] = D[T[t]].filter(x => x !== r); },
+    async delWhere(t, col, val, extra) { D[T[t]] = D[T[t]].filter(x => !(x[col] === val && (!extra || x[extra[0]] === extra[1]))); },
+    async updFam(fid, patch) { chk(fid); Object.assign(D.fams.find(x => x.id === fid), patch); },
+    async delWord(kid, lang, word) { D.ws = D.ws.filter(x => !(x.kid_id === kid && x.lang === lang && x.word === word)); },
+    async upsertWords(rows) { rows.forEach(r => { D.ws = D.ws.filter(x => !(x.kid_id === r.kid_id && x.lang === r.lang && x.word === r.word)); D.ws.push({ ...r }); }); },
+    subscribe() { return null; }
+  };
+}
+
+/* ---------- เริ่มเกม ---------- */
+async function boot() {
+  document.getElementById("sfxToggleBtn").textContent = sfxEnabled ? "🔔" : "🔕";
+  toggleSoundUI();
+  fetchAbcData();
+  fetchSentenceData();
+  try { window.speechSynthesis.getVoices(); } catch (e) { /* ไม่เป็นไร */ }
+  try { api = DEMO ? makeDemoApi() : makeApi(); }
+  catch (e) { document.getElementById("bootMsg").textContent = "โหลดระบบไม่ได้ ตรวจอินเทอร์เน็ตแล้วรีเฟรช"; return; }
+  let sess = null;
+  try { sess = await api.session(); } catch (e) { console.warn(e); }
+  if (!sess) { showPage("authPage"); return; }
+  await enterApp();
+}
+async function enterApp() {
+  const msg = document.getElementById("bootMsg"); showPage("bootPage"); msg.textContent = "";
+  for (let i = 0; i < 3; i++) {
+    try {
+      KG.me = await api.me();
+      if (!KG.me?.signed_in) { showPage("authPage"); return; }
+      if (KG.me.family_id) await loadFamily();
+      else KG.data = null;
+      break;
+    } catch (e) {
+      if (i === 2) { msg.innerHTML = `${esc(thaiErr(e))}<br><button class="btn-practice" style="margin-top:10px;" onclick="enterApp()">🔄 ลองใหม่</button>`; return; }
+      await new Promise(r => setTimeout(r, 800 * (i + 1)));
+    }
+  }
+  if (KG.me.kid_id && !KG.me.is_parent) { selectKid(KG.me.kid_id); return; } // บัญชีของลูก: เข้าเล่นได้เลย
+  goRole();
+}
+async function doLogin() {
+  const email = document.getElementById("authEmail").value.trim(), pw = document.getElementById("authPass").value;
+  const err = document.getElementById("authErr"), btn = document.getElementById("authBtn");
+  err.textContent = ""; if (!email || !pw) { err.textContent = "ใส่อีเมลและรหัสผ่าน"; return; }
+  btn.disabled = true; btn.textContent = "กำลังเข้าสู่ระบบ...";
+  try { await api.signIn(email, pw); document.getElementById("authPass").value = ""; await enterApp(); }
+  catch (e) { err.textContent = thaiErr(e); }
+  finally { btn.disabled = false; btn.textContent = "เข้าสู่ระบบ"; }
+}
+async function doLogout() {
+  if (!confirm("ออกจากระบบเกมในเครื่องนี้?\n(แอปอื่นที่ใช้อีเมลเดียวกันในเครื่องนี้จะออกด้วย)")) return;
+  await api.signOut(); KG.me = null; KG.kid = null; KG.data = null; KG.unlockedAt = 0;
+  if (KG.chan) { try { KG.chan.unsubscribe(); } catch (e) { /* */ } KG.chan = null; }
+  showPage("authPage");
+}
+function togglePass(id, btn) { const i = document.getElementById(id); const show = i.type === "password"; i.type = show ? "text" : "password"; btn.textContent = show ? "🙈" : "👁️"; }
+
+async function loadFamily() {
+  KG.data = await api.load(KG.me.family_id);
+  shopData.settings = { ...DEFAULT_SETTINGS, ...(KG.data.fam?.settings || {}) };
+  COMBO_BONUS_EVERY = Math.max(2, parseInt(shopData.settings.comboEvery) || 5);
+  COMBO_BONUS_STARS = Math.max(0, parseInt(shopData.settings.comboStars) || 0);
+  if (KG.kid) { KG.kid = KG.data.kids.find(k => k.id === KG.kid.id) || null; applyKidTotals(); }
+  if (!KG.chan) KG.chan = api.subscribe(KG.me.family_id, onRemoteChange);
+}
+let remoteT = null;
+function onRemoteChange() {
+  clearTimeout(remoteT);
+  remoteT = setTimeout(async () => {
+    try { await loadFamily(); } catch (e) { console.warn(e); return; }
+    if (document.getElementById("portalPage").classList.contains("active")) updateGrandTotal();
+    if (document.getElementById("shopPage").classList.contains("active")) renderShop();
+    if (document.getElementById("hubParentDashboard").classList.contains("active")) renderPz();
+  }, 600);
+}
+function kidRows(kind) { return (KG.data?.[kind] || []).filter(r => r.kid_id === KG.kid?.id); }
+function kidTotals(id) { return (KG.data?.totals || []).find(t => t.kid_id === id) || { math: 0, abc: 0, thai: 0, bonus: 0, spent: 0, rounds: 0 }; }
+function applyKidTotals() {
+  const t = kidTotals(KG.kid?.id);
+  mathScoreGlobal = +t.math || 0; abcScoreGlobal = +t.abc || 0; thaiScoreGlobal = +t.thai || 0; bonusScoreGlobal = +t.bonus || 0;
+  globalRounds = +t.rounds || 0; shopData.spent = +t.spent || 0;
+  shopData.rewards = (KG.data?.rewards || []).filter(r => r.active);
+  shopData.redemptions = kidRows("redemptions");
+  updateAbcUI();
+}
+async function loadWordStats() {
+  wordStats = {}; thaiWordStats = {}; markedWords = {}; reviewMastery = {};
+  if (!KG.kid) return;
+  try {
+    (await api.wordStats(KG.kid.id)).forEach(r => {
+      if (r.lang === "en") { wordStats[r.word] = { correct: 0, wrong: r.wrong }; if (r.marked) markedWords[r.word] = true; }
+      else thaiWordStats[r.word] = { wrong: r.wrong };
+      if (r.mastered) reviewMastery[r.lang + ":" + r.word] = r.mastered;
+    });
+  } catch (e) { console.warn(e); }
+}
+function kgWordMark(lang, word, o) { if (KG.kid) api.wordMark(KG.kid.id, lang, word, !!o.mastered || null, o.marked ?? null).catch(e => console.warn(e)); }
+async function selectKid(id) {
+  const k = KG.data?.kids.find(x => x.id === id); if (!k) { goRole(); return; }
+  KG.kid = k; mathPlayer = k.name; mathAvatar = k.avatar || "👦";
+  applyKidTotals(); await loadWordStats();
+  document.getElementById("switchKidBtn").style.display = KG.me.is_parent ? "flex" : "none";
+  document.getElementById("whoLine").textContent = `เข้าระบบ: ${KG.me.email || ""}`;
+  showPage("portalPage"); updateGrandTotal();
+}
+async function reloadKid() { try { await loadFamily(); await loadWordStats(); } catch (e) { console.warn(e); } updateGrandTotal(); }
+
+function goRole() {
+  if (!KG.me) { showPage("authPage"); return; }
+  if (KG.me.kid_id && !KG.me.is_parent) { selectKid(KG.me.kid_id); return; }
+  document.getElementById("roleWho").textContent = `เข้าระบบเป็น ${KG.me.email || ""}`;
+  showPage("rolePage");
+}
+function chooseKidRole() {
+  sfx("tap");
+  if (KG.me.kid_id) { selectKid(KG.me.kid_id); return; }
+  const list = document.getElementById("kidPickList"), join = document.getElementById("kidJoinBox");
+  if (KG.me.is_parent) {
+    const kids = KG.data?.kids || [];
+    document.getElementById("kidPickTitle").textContent = kids.length ? "ใครจะเล่น?" : "ยังไม่มีลูกในเกม";
+    list.innerHTML = kids.length ? kids.map(k => `<button class="kid-pick" onclick="selectKid('${esc(k.id)}')"><span>${esc(k.avatar)}</span>${esc(k.name)}<small>⭐ ${totalOf(k.id).toLocaleString()}</small></button>`).join("")
+      : `<div style="grid-column:1/-1; color:#6b5b8a;">เข้าโซนผู้ปกครองเพื่อเพิ่มลูกก่อนนะ<br><button class="btn-practice" style="margin-top:10px;" onclick="chooseParentRole()">👨‍👩‍👧 ไปเพิ่มลูก</button></div>`;
+    join.style.display = "none";
+  } else {
+    document.getElementById("kidPickTitle").textContent = "หนูยังไม่ได้อยู่ในเกม";
+    list.innerHTML = ""; join.style.display = "block";
+  }
+  showPage("kidPickPage");
+}
+function totalOf(id) { const t = kidTotals(id); return (+t.math || 0) + (+t.abc || 0) + (+t.thai || 0) + (+t.bonus || 0); }
+async function kidJoin() {
+  const c = document.getElementById("kidJoinCode").value.trim(), err = document.getElementById("kidJoinErr");
+  if (c.length < 6) { err.textContent = "ใส่รหัสให้ครบ 6 ตัว"; return; }
+  err.textContent = "";
+  try { await api.linkKid(c); sfx("fanfare"); confetti(120); await enterApp(); }
+  catch (e) { err.textContent = thaiErr(e); }
+}
+function chooseParentRole() {
+  sfx("tap");
+  if (KG.me.kid_id && !KG.me.is_parent) { kidAlert("บัญชีนี้เป็นบัญชีของเด็ก<br>ผู้ปกครองให้เข้าด้วยอีเมลของตัวเองนะ", { emoji: "🔒" }); return; }
+  if (!KG.me.is_parent) { document.getElementById("setupErr").textContent = ""; showPage("setupPage"); return; }
+  openParentZone();
+}
+async function setupCreate() {
+  const err = document.getElementById("setupErr"); err.textContent = "";
+  try { await api.createFamily(document.getElementById("setupName").value.trim()); KG.unlockedAt = Date.now(); await enterApp(); KG.pzTab = "kids"; showParentDash(); }
+  catch (e) { err.textContent = thaiErr(e); }
+}
+async function setupJoin() {
+  const err = document.getElementById("setupErr"), c = document.getElementById("setupCode").value.trim(); err.textContent = "";
+  if (c.length < 6) { err.textContent = "ใส่รหัสผู้ปกครองให้ครบ 6 ตัว"; return; }
+  try { await api.joinParent(c); KG.unlockedAt = Date.now(); await enterApp(); showParentDash(); }
+  catch (e) { err.textContent = thaiErr(e); }
+}
+
+/* ---------- 🛍️ ร้านแลกรางวัล (ฝั่งเด็ก) ---------- */
+function shopBalance() { return Math.max(0, getGrandTotal() - shopData.spent); }
+function openShop() { sfx("tap"); showPage("shopPage"); renderShop(); }
+function renderShop() {
+  const bal = shopBalance();
+  document.getElementById("shopBalance").textContent = bal;
+  document.getElementById("rewardGrid").innerHTML = shopData.rewards.length ? shopData.rewards.map(r => {
+    const ok = bal >= r.cost, pct = Math.min(100, Math.round(bal / r.cost * 100));
+    return `<div class="reward-card">
+        <div class="ico">${esc(r.icon || "🎁")}</div>
+        <div class="nm">${esc(r.name)}</div>
+        <div class="detail">${esc(r.detail || "")}</div>
+        <div class="cost">⭐ ${r.cost}</div>
+        ${ok ? "" : `<div class="xp-track" style="height:10px;"><div class="xp-fill" style="width:${pct}%"></div></div>`}
+        <button ${ok ? "" : "disabled"} onclick="redeemReward('${esc(r.id)}')">${ok ? "แลกเลย!" : `อีก ${r.cost - bal} ดาว`}</button>
+      </div>`;
+  }).join("") : `<div style="grid-column:1/-1; color:#888;">ยังไม่มีของรางวัล ให้คุณพ่อคุณแม่เพิ่มในโซนผู้ปกครองนะ</div>`;
+  const list = shopData.redemptions.slice(0, 12);
+  document.getElementById("couponList").innerHTML = list.length ? list.map(c => `
+      <div class="coupon"><span class="ico">${esc(c.icon || "🎁")}</span>
+        <div><b>${esc(c.name)}</b><div style="font-size:0.75rem; color:#888;">${new Date(c.created_at).toLocaleString("th-TH")}</div></div>
+        <span class="st ${c.status}">${c.status === "given" ? "ได้รับแล้ว ✓" : "รอรับ ⏳"}</span></div>`).join("")
+    : `<div style="color:#aaa; font-size:0.9rem;">ยังไม่มีคูปอง เก็บดาวแล้วมาแลกกันนะ!</div>`;
+}
+function redeemReward(id) {
+  const r = shopData.rewards.find(x => String(x.id) === String(id));
+  if (!r || shopBalance() < r.cost) return;
+  kidAlert(`ใช้ <b>${r.cost}</b> ดาว แลก<br><b style="font-size:1.3rem;">${esc(r.name)}</b>${r.detail ? `<br><span style="font-size:0.9rem;">${esc(r.detail)}</span>` : ""}<br>ใช่ไหม?`, {
+    emoji: r.icon || "🎁", title: "แลกรางวัล", button: "แลกเลย! 🎉", cancel: "ยังก่อน เก็บดาวต่อ",
+    onClose: async () => {
+      try { await api.redeem(KG.kid.id, r.id); } catch (e) { kidAlert(esc(thaiErr(e)), { emoji: "🙈" }); return; }
+      await reloadKid(); renderShop();
+      sfx("fanfare"); confetti(160);
+      setTimeout(() => kidAlert("ได้คูปองแล้ว! 🎟️<br>เอาไปให้คุณพ่อคุณแม่ดูได้เลย", { emoji: r.icon || "🎁", title: "เย้!", button: "เยี่ยม!" }), 300);
+    }
+  });
+}
+
+/* =====================================================================
+ * 👨‍👩‍👧 โซนผู้ปกครอง (รหัสผ่าน = รหัสที่ใช้เข้าอีเมล)
+ * ===================================================================== */
+function parentUnlocked() { return KG.me?.is_parent && Date.now() - KG.unlockedAt < 10 * 60e3; }
+function openParentZone() {
+  sfx("tap");
+  if (!KG.me?.is_parent) {
+    if (KG.me?.kid_id) kidAlert("โซนนี้สำหรับคุณพ่อคุณแม่นะ<br>ให้ผู้ปกครองเข้าด้วยอีเมลของตัวเอง", { emoji: "🔒", title: "โซนผู้ปกครอง" });
+    else showPage("setupPage");
+    return;
+  }
+  if (parentUnlocked()) { showParentDash(); return; }
+  document.getElementById("pinEmail").textContent = KG.me.email || "";
+  document.getElementById("pinUser").value = KG.me.email || "";
+  document.getElementById("pinErr").textContent = ""; document.getElementById("hubPinInput").value = "";
+  showPage("hubParentLogin");
+  setTimeout(() => document.getElementById("hubPinInput").focus(), 50);
+}
+function pinBack() { if (KG.kid) showPage("portalPage"); else goRole(); }
+function pwFailText(r) {
+  return r.reason === "wrong" ? `รหัสผ่านไม่ถูกต้อง (ลองได้อีก ${r.left} ครั้ง)`
+    : r.reason === "locked" ? `ใส่ผิดหลายครั้ง ลองใหม่ได้ในอีก ${r.minutes} นาที`
+    : r.reason === "no_password" ? "บัญชีนี้ยังไม่มีรหัสผ่าน ตั้งรหัสผ่านใน DarkChat/สมุดบ้านก่อน"
+    : r.reason === "not_parent" ? "บัญชีนี้ไม่ใช่ผู้ปกครองในเกม" : (r.reason || "ตรวจรหัสผ่านไม่ได้");
+}
+async function checkHubPin() {
+  const pw = document.getElementById("hubPinInput").value, err = document.getElementById("pinErr"), btn = document.getElementById("pinBtn");
+  if (!pw) { err.textContent = "ใส่รหัสผ่าน"; return; }
+  btn.disabled = true; err.textContent = "";
+  try {
+    const r = await api.checkPassword(pw);
+    if (!r.ok) { err.textContent = pwFailText(r); return; }
+    document.getElementById("hubPinInput").value = ""; KG.unlockedAt = Date.now(); showParentDash();
+  } catch (e) { err.textContent = thaiErr(e); }
+  finally { btn.disabled = false; }
+}
+function leaveParentZone() { if (KG.kid) { showPage("portalPage"); } else goRole(); }
+async function showParentDash() {
+  showPage("hubParentDashboard");
+  if (!KG.data) { try { KG.me = await api.me(); await loadFamily(); } catch (e) { document.getElementById("pzBody").innerHTML = `<div class="kg-err">${esc(thaiErr(e))}</div>`; return; } }
+  if (!KG.pzKid || !KG.data.kids.some(k => k.id === KG.pzKid)) KG.pzKid = KG.kid?.id || KG.data.kids[0]?.id || null;
+  renderPz();
+}
+document.getElementById("pzTabs").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pz]"); if (!b) return;
+  KG.pzTab = b.dataset.pz; renderPz(); sfx("tap");
+});
+const SUBJ = { math: "🧮 คณิต", abc: "🐰 ABC", thai: "🇹🇭 ไทย", bonus: "🎯 พิเศษ" };
+const fmtT = (d) => new Date(d).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+function kidSel() {
+  const kids = KG.data.kids;
+  if (!kids.length) return `<div class="pz-hint">ยังไม่มีลูกในเกม เพิ่มที่แท็บ 👧 ลูก</div>`;
+  return `<div class="pz-kidsel">${kids.map(k => `<button data-pzkid="${esc(k.id)}" class="${k.id === KG.pzKid ? "on" : ""}">${esc(k.avatar)} ${esc(k.name)}</button>`).join("")}</div>`;
+}
+function pzGuard() { if (!parentUnlocked()) { KG.unlockedAt = 0; openParentZone(); return false; } KG.unlockedAt = Date.now(); return true; }
+async function pzRun(fn, okMsg) {
+  if (!pzGuard()) return;
+  try { await fn(); await loadFamily(); if (KG.kid) { applyKidTotals(); updateGrandTotal(); } renderPz(); if (okMsg) pzToast(okMsg); }
+  catch (e) { alert(thaiErr(e)); }
+}
+function pzToast(t) { showPraise(t); }
+function renderPz() {
+  document.querySelectorAll("#pzTabs [data-pz]").forEach(b => b.classList.toggle("on", b.dataset.pz === KG.pzTab));
+  const D = KG.data, fam = D.fam || {};
+  document.getElementById("pzFamName").textContent = `🏡 ${fam.name || ""} · ผู้ปกครอง ${D.parents.length} คน · ลูก ${D.kids.length} คน`;
+  const body = document.getElementById("pzBody"); let h = "";
+  const T = KG.pzTab;
+  if (T === "kids") h = pzKidsHTML();
+  else if (T === "stars") h = pzStarsHTML();
+  else if (T === "shop") h = pzShopHTML();
+  else if (T === "words") { h = pzWordsHTML(); }
+  else h = pzSettingsHTML();
+  body.innerHTML = h;
+  if (T === "words") pzLoadWords();
+}
+
+// ---------- แท็บ 👧 ลูก ----------
+function pzKidsHTML() {
+  const D = KG.data;
+  const kids = D.kids.map(k => {
+    const t = totalOf(k.id), linked = !!k.user_id;
+    return `<div class="pz-kid">
+      <span class="av">${esc(k.avatar)}</span>
+      <div class="nm"><b>${esc(k.name)}</b><div>⭐ ${t.toLocaleString()} · ${linked ? "📧 ผูกบัญชีอีเมลแล้ว (เล่นจากเครื่องตัวเองได้)" : "ยังไม่ผูกบัญชี (เล่นผ่านเครื่องผู้ปกครองได้)"}</div></div>
+      <label style="font-size:0.85rem;">🎓 <select class="pz-input" style="padding:6px;" onchange="pzGrade('${esc(k.id)}', this.value)">
+        <option value="0" ${!k.grade_lock ? "selected" : ""}>เลือกเอง</option>${[1, 2, 3, 4, 5, 6].map(n => `<option value="${n}" ${k.grade_lock === n ? "selected" : ""}>ล็อก ป.${n}</option>`).join("")}</select></label>
+      <div class="pz-actions">
+        <button class="pz-btn green sm" onclick="selectKid('${esc(k.id)}')">▶ เล่นเป็นคนนี้</button>
+        <button class="pz-btn sm" onclick="pzLinkKid('${esc(k.id)}')">${linked ? "🔗 เปลี่ยนบัญชี" : "🔗 ผูกบัญชีลูก"}</button>
+        <button class="pz-btn gray sm" onclick="pzEditKid('${esc(k.id)}')">✏️ แก้ชื่อ/ตัวละคร</button>
+        ${linked ? `<button class="pz-btn gray sm" onclick="pzUnlink('${esc(k.id)}')">ยกเลิกผูก</button>` : ""}
+        <button class="pz-btn red sm" onclick="pzDelKid('${esc(k.id)}')">ลบ</button>
+      </div>
+      ${k.link_code && !linked ? `<div class="pz-hint" style="width:100%; margin:4px 0 0;">รหัสให้ลูกใส่: <span class="pz-code">${esc(k.link_code)}</span><br>ลูกเข้าเกมด้วยอีเมลของตัวเอง → เลือก “เด็ก” → ใส่รหัสนี้</div>` : ""}
+      <div id="pzLink-${esc(k.id)}" style="width:100%;"></div>
+    </div>`;
+  }).join("");
+  return `<div class="pz-sec"><h4>👧👦 ลูกในเกม <small>${D.kids.length} คน</small></h4>
+      ${kids || `<div class="pz-hint">ยังไม่มีลูกในเกม เพิ่มด้านล่างได้เลย</div>`}
+      <div class="pz-form">
+        <input id="pzNewKidAv" class="pz-input" style="width:56px;" maxlength="4" placeholder="👦" value="👦">
+        <input id="pzNewKidName" class="pz-input" style="flex:1; min-width:140px; text-align:left;" maxlength="40" placeholder="ชื่อลูก เช่น ไดมอนด์">
+        <button class="pz-btn green" onclick="pzAddKid()">+ เพิ่มลูก</button>
+      </div>
+      <div class="pz-hint">💡 เพิ่มลูกแล้วกด “ผูกบัญชีลูก” เลือกจากสมาชิกในสมุดบ้านได้ทันที หรือสร้างรหัสให้ลูกใส่เอง<br>ถ้าลูกไม่มีอีเมล ก็เล่นผ่านเครื่องผู้ปกครองได้ (เลือก “เด็ก” แล้วเลือกชื่อ)</div>
+    </div>
+    <div class="pz-sec"><h4>👨‍👩 ผู้ปกครองร่วม <small>${D.parents.length} คน</small></h4>
+      <div class="pz-hint">ให้ผู้ปกครองอีกคน (เช่น คุณแม่) เข้าเกมด้วยอีเมลของตัวเอง → เลือก “ผู้ปกครอง” → ใส่รหัสนี้</div>
+      <span class="pz-code">${esc(D.fam?.parent_code || "")}</span>
+      <div class="pz-hint" style="margin-top:8px;">⚠️ อย่าให้รหัสนี้กับลูก เพราะจะเข้าโซนผู้ปกครองได้</div>
+    </div>
+    <div class="pz-sec"><h4>📦 ยกยอดดาวจากเกมเดิม</h4>
+      <div class="pz-hint">ดึงคะแนนคณิต (Firebase), คะแนน ABC/ไทย (Google Sheets), ร้านรางวัลเดิม และคำผิดบ่อยในเครื่องนี้ มาใส่ให้ลูกหนึ่งคน ทำครั้งเดียวพอ${D.fam?.settings?.imported ? `<br><b style="color:#e8590c;">เคยยกยอดแล้วเมื่อ ${esc(new Date(D.fam.settings.imported).toLocaleString("th-TH"))}</b>` : ""}</div>
+      <button class="pz-btn" onclick="pzImportOld()" ${D.kids.length ? "" : "disabled"}>📦 ตรวจยอดเดิม</button>
+      <div id="pzImportBox"></div>
+    </div>`;
+}
+async function pzAddKid() {
+  const name = document.getElementById("pzNewKidName").value.trim(), av = document.getElementById("pzNewKidAv").value.trim() || "👦";
+  if (!name) { alert("ใส่ชื่อลูกก่อน"); return; }
+  await pzRun(async () => { const k = await api.ins("kg_kids", { family_id: KG.me.family_id, name, avatar: av, sort: KG.data.kids.length + 1 }); KG.pzKid = k.id; }, `เพิ่ม ${name} แล้ว 🎉`);
+}
+async function pzGrade(id, v) { await pzRun(() => api.upd("kg_kids", id, { grade_lock: parseInt(v) || 0 })); }
+async function pzEditKid(id) {
+  const k = KG.data.kids.find(x => x.id === id); if (!k) return;
+  const name = prompt("ชื่อลูก", k.name); if (name === null) return;
+  const av = prompt("ตัวละคร (อีโมจิ 1 ตัว)", k.avatar); if (av === null) return;
+  await pzRun(() => api.upd("kg_kids", id, { name: name.trim().slice(0, 40) || k.name, avatar: av.trim().slice(0, 8) || k.avatar }));
+  if (KG.kid?.id === id) { mathPlayer = KG.kid.name; mathAvatar = KG.kid.avatar; }
+}
+async function pzDelKid(id) {
+  const k = KG.data.kids.find(x => x.id === id); if (!k) return;
+  if (!confirm(`ลบ ${k.name} ออกจากเกม?\nดาว ประวัติ และคูปองทั้งหมดของ ${k.name} จะหายไป กู้คืนไม่ได้`)) return;
+  if (prompt(`พิมพ์ชื่อ "${k.name}" เพื่อยืนยันการลบ`) !== k.name) return;
+  await pzRun(() => api.del("kg_kids", id), "ลบแล้ว");
+  if (KG.kid?.id === id) KG.kid = null;
+}
+async function pzUnlink(id) {
+  if (!confirm("ยกเลิกการผูกบัญชีอีเมลของลูก?\n(ดาวยังอยู่ครบ ลูกจะเข้าเกมจากเครื่องตัวเองไม่ได้จนกว่าจะผูกใหม่)")) return;
+  await pzRun(() => api.upd("kg_kids", id, { user_id: null }));
+}
+async function pzLinkKid(id) {
+  if (!pzGuard()) return;
+  const box = document.getElementById("pzLink-" + id);
+  box.innerHTML = `<div class="pz-hint">กำลังโหลดสมาชิกในสมุดบ้าน...</div>`;
+  let mem = [];
+  try { mem = await api.homeMembers(); } catch (e) { console.warn(e); }
+  box.innerHTML = `<div class="pz-sec" style="margin:8px 0 0; background:#fff;">
+      <h4>🔗 ผูกบัญชีให้ลูก</h4>
+      ${mem.length ? `<div class="pz-hint">เลือกจากสมาชิกในสมุดบ้าน (กดครั้งเดียวเสร็จ)</div>
+        ${mem.map(m => `<div class="pz-line"><span class="ico">${m.is_child ? "🧒" : "🙂"}</span><div class="f">${esc(m.name)}${m.linked_kid ? `<div>ผูกกับ ${esc(KG.data.kids.find(k => k.id === m.linked_kid)?.name || "เด็กอีกคน")} อยู่</div>` : ""}</div>
+          ${m.linked_kid === id ? `<span style="color:#2b8a3e; font-weight:700;">✓ ผูกอยู่</span>` : `<button class="pz-btn green sm" onclick="pzLinkMember('${esc(id)}','${esc(m.member_id)}')">เลือก</button>`}</div>`).join("")}`
+        : `<div class="pz-hint">ไม่พบสมาชิกในสมุดบ้านที่มีบัญชี (หรือคุณยังไม่ได้ใช้สมุดบ้าน)</div>`}
+      <div class="pz-hint" style="margin-top:10px;">หรือสร้างรหัสให้ลูกใส่เองในเครื่องลูก</div>
+      <button class="pz-btn sm" onclick="pzNewCode('${esc(id)}')">🔑 สร้างรหัส 6 ตัว</button>
+    </div>`;
+}
+async function pzLinkMember(kid, mid) { await pzRun(() => api.linkMember(kid, mid), "ผูกบัญชีแล้ว ✓"); }
+async function pzNewCode(kid) { await pzRun(() => api.newLinkCode(kid)); }
+
+// ---------- แท็บ ⭐ ดาว ----------
+function pzStarsHTML() {
+  const D = KG.data, k = D.kids.find(x => x.id === KG.pzKid);
+  if (!k) return kidSel();
+  const t = kidTotals(k.id), total = totalOf(k.id), spent = +t.spent || 0;
+  const hist = [
+    ...D.adjust.filter(a => a.kid_id === k.id).map(a => ({ at: a.created_at, html: `<span class="ico">${a.amount > 0 ? "➕" : "➖"}</span><div class="f">${SUBJ[a.subject]} ${esc(a.note || (a.amount > 0 ? "เพิ่มดาว" : "หักดาว"))}<div>${fmtT(a.created_at)}</div></div>
+        <b style="color:${a.amount > 0 ? "#2b8a3e" : "#e03131"}">${a.amount > 0 ? "+" : ""}${a.amount}</b><button class="pz-btn gray sm" onclick="pzDelAdj('${esc(a.id)}')" title="ยกเลิกรายการนี้">↩️</button>` })),
+    ...D.rounds.filter(r => r.kid_id === k.id).map(r => ({ at: r.played_at, html: `<span class="ico">🎮</span><div class="f">เล่นครบ 3 ด่าน ${"⭐".repeat(r.stars || 1)}<div>${fmtT(r.played_at)} · คณิต ${r.math} · ABC ${r.abc} · ไทย ${r.thai}${r.wrong_en || r.wrong_th ? `<br>❌ ${esc([r.wrong_en, r.wrong_th].filter(Boolean).join(" · ").slice(0, 160))}` : ""}</div></div>
+        <b style="color:#2b8a3e">+${r.math + r.abc + r.thai}</b>` }))
+  ].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 60);
+  return kidSel() + `
+    <div class="pz-sec"><h4>${esc(k.avatar)} ดาวของ ${esc(k.name)} <small>รวม ${total.toLocaleString()} · ใช้แลกไป ${spent.toLocaleString()}</small></h4>
+      <div class="pz-grid4">${Object.entries(SUBJ).map(([s, l]) => `<div>${l}<b>${(+t[s] || 0).toLocaleString()}</b></div>`).join("")}</div>
+      <div class="pz-hint" style="margin-top:8px;">💰 คงเหลือให้แลกรางวัล: <b style="color:#e8590c; font-size:1.1rem;">${Math.max(0, total - spent).toLocaleString()}</b> ดาว · เล่นไปแล้ว ${t.rounds || 0} รอบ</div>
+    </div>
+    <div class="pz-sec"><h4>🎯 ภารกิจพิเศษ <small>กดเพื่อให้ดาว ${esc(k.name)}</small></h4>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">${D.tasks.map(x => `<button class="pz-task" onclick="pzAward('${esc(x.id)}')">${esc(x.icon)} ${esc(x.name)} <b>+${x.stars}</b></button>`).join("") || `<span class="pz-hint">ยังไม่มีภารกิจ เพิ่มด้านล่าง</span>`}</div>
+      <details style="margin-top:10px;"><summary style="cursor:pointer; color:var(--purple); font-weight:600;">✏️ ตั้งค่าภารกิจ (ทำอะไรได้กี่ดาว)</summary>
+        ${D.tasks.map(x => `<div class="pz-line"><span class="ico">${esc(x.icon)}</span><div class="f">${esc(x.name)}</div>
+          <input type="number" class="pz-input" style="width:70px; padding:6px;" value="${x.stars}" min="1" onchange="pzTaskStars('${esc(x.id)}', this.value)">
+          <button class="pz-btn red sm" onclick="pzDelTask('${esc(x.id)}')">ลบ</button></div>`).join("")}
+        <div class="pz-form"><input id="pzTaskIcon" class="pz-input" style="width:52px;" maxlength="4" placeholder="✅">
+          <input id="pzTaskName" class="pz-input" style="flex:1; min-width:120px; text-align:left;" maxlength="60" placeholder="เช่น ล้างจาน, อ่านหนังสือ 20 นาที">
+          <input id="pzTaskStars" class="pz-input" style="width:70px;" type="number" placeholder="ดาว">
+          <button class="pz-btn green" onclick="pzAddTask()">+ เพิ่ม</button></div>
+      </details>
+    </div>
+    <div class="pz-sec"><h4>➕➖ เพิ่ม/หักดาวเอง</h4>
+      <div class="pz-form">
+        <select id="pzAdjSubj" class="pz-input">${Object.entries(SUBJ).map(([s, l]) => `<option value="${s}">${l}</option>`).join("")}</select>
+        <input id="pzAdjAmt" class="pz-input" style="width:90px;" type="number" min="1" placeholder="จำนวน">
+        <input id="pzAdjNote" class="pz-input" style="flex:1; min-width:120px; text-align:left;" maxlength="120" placeholder="เหตุผล (ไม่ใส่ก็ได้)">
+      </div>
+      <div class="pz-form"><button class="pz-btn green" onclick="pzAdjust(1)">+ เพิ่มดาว</button><button class="pz-btn red" onclick="pzAdjust(-1)">− หักดาว</button></div>
+    </div>
+    <div class="pz-sec"><h4>📜 ประวัติ <small>ล่าสุด 60 รายการ</small></h4>
+      <div class="pz-scroll">${hist.map(x => `<div class="pz-line">${x.html}</div>`).join("") || `<div class="pz-hint">ยังไม่มีประวัติ</div>`}</div>
+    </div>`;
+}
+async function pzAdjust(sign) {
+  const amt = parseInt(document.getElementById("pzAdjAmt").value), subj = document.getElementById("pzAdjSubj").value, note = document.getElementById("pzAdjNote").value.trim();
+  if (!(amt > 0)) { alert("ใส่จำนวนดาวก่อน"); return; }
+  const k = KG.data.kids.find(x => x.id === KG.pzKid);
+  if (!confirm(`${sign > 0 ? "เพิ่ม" : "หัก"} ${amt} ดาว (${SUBJ[subj]}) ให้ ${k.name}?`)) return;
+  await pzRun(() => api.ins("kg_adjust", { family_id: KG.me.family_id, kid_id: k.id, subject: subj, amount: amt * sign, note: note.slice(0, 120) }), `${sign > 0 ? "+" : "−"}${amt} ⭐`);
+}
+async function pzAward(tid) {
+  const x = KG.data.tasks.find(t => t.id === tid), k = KG.data.kids.find(y => y.id === KG.pzKid); if (!x || !k) return;
+  if (!confirm(`ให้ ${k.name} +${x.stars} ดาว\nจาก “${x.name}”?`)) return;
+  await pzRun(() => api.ins("kg_adjust", { family_id: KG.me.family_id, kid_id: k.id, subject: "bonus", amount: x.stars, note: `${x.icon} ${x.name}`.slice(0, 120) }), `${x.icon} +${x.stars} ⭐`);
+}
+async function pzDelAdj(id) { if (confirm("ยกเลิกรายการเพิ่ม/หักดาวนี้?")) await pzRun(() => api.del("kg_adjust", id)); }
+async function pzAddTask() {
+  const name = document.getElementById("pzTaskName").value.trim(), stars = parseInt(document.getElementById("pzTaskStars").value);
+  if (!name || !(stars > 0)) { alert("ใส่ชื่อภารกิจและจำนวนดาว"); return; }
+  await pzRun(() => api.ins("kg_tasks", { family_id: KG.me.family_id, icon: document.getElementById("pzTaskIcon").value.trim() || "✅", name, stars, sort: KG.data.tasks.length + 1 }));
+}
+async function pzTaskStars(id, v) { const n = parseInt(v); if (n > 0) await pzRun(() => api.upd("kg_tasks", id, { stars: n })); }
+async function pzDelTask(id) { if (confirm("ลบภารกิจนี้? (ดาวที่ให้ไปแล้วไม่หาย)")) await pzRun(() => api.del("kg_tasks", id)); }
+
+// ---------- แท็บ 🛍️ รางวัล ----------
+function pzShopHTML() {
+  const D = KG.data, kidName = (id) => { const k = D.kids.find(x => x.id === id); return k ? `${k.avatar} ${k.name}` : "-"; };
+  const pend = D.redemptions.filter(r => r.status === "pending"), given = D.redemptions.filter(r => r.status === "given").slice(0, 30);
+  const line = (c) => `<div class="pz-line"><span class="ico">${esc(c.icon || "🎁")}</span>
+      <div class="f">${esc(c.name)} <span style="color:#f08c00;">(${c.cost}⭐)</span><div>${esc(kidName(c.kid_id))} · ${fmtT(c.created_at)}</div></div>
+      ${c.status === "given" ? `<span class="st given">ให้แล้ว</span>` : `<button class="pz-btn green sm" onclick="pzGive('${esc(c.id)}')">✅ ให้แล้ว</button>`}
+      <button class="pz-btn gray sm" onclick="pzRefund('${esc(c.id)}')" title="ยกเลิกและคืนดาว">↩️</button></div>`;
+  return `<div class="pz-sec"><h4>🎟️ คูปองรอให้ <small>${pend.length} ใบ</small></h4>
+      ${pend.map(line).join("") || `<div class="pz-hint">ไม่มีคูปองค้าง</div>`}
+      ${given.length ? `<details style="margin-top:6px;"><summary style="cursor:pointer; color:#8a7aa8;">ให้แล้ว ${given.length} ใบล่าสุด</summary>${given.map(line).join("")}</details>` : ""}
+    </div>
+    <div class="pz-sec"><h4>🎁 ของรางวัล <small>แก้ได้ทุกช่อง กดออกนอกช่องแล้วบันทึกเอง</small></h4>
+      ${D.rewards.map(r => `<div class="pz-kid" style="${r.active ? "" : "opacity:0.55;"}">
+          <input class="pz-input" style="width:52px;" maxlength="4" value="${esc(r.icon)}" onchange="pzRw('${esc(r.id)}','icon',this.value)">
+          <div class="nm" style="display:flex; flex-direction:column; gap:4px;">
+            <input class="pz-input" style="text-align:left;" maxlength="60" value="${esc(r.name)}" onchange="pzRw('${esc(r.id)}','name',this.value)" placeholder="ชื่อรางวัล">
+            <input class="pz-input" style="text-align:left; font-size:0.85rem;" maxlength="200" value="${esc(r.detail || "")}" onchange="pzRw('${esc(r.id)}','detail',this.value)" placeholder="ได้อะไร/ทำอะไรได้บ้าง เช่น เลือกร้านเอง ไม่เกิน 100 บาท">
+          </div>
+          <label style="font-size:0.85rem; white-space:nowrap;">⭐ <input type="number" class="pz-input" style="width:80px; padding:6px;" value="${r.cost}" min="1" onchange="pzRw('${esc(r.id)}','cost',this.value)"></label>
+          <div class="pz-actions">
+            <label class="pz-switch" style="margin:0;"><input type="checkbox" ${r.active ? "checked" : ""} onchange="pzRw('${esc(r.id)}','active',this.checked)"> แสดงในร้าน</label>
+            <button class="pz-btn red sm" onclick="pzDelReward('${esc(r.id)}')">ลบ</button>
+          </div></div>`).join("") || `<div class="pz-hint">ยังไม่มีของรางวัล</div>`}
+      <div class="pz-form">
+        <input id="pzNewIcon" class="pz-input" style="width:52px;" placeholder="🎁" maxlength="4">
+        <input id="pzNewName" class="pz-input" style="flex:1; min-width:120px; text-align:left;" maxlength="60" placeholder="ชื่อรางวัล เช่น ไปสวนสนุก">
+        <input id="pzNewCost" class="pz-input" style="width:80px;" type="number" placeholder="ดาว">
+      </div>
+      <div class="pz-form">
+        <input id="pzNewDetail" class="pz-input" style="flex:1; min-width:160px; text-align:left;" maxlength="200" placeholder="รายละเอียด (ไม่ใส่ก็ได้) เช่น วันเสาร์-อาทิตย์เท่านั้น">
+        <button class="pz-btn green" onclick="pzAddReward()">+ เพิ่มรางวัล</button>
+      </div>
+    </div>`;
+}
+async function pzRw(id, field, v) {
+  const patch = {};
+  if (field === "cost") { const c = parseInt(v); if (!(c > 0)) { alert("ใส่จำนวนดาวมากกว่า 0"); renderPz(); return; } patch.cost = c; }
+  else if (field === "active") patch.active = !!v;
+  else if (field === "name") { if (!v.trim()) { alert("ชื่อรางวัลห้ามว่าง"); renderPz(); return; } patch.name = v.trim().slice(0, 60); }
+  else patch[field] = String(v).trim().slice(0, field === "icon" ? 8 : 200) || (field === "icon" ? "🎁" : "");
+  await pzRun(() => api.upd("kg_rewards", id, patch), "บันทึกแล้ว ✓");
+}
+async function pzAddReward() {
+  const name = document.getElementById("pzNewName").value.trim(), cost = parseInt(document.getElementById("pzNewCost").value);
+  if (!name || !(cost > 0)) { alert("ใส่ชื่อรางวัล และจำนวนดาวให้ถูกต้อง"); return; }
+  await pzRun(() => api.ins("kg_rewards", { family_id: KG.me.family_id, icon: document.getElementById("pzNewIcon").value.trim() || "🎁", name,
+    detail: document.getElementById("pzNewDetail").value.trim().slice(0, 200), cost, sort: KG.data.rewards.length + 1 }), "เพิ่มรางวัลแล้ว 🎁");
+}
+async function pzDelReward(id) { if (confirm("ลบรางวัลนี้? (คูปองที่ลูกแลกไปแล้วยังอยู่)")) await pzRun(() => api.del("kg_rewards", id)); }
+async function pzGive(id) { await pzRun(() => api.upd("kg_redemptions", id, { status: "given", given_at: new Date().toISOString() }), "✅ ให้แล้ว"); }
+async function pzRefund(id) {
+  const c = KG.data.redemptions.find(x => x.id === id); if (!c) return;
+  if (!confirm(`ยกเลิกคูปอง "${c.name}" และคืน ${c.cost} ดาวให้ลูก?`)) return;
+  await pzRun(() => api.del("kg_redemptions", id), `↩️ คืน ${c.cost} ดาวแล้ว`);
+}
+
+// ---------- แท็บ 📌 คำผิด ----------
+function pzWordsHTML() {
+  const k = KG.data.kids.find(x => x.id === KG.pzKid);
+  if (!k) return kidSel();
+  return kidSel() + `<div class="pz-sec"><h4>📌 คำที่ ${esc(k.name)} ผิดบ่อย <small>🚩 = ทำสีแดงไว้ (ยังจำไม่ได้)</small></h4>
+      <div id="pzWords"><div class="pz-hint">กำลังโหลด...</div></div></div>`;
+}
+async function pzLoadWords() {
+  const k = KG.data.kids.find(x => x.id === KG.pzKid); if (!k) return;
+  let rows = [];
+  try { rows = await api.wordStats(k.id); } catch (e) { document.getElementById("pzWords").innerHTML = `<div class="kg-err">${esc(thaiErr(e))}</div>`; return; }
+  const box = document.getElementById("pzWords"); if (!box) return;
+  const part = (lang, title) => { const r = rows.filter(x => x.lang === lang);
+    return `<b>${title}</b> <small style="color:#999;">${r.length} คำ</small><div class="pz-scroll" style="max-height:220px; margin:4px 0 10px;">${r.map(x => `<div class="pz-line">
+        <div class="f">${x.marked ? "🚩 " : ""}<b>${esc(x.word)}</b><div>ผิด ${x.wrong} ครั้ง${x.mastered ? ` · ทบทวนผ่านแล้ว (ตอนผิด ${x.mastered})` : ""}</div></div>
+        ${x.marked ? `<button class="pz-btn gray sm" onclick="pzUnmark('${lang}', ${JSON.stringify(x.word).replace(/"/g, "&quot;")})">ลบสีแดง</button>` : ""}
+        <button class="pz-btn red sm" onclick="pzWordReset('${lang}', ${JSON.stringify(x.word).replace(/"/g, "&quot;")})">ล้าง</button></div>`).join("") || `<div class="pz-hint">ไม่มี</div>`}</div>`; };
+  box.innerHTML = part("en", "🐰 ภาษาอังกฤษ") + part("th", "🇹🇭 ภาษาไทย")
+    + (rows.length ? `<button class="pz-btn red sm" onclick="pzWordResetAll()">🗑️ ล้างคำผิดทั้งหมดของ ${esc(k.name)}</button>` : "");
+}
+async function pzUnmark(lang, word) { await pzRun(() => api.wordMark(KG.pzKid, lang, word, null, false), "ลบสีแดงแล้ว"); if (KG.kid?.id === KG.pzKid) delete markedWords[word]; }
+async function pzWordReset(lang, word) {
+  if (!confirm(`ล้างสถิติคำ "${word}"? (จะไม่อยู่ในรายการทบทวน)`)) return;
+  await pzRun(() => api.delWord(KG.pzKid, lang, word), "ล้างแล้ว");
+  if (KG.kid?.id === KG.pzKid) await loadWordStats();
+}
+async function pzWordResetAll() {
+  const k = KG.data.kids.find(x => x.id === KG.pzKid);
+  if (!confirm(`ล้างคำผิดทั้งหมดของ ${k.name}? (ดาวไม่หาย)`)) return;
+  await pzRun(() => api.delWhere("kg_word_stats", "kid_id", KG.pzKid), "ล้างแล้ว");
+  if (KG.kid?.id === KG.pzKid) await loadWordStats();
+}
+
+// ---------- แท็บ ⚙️ ตั้งค่า ----------
+function pzSettingsHTML() {
+  const S = shopData.settings, D = KG.data;
+  return `<div class="pz-sec"><h4>🏡 ชื่อบ้าน</h4>
+      <div class="pz-form"><input id="pzFamNameIn" class="pz-input" style="flex:1; text-align:left;" maxlength="60" value="${esc(D.fam?.name || "")}">
+        <button class="pz-btn" onclick="pzSaveFamName()">บันทึก</button></div></div>
+    <div class="pz-sec"><h4>🎮 กติกาเกม</h4>
+      <label class="pz-switch"><input type="checkbox" id="pzComboBonus" ${S.comboBonus ? "checked" : ""}> 🔥 โบนัสคอมโบ (ตอบถูกติดกันได้ดาวเพิ่ม)</label>
+      <div class="pz-form">ตอบถูกติดกันครบ <input id="pzComboEvery" type="number" class="pz-input" style="width:64px;" min="2" max="20" value="${S.comboEvery}"> ข้อ
+        ได้ <input id="pzComboStars" type="number" class="pz-input" style="width:64px;" min="0" max="20" value="${S.comboStars}"> ดาว</div>
+      <div class="pz-form">🇹🇭 ภาษาไทย ตอบถูกได้ <input id="pzThaiPts" type="number" class="pz-input" style="width:64px;" min="1" max="10" value="${S.thaiPts}"> ดาว/คำ</div>
+      <div class="pz-hint">🧮 คณิตได้ดาวตามระดับชั้น (ป.1 = 2 … ป.6 = 8) · 🐰 ABC เปิดเสียง 1 / ปิดเสียง 2 ดาว ตอบผิด −1 · ล็อกระดับชั้นคณิตได้ที่แท็บ 👧 ลูก</div>
+      <button class="pz-btn green" onclick="pzSaveSettings()">💾 บันทึกกติกา</button>
+    </div>
+    <div class="pz-sec" style="border-color:#ffc9c9;"><h4 style="color:#e03131;">🛑 ล้างข้อมูล</h4>
+      ${kidSel()}
+      <button class="pz-btn red" onclick="pzResetKid()" ${D.kids.length ? "" : "disabled"}>🗑️ ล้างดาวและประวัติทั้งหมดของคนที่เลือก</button>
+      <div class="pz-hint" style="margin-top:10px;">ออกจากบ้านเกม: ถ้าเป็นผู้ปกครองคนสุดท้าย ข้อมูลเกมทั้งหมดของบ้านจะถูกลบ</div>
+      <button class="pz-btn gray" onclick="pzLeave()">🚪 ออกจากบ้านเกม</button>
+    </div>
+    <div class="pz-sec"><h4>🔑 บัญชี</h4>
+      <div class="pz-hint">เข้าระบบเป็น ${esc(KG.me.email || "")}</div>
+      <button class="pz-btn gray" onclick="doLogout()">ออกจากระบบ</button></div>`;
+}
+async function pzSaveFamName() { const n = document.getElementById("pzFamNameIn").value.trim(); if (n) await pzRun(() => api.updFam(KG.me.family_id, { name: n.slice(0, 60) }), "บันทึกแล้ว ✓"); }
+async function pzSaveSettings() {
+  const num = (id, lo, hi, d) => Math.min(hi, Math.max(lo, parseInt(document.getElementById(id).value) || d));
+  const settings = { ...(KG.data.fam?.settings || {}), comboBonus: document.getElementById("pzComboBonus").checked,
+    comboEvery: num("pzComboEvery", 2, 20, 5), comboStars: num("pzComboStars", 0, 20, 2), thaiPts: num("pzThaiPts", 1, 10, 3) };
+  await pzRun(() => api.updFam(KG.me.family_id, { settings }), "บันทึกกติกาแล้ว ✓");
+}
+async function pzResetKid() {
+  const k = KG.data.kids.find(x => x.id === KG.pzKid); if (!k) return;
+  if (!confirm(`ล้างดาว ประวัติการเล่น คูปอง และคำผิดทั้งหมดของ ${k.name}?\nกู้คืนไม่ได้`)) return;
+  if (prompt(`พิมพ์ชื่อ "${k.name}" เพื่อยืนยัน`) !== k.name) return;
+  await pzRun(async () => { for (const t of ["kg_rounds", "kg_adjust", "kg_redemptions", "kg_word_stats"]) await api.delWhere(t, "kid_id", k.id); }, "ล้างแล้ว");
+  if (KG.kid?.id === k.id) await loadWordStats();
+}
+async function pzLeave() {
+  const last = KG.data.parents.length <= 1;
+  if (!confirm(last ? "คุณเป็นผู้ปกครองคนสุดท้าย ออกแล้วข้อมูลเกมของบ้านนี้ทั้งหมดจะถูกลบ ยืนยัน?" : "ออกจากบ้านเกมนี้?")) return;
+  if (last && prompt('พิมพ์ "ลบ" เพื่อยืนยัน') !== "ลบ") return;
+  try { await api.leaveFamily(); } catch (e) { alert(thaiErr(e)); return; }
+  KG.kid = null; KG.data = null; KG.unlockedAt = 0; await enterApp();
+}
+
+/* ---------- 📦 ยกยอดจากเกมเดิม (Firebase + Google Sheets + เครื่องนี้) ---------- */
+async function pzImportOld() {
+  if (!pzGuard()) return;
+  const box = document.getElementById("pzImportBox");
+  box.innerHTML = `<div class="pz-hint">⏳ กำลังดึงยอดจากระบบเดิม...</div>`;
+  const get = (url) => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);
+  const enc = encodeURIComponent(OLD_PLAYER);
+  const [fbScore, fbShop, rep] = await Promise.all([
+    get(`${OLD_FIREBASE_DB}/scores/${enc}.json`), get(`${OLD_FIREBASE_DB}/shop/${enc}.json`), get(`${API_URL}?action=getReport&t=${Date.now()}`)]);
+  const ls = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+  const O = {
+    math: parseInt(fbScore?.score) || 0,
+    abc: parseInt(rep?.summary?.stars) || 0,
+    thai: parseInt(rep?.summary?.thaiStars) || parseInt(rep?.summary?.thaistars) || 0,
+    spent: parseInt(fbShop?.spent) || parseInt(ls("shopData")?.spent) || 0,
+    rewards: (() => { const r = fbShop?.rewards || ls("shopData")?.rewards; return Array.isArray(r) ? r.filter(Boolean) : Object.values(r || {}); })(),
+    pending: (() => { const r = fbShop?.redemptions || ls("shopData")?.redemptions; return (Array.isArray(r) ? r.filter(Boolean) : Object.values(r || {})).filter(c => c.status === "pending"); })(),
+    ws: ls("wordStats") || {}, tws: ls("thaiWordStats") || {}, marked: ls("markedWords") || {}, mastery: ls("reviewMastery") || {}
+  };
+  KG.importData = O;
+  const nW = Object.values(O.ws).filter(x => x?.wrong > 0).length + Object.values(O.tws).filter(x => x?.wrong > 0).length;
+  const newRewards = O.rewards.filter(r => r?.name && !KG.data.rewards.some(x => x.name === r.name));
+  box.innerHTML = `<div class="pz-sec" style="background:#fff; margin-top:8px;">
+      <h4>ยอดที่พบในระบบเดิม (ของ ${esc(OLD_PLAYER)})</h4>
+      ${!fbScore && !rep ? `<div class="kg-err">ดึงข้อมูลระบบเดิมไม่ได้ (อาจปิดไปแล้ว) ใช้ “เพิ่มดาวเอง” ในแท็บ ⭐ แทนได้</div>` : ""}
+      <div class="pz-grid4"><div>🧮 คณิต (Firebase)<b>${O.math}</b></div><div>🐰 ABC (Sheets)<b>${O.abc}</b></div><div>🇹🇭 ไทย (Sheets)<b>${O.thai}</b></div><div>🛍️ ใช้แลกไปแล้ว<b>${O.spent}</b></div></div>
+      <div class="pz-hint" style="margin-top:8px;">คำผิดบ่อยในเครื่องนี้ ${nW} คำ · รางวัลเดิมที่ยังไม่มี ${newRewards.length} รายการ · คูปองค้างให้ ${O.pending.length} ใบ</div>
+      <div class="pz-form">ยกให้: <select id="pzImpKid" class="pz-input">${KG.data.kids.map(k => `<option value="${esc(k.id)}" ${k.id === KG.pzKid ? "selected" : ""}>${esc(k.avatar)} ${esc(k.name)}</option>`).join("")}</select></div>
+      <label class="pz-switch"><input type="checkbox" id="pzImpStars" checked> ยกดาวคณิต/ABC/ไทย และดาวที่ใช้ไปแล้ว</label>
+      <label class="pz-switch"><input type="checkbox" id="pzImpWords" ${nW ? "checked" : "disabled"}> ยกคำผิดบ่อย (จากเครื่องนี้)</label>
+      <label class="pz-switch"><input type="checkbox" id="pzImpRewards" ${newRewards.length ? "checked" : "disabled"}> เพิ่มรางวัลเดิมเข้าร้าน + คูปองที่ยังค้างให้</label>
+      <button class="pz-btn green" onclick="pzDoImport()">✅ ยกยอดเลย</button>
+    </div>`;
+}
+async function pzDoImport() {
+  const O = KG.importData; if (!O) return;
+  const kid = document.getElementById("pzImpKid").value, k = KG.data.kids.find(x => x.id === kid);
+  if (KG.data.fam?.settings?.imported && !confirm("เคยยกยอดไปแล้ว ถ้ายกซ้ำดาวจะเพิ่มซ้ำ ยืนยันจะทำต่อ?")) return;
+  if (!confirm(`ยกยอดจากเกมเดิมให้ ${k.name}?`)) return;
+  const fid = KG.me.family_id, note = "📦 ยกยอดจากเกมเดิม";
+  await pzRun(async () => {
+    if (document.getElementById("pzImpStars").checked) {
+      const rows = [["math", O.math], ["abc", O.abc], ["thai", O.thai]].filter(([, n]) => n).map(([subject, amount]) => ({ family_id: fid, kid_id: kid, subject, amount, note }));
+      await api.insMany("kg_adjust", rows);
+      const pendCost = O.pending.reduce((a, c) => a + (parseInt(c.cost) || 0), 0);
+      const used = Math.max(0, O.spent - (document.getElementById("pzImpRewards").checked ? pendCost : 0));
+      if (used > 0) await api.ins("kg_redemptions", { family_id: fid, kid_id: kid, icon: "📦", name: "ดาวที่ใช้แลกไปแล้วในเกมเดิม", cost: used, status: "given", given_at: new Date().toISOString() });
+    }
+    if (document.getElementById("pzImpRewards").checked) {
+      const have = new Set(KG.data.rewards.map(r => r.name));
+      await api.insMany("kg_rewards", O.rewards.filter(r => r?.name && !have.has(r.name)).map((r, i) => ({ family_id: fid, icon: String(r.icon || "🎁").slice(0, 8), name: String(r.name).slice(0, 60), detail: "", cost: Math.max(1, parseInt(r.cost) || 1), sort: KG.data.rewards.length + i + 1 })));
+      await api.insMany("kg_redemptions", O.pending.map(c => ({ family_id: fid, kid_id: kid, icon: String(c.icon || "🎁").slice(0, 8), name: String(c.name || "รางวัล").slice(0, 60), cost: Math.max(1, parseInt(c.cost) || 1), status: "pending" })));
+    }
+    if (document.getElementById("pzImpWords").checked) {
+      const rows = [];
+      Object.entries(O.ws).forEach(([w, s]) => { if (w && (s?.wrong > 0 || O.marked[w])) rows.push({ kid_id: kid, family_id: fid, lang: "en", word: w.slice(0, 200), wrong: parseInt(s?.wrong) || 0, mastered: parseInt(O.mastery["en:" + w]) || 0, marked: !!O.marked[w] }); });
+      Object.entries(O.tws).forEach(([w, s]) => { if (w && s?.wrong > 0) rows.push({ kid_id: kid, family_id: fid, lang: "th", word: w.slice(0, 200), wrong: parseInt(s.wrong) || 0, mastered: parseInt(O.mastery["th:" + w]) || 0, marked: false }); });
+      for (let i = 0; i < rows.length; i += 200) await api.upsertWords(rows.slice(i, i + 200));
+    }
+    await api.updFam(fid, { settings: { ...(KG.data.fam?.settings || {}), imported: new Date().toISOString() } });
+  }, "📦 ยกยอดเรียบร้อย!");
+  if (KG.kid?.id === kid) await loadWordStats();
+  confetti(120);
+}
+
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pzkid]"); if (!b) return;
+  KG.pzKid = b.dataset.pzkid; renderPz();
+});
+window.addEventListener("load", boot);
 </script>
 </body>
 </html>
