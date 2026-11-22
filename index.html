@@ -391,6 +391,10 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
+  .who-chip { display:inline-flex; align-items:center; gap:8px; background:#fff; border-radius:30px; padding:4px 14px 4px 4px; box-shadow:0 2px 8px rgba(0,0,0,.08); text-align:left; color:#4a3b66; }
+  .who-chip b { display:block; font-size:.9rem; line-height:1.1; } .who-chip small { display:block; font-size:.68rem; color:#999; }
+  .who-av { width:34px; height:34px; border-radius:50%; background:#eee center/cover no-repeat; flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; }
+  .who-av.txt { background:linear-gradient(135deg,#ffd36e,#ff9f6e); color:#fff; font-weight:800; font-size:1.05rem; }
 </style>
 </head>
 <body>
@@ -2315,6 +2319,7 @@ function makeApi() {
     async signIn(email, password) { const r = await sb.auth.signInWithPassword({ email, password }); if (r.error) throw new Error(thaiErr(r.error)); },
     async signOut() { try { await sb.auth.signOut({ scope: "local" }); } catch (e) { /* ไม่เป็นไร */ } },
     me: () => rpc("kg_me"),
+    async profile(uid) { const r = await sb.from("profiles").select("nickname,username,avatar").eq("id", uid).maybeSingle(); return r.data || null; },
     async access() { const r = await sb.rpc("ext_kind_access", { p_kind: "kidgame" }); if (r.error) { if (/ext_kind_access|Could not find/i.test(r.error.message || "")) return { ok: true }; throw new Error(thaiErr(r.error)); } return r.data; },
     async load(fid) {
       const since = new Date(Date.now() - 400 * 864e5).toISOString();
@@ -2383,6 +2388,7 @@ function makeDemoApi() {
     async signIn(email, password) { email = email.toLowerCase(); let u = Object.values(D.users).find(x => x.email === email);
       if (!u) { u = { id: uid(), email, password }; D.users[u.id] = u; } else if (u.password !== password) throw new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง"); D.session = u.id; },
     async signOut() { D.session = null; },
+    async profile() { return { nickname: "คุณแม่", avatar: "👩" }; },
     async me() { const u = me(); if (!u) return { signed_in: false }; const p = D.parents.find(x => x.user_id === u.id), k = D.kids.find(x => x.user_id === u.id);
       return { signed_in: true, email: u.email, is_parent: !!p, kid_id: k?.id || null, family_id: p?.family_id || k?.family_id || null, access: !/nolic/.test(u.email) }; },
     async access() { return /nolic/.test(me()?.email || "") ? { ok: false, reason: "no_license", ext_name: "เกมเด็ก", price: 49, trial_days: 7, trial_used: false, darkchat_url: "https://example.com/darkchat/" } : { ok: true }; },
@@ -2533,12 +2539,27 @@ async function loadWordStats() {
   } catch (e) { console.warn(e); }
 }
 function kgWordMark(lang, word, o) { if (KG.kid) api.wordMark(KG.kid.id, lang, word, !!o.mastered || null, o.marked ?? null).catch(e => console.warn(e)); }
+// รูปโปรไฟล์ + ชื่อจากบัญชี DarkChat (บัญชีเดียวกัน)
+let KG_PROFILE = null;
+async function paintWho(id) {
+  const el = document.getElementById(id); if (!el || !KG.me) return;
+  const draw = () => {
+    const p = KG_PROFILE || {}, name = p.nickname || p.username || (KG.me.email || "").split("@")[0], av = p.avatar || "";
+    const pic = /^(https?:|data:)/.test(av) ? `<span class="who-av" style="background-image:url('${av.replace(/'/g, "%27")}')"></span>`
+      : `<span class="who-av txt">${esc(av && [...av].length <= 4 ? av : name.charAt(0).toUpperCase())}</span>`;
+    el.innerHTML = `<span class="who-chip">${pic}<span><b>${esc(name)}</b><small>${esc(KG.me.email || "")}</small></span></span>`;
+  };
+  draw();
+  if (!KG_PROFILE) {
+    try { const s = await api.session?.(); const uid = s?.user?.id; if (uid || DEMO) { KG_PROFILE = (await api.profile(uid)) || {}; draw(); } } catch (e) {}
+  }
+}
 async function selectKid(id) {
   const k = KG.data?.kids.find(x => x.id === id); if (!k) { goRole(); return; }
   KG.kid = k; mathPlayer = k.name; mathAvatar = k.avatar || "👦";
   applyKidTotals(); await loadWordStats();
   document.getElementById("switchKidBtn").style.display = KG.me.is_parent ? "flex" : "none";
-  document.getElementById("whoLine").textContent = `เข้าระบบ: ${KG.me.email || ""}`;
+  paintWho("whoLine");
   showPage("portalPage"); updateGrandTotal();
 }
 async function reloadKid() { try { await loadFamily(); await loadWordStats(); } catch (e) { console.warn(e); } updateGrandTotal(); }
@@ -2546,7 +2567,7 @@ async function reloadKid() { try { await loadFamily(); await loadWordStats(); } 
 function goRole() {
   if (!KG.me) { showPage("authPage"); return; }
   if (KG.me.kid_id && !KG.me.is_parent) { selectKid(KG.me.kid_id); return; }
-  document.getElementById("roleWho").textContent = `เข้าระบบเป็น ${KG.me.email || ""}`;
+  paintWho("roleWho");
   showPage("rolePage");
 }
 function chooseKidRole() {
