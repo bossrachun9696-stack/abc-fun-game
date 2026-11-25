@@ -1274,11 +1274,22 @@ function updateGrandTotal() {
     renderPortalExtras();
 }
 
+// เปิดเร็ว: คลังคำ/ประโยคจาก Google Sheets ใช้ชุดที่เก็บไว้ในเครื่องก่อน (โหลดจาก Sheets ใช้ 4–6 วินาที)
+// แล้วดึงชุดใหม่เบื้องหลัง ถ้าเปลี่ยนค่อยอัปเดต
+function swrJSON(key, url, apply, onFail) {
+    let cached = null;
+    try { cached = localStorage.getItem(key); if (cached) apply(JSON.parse(cached)); } catch (e) { cached = null; }
+    fetch(url).then(res => res.json()).then(d => {
+        const str = JSON.stringify(d);
+        if (str === cached) return;
+        try { if (str.length < 1500000) localStorage.setItem(key, str); } catch (e) { /* เครื่องเต็ม: ใช้แบบออนไลน์อย่างเดียว */ }
+        apply(d);
+    }).catch(e => { if (!cached) onFail(e); });
+}
+
 function fetchSentenceData() {
     const nocache = "&t=" + new Date().getTime();
-    fetch(SENTENCE_API_URL + "?action=getSentences" + nocache)
-    .then(res => res.json())
-    .then(data => {
+    swrJSON("kg-sentences-v1", SENTENCE_API_URL + "?action=getSentences" + nocache, data => {
         if(data && typeof data === 'object') {
             if(Array.isArray(data.sentences)) {
                 sentencesDB = data.sentences.filter(s => s.question && s.correct);
@@ -1293,14 +1304,14 @@ function fetchSentenceData() {
             }
             refreshLoadingUI();
         }
-    }).catch(err => console.error("Error loading sentences/QA:", err));
+    }, err => console.error("Error loading sentences/QA:", err));
 }
 
 function fetchAbcData() {
     const nocache = "&t=" + new Date().getTime();
     
     // คลังคำศัพท์อังกฤษ + ไทย จาก Google Sheets (คะแนนย้ายไปเก็บใน Supabase แล้ว)
-    fetch(API_URL + "?t=" + Date.now()).then(res => res.json()).then(data => {
+    swrJSON("kg-words-v1", API_URL + "?t=" + Date.now(), data => {
         let rawWords = data.words ? data.words : (Array.isArray(data) ? data : backupWords);
         
         let seenEng = new Set();
@@ -1329,7 +1340,7 @@ function fetchAbcData() {
         sessionEngPool = shuffleArray([...words]);
         sessionThaiPool = shuffleArray([...thaiWordsDB]);
         refreshLoadingUI();
-    }).catch(e => {
+    }, e => {
         words = backupWords;
         sessionEngPool = shuffleArray([...words]);
         document.getElementById("loadingStatus").textContent = "⚠️ โหมดออฟไลน์";
@@ -3099,6 +3110,12 @@ document.addEventListener("click", (e) => {
   KG.pzKid = b.dataset.pzkid; renderPz();
 });
 window.addEventListener("load", boot);
+</script>
+<script>
+// เปิดเร็ว: เก็บไฟล์หน้าเว็บไว้ในเครื่อง (sw.js)
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 </script>
 </body>
 </html>
